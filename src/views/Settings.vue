@@ -515,7 +515,7 @@ onMounted(async () => {
 
   // Load students for payment notification testing
   try {
-    await store.loadStudents()
+    await store.fetchStudents()
     students.value = store.students
   } catch (error) {
     console.error('Error loading students:', error)

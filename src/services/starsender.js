@@ -66,20 +66,26 @@ class StarSenderService {
         payload.schedule = options.schedule
       }
 
-      console.log('Sending message to StarSender:', {
+      console.log('Sending message to StarSender via proxy:', {
         to: formattedPhone,
         messageLength: message.length,
         hasDelay: !!options.delay,
         hasSchedule: !!options.schedule
       })
 
-      const response = await fetch(`${BASE_URL}/api/send`, {
+      const response = await fetch(PROXY_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': this.deviceApiKey
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          action: 'send',
+          phoneNumber: formattedPhone,
+          message: message,
+          delay: options.delay,
+          schedule: options.schedule
+        })
       })
 
       if (!response.ok) {
@@ -307,7 +313,7 @@ SD Islam Al Husna
 
 Halo, Orang Tua/Wali dari *${studentName}*
 
-�� *Detail Pembayaran:*
+📋 *Detail Pembayaran:*
 • Keterangan: ${description}
 • Jumlah: Rp ${amount?.toLocaleString('id-ID')}
 • Jatuh Tempo: ${dueDate}

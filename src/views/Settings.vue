@@ -354,17 +354,27 @@ const exportTransactions = () => {
 
 const exportAll = () => {
   const data = {
+    metadata: {
+      exported_at: new Date().toISOString(),
+      version: '1.0.0',
+      class: 'Kelas 1B SD Islam Al Husna',
+      academic_year: '2025/2026',
+      total_students: store.students.length,
+      total_transactions: store.transactions.length,
+      total_expenses: store.expenses.length,
+      current_balance: store.currentBalance
+    },
     students: store.students,
     transactions: store.transactions,
     expenses: store.expenses,
     campaigns: store.campaigns,
-    paymentLinks: store.paymentLinks,
-    exportDate: new Date().toISOString()
+    paymentLinks: store.paymentLinks
   }
-  
+
   const jsonContent = JSON.stringify(data, null, 2)
-  downloadJSON(jsonContent, 'backup-kas-kelas.json')
-  toast.success('Semua data berhasil di-export')
+  const timestamp = new Date().toISOString().slice(0, 10)
+  downloadJSON(jsonContent, `backup_kas_kelas_1b_${timestamp}.json`)
+  toast.success('Backup lengkap berhasil di-export')
 }
 
 const clearAllData = async () => {

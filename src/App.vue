@@ -50,12 +50,12 @@
           <div class="flex items-center">
             <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
               <span class="text-primary-600 font-medium text-sm">
-                {{ permissions.currentUser.name.charAt(0).toUpperCase() }}
+                {{ (permissions.currentUser?.name || 'U').charAt(0).toUpperCase() }}
               </span>
             </div>
             <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900">{{ permissions.currentUser.name }}</p>
-              <p class="text-xs text-gray-500">{{ permissions.getRoleDisplayInfo(permissions.currentUser.role).name }}</p>
+              <p class="text-sm font-medium text-gray-900">{{ permissions.currentUser?.name || 'User' }}</p>
+              <p class="text-xs text-gray-500">{{ permissions.getRoleDisplayInfo(permissions.currentUser?.role || 'viewer').name }}</p>
             </div>
           </div>
         </div>

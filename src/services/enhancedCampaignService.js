@@ -255,11 +255,32 @@ _"Bersama Membangun Generasi Cerdas & Berkarakter"_`,
   // Store payment link in database
   async storePaymentLink(linkData) {
     try {
-      const { data, error } = await db.addPaymentLink ? 
-        await db.addPaymentLink(linkData) :
-        this.storePaymentLinkToStorage(linkData)
+      // Ensure all required fields are present
+      const completeData = {
+        id: linkData.id || `pl_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`,
+        student_id: linkData.student_id,
+        order_id: linkData.order_id,
+        payment_url: linkData.payment_url,
+        amount: parseInt(linkData.amount),
+        description: linkData.description || 'Kas Kelas',
+        status: linkData.status || 'pending',
+        payment_method: linkData.payment_method || null,
+        completed_at: linkData.completed_at || null,
+        expires_at: linkData.expires_at || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        campaign_id: linkData.campaign_id || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      console.log('Storing payment link:', completeData.order_id, 'for student:', linkData.student_id)
+
+      const { data, error } = await db.addPaymentLink ?
+        await db.addPaymentLink(completeData) :
+        this.storePaymentLinkToStorage(completeData)
 
       if (error) throw error
+
+      console.log('Payment link stored successfully:', completeData.order_id)
       return data
     } catch (error) {
       console.error('Error storing payment link:', error)

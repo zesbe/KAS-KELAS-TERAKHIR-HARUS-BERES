@@ -347,14 +347,28 @@ const exportStudents = () => {
 
 const exportTransactions = () => {
   const csvContent = [
-    'Tanggal,Siswa,Keterangan,Jumlah,Status,Metode',
-    ...store.transactions.map(t => 
-      `"${t.created_at}","${t.student?.name || ''}","${t.description}","${t.amount}","${t.status}","${t.payment_method || ''}"`
+    'Tanggal,Siswa,Keterangan,Jumlah,Status,Metode,Order ID',
+    ...store.transactions.map(t =>
+      `"${t.created_at}","${t.student?.name || ''}","${t.description}","${t.amount}","${t.status}","${t.payment_method || ''}","${t.order_id || ''}"`
     )
   ].join('\n')
-  
-  downloadCSV(csvContent, 'transaksi.csv')
+
+  const timestamp = new Date().toISOString().slice(0, 10)
+  downloadCSV(csvContent, `transaksi_${timestamp}.csv`)
   toast.success('Data transaksi berhasil di-export')
+}
+
+const exportExpenses = () => {
+  const csvContent = [
+    'Tanggal,Kategori,Keterangan,Catatan,Jumlah,Status,Disetujui Oleh,Tanggal Disetujui',
+    ...store.expenses.map(e =>
+      `"${e.created_at}","${e.category}","${e.description}","${e.notes || ''}","${e.amount}","${e.status}","${e.approved_by || ''}","${e.approved_at || ''}"`
+    )
+  ].join('\n')
+
+  const timestamp = new Date().toISOString().slice(0, 10)
+  downloadCSV(csvContent, `pengeluaran_${timestamp}.csv`)
+  toast.success('Data pengeluaran berhasil di-export')
 }
 
 const exportAll = () => {

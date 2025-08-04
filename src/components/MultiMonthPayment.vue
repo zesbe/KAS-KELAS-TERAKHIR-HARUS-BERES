@@ -489,9 +489,9 @@ const months = [
 const years = [2024, 2025, 2026]
 
 const quickTemplates = [
-  { months: 3, label: '3 Bulan', amount: 75000 },
-  { months: 6, label: '6 Bulan', amount: 150000 },
-  { months: 12, label: '1 Tahun', amount: 300000 }
+  { months: 3, label: '3 Bulan', amount: 150000 },
+  { months: 6, label: '6 Bulan', amount: 300000 },
+  { months: 12, label: '1 Tahun', amount: 600000 }
 ]
 
 const filteredPayments = computed(() => {

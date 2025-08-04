@@ -692,7 +692,7 @@ const creating = ref(false)
 const activeTab = ref('single')
 
 const quickGenerate = reactive({
-  amount: 25000,
+  amount: 50000,
   description: 'Kas Bulanan',
   target: 'all',
   selectedStudents: []

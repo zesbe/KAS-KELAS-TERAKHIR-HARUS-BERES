@@ -270,19 +270,15 @@
                 <span>{{ form.months }} bulan ({{ getPeriodLabel() }})</span>
               </div>
               <div class="flex justify-between">
-                <span>Subtotal:</span>
-                <span>{{ formatCurrency(form.monthlyAmount * form.months) }}</span>
-              </div>
-              <div v-if="form.discountType !== 'none'" class="flex justify-between text-green-600">
-                <span>Diskon:</span>
-                <span>-{{ formatCurrency(calculatedDiscount) }}</span>
+                <span>Jumlah per Bulan:</span>
+                <span>{{ formatCurrency(form.monthlyAmount) }}</span>
               </div>
               <div class="flex justify-between font-bold border-t pt-1">
-                <span>Total:</span>
-                <span>{{ formatCurrency(calculatedTotal) }}</span>
+                <span>Total Pembayaran:</span>
+                <span>{{ formatCurrency(form.monthlyAmount * form.months) }}</span>
               </div>
-              <div v-if="calculatedDiscount > 0" class="text-green-600 text-xs">
-                Hemat {{ formatCurrency(calculatedDiscount) }} dari pembayaran bulanan!
+              <div class="text-blue-600 text-xs mt-2">
+                Pembayaran untuk {{ form.months }} bulan kas kelas
               </div>
             </div>
           </div>

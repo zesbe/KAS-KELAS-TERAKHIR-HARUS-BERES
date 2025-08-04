@@ -267,6 +267,9 @@ const store = useAppStore()
 const toast = useToast()
 const permissions = usePermissions()
 
+// Students data for testing
+const students = ref([])
+
 const settings = reactive({
   starsender: {
     deviceApiKey: ''

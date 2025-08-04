@@ -536,17 +536,8 @@ const getPeriodLabel = () => {
 }
 
 const calculateTotal = () => {
-  const subtotal = form.monthlyAmount * form.months
-  let discount = 0
-  
-  if (form.discountType === 'percentage') {
-    discount = subtotal * (form.discountValue / 100)
-  } else if (form.discountType === 'fixed') {
-    discount = form.discountValue
-  }
-  
-  calculatedDiscount.value = discount
-  calculatedTotal.value = subtotal - discount
+  // Simple calculation without discount
+  return form.monthlyAmount * form.months
 }
 
 const useTemplate = (template) => {

@@ -1,19 +1,20 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
       <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Pengeluaran</h1>
+        <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Pengeluaran</h1>
         <p class="text-sm text-gray-500 mt-1">Kelola semua pengeluaran kas kelas</p>
       </div>
-      <div class="flex space-x-3">
+      <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
         <div class="relative">
           <button
             @click="showExportMenu = !showExportMenu"
-            class="btn-secondary"
+            class="btn-secondary w-full sm:w-auto"
           >
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            Export Data
+            <span class="hidden sm:inline">Export Data</span>
+            <span class="sm:hidden">Export</span>
             <ChevronDownIcon class="w-4 h-4 ml-1" />
           </button>
 
@@ -34,10 +35,11 @@
         </div>
         <button
           @click="showAddModal = true"
-          class="btn-primary"
+          class="btn-primary w-full sm:w-auto"
         >
           <PlusIcon class="w-4 h-4 mr-2" />
-          Tambah Pengeluaran
+          <span class="hidden sm:inline">Tambah Pengeluaran</span>
+          <span class="sm:hidden">Tambah</span>
         </button>
       </div>
     </div>

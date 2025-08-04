@@ -20,7 +20,22 @@ supabase login
 supabase link --project-ref YOUR_PROJECT_REF
 ```
 
-### 3. Deploy the Edge Function
+### 3. Set Environment Variable
+Set your StarSender Device API Key as environment variable:
+
+**Via Supabase Dashboard:**
+1. Go to Edge Functions
+2. Click on Settings
+3. Add environment variable:
+   - Name: `STARSENDER_DEVICE_API_KEY`
+   - Value: `your-device-api-key-here`
+
+**Via CLI:**
+```bash
+supabase secrets set STARSENDER_DEVICE_API_KEY=your-device-api-key-here
+```
+
+### 4. Deploy the Edge Function
 ```bash
 supabase functions deploy starsender-proxy
 ```

@@ -79,10 +79,17 @@ export const useAppStore = defineStore('app', {
       this.loading = true
       try {
         const { data, error } = await db.getStudents()
-        if (error) throw error
+        if (error) {
+          this.databaseStatus = 'error'
+          throw error
+        }
         this.students = data || []
+        // Check if we're getting mock data
+        this.isUsingMockData = data && data.length > 0 && data[0].id === '1'
+        this.databaseStatus = this.isUsingMockData ? 'mock' : 'connected'
       } catch (error) {
         this.error = this.formatError(error)
+        this.databaseStatus = 'error'
         console.error('Error fetching students:', this.formatError(error))
       } finally {
         this.loading = false

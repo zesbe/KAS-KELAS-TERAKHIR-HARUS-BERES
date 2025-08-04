@@ -224,7 +224,7 @@ export const mockDb = {
       created_at: new Date().toISOString()
     }
     mockDb.mockCampaigns.push(newCampaign)
-    return Promise.resolve({ data: [newCampaign], error: null })
+    return Promise.resolve({ data: newCampaign, error: null })
   },
 
   updateCampaign: (id, updates) => {

@@ -57,7 +57,7 @@ const pagePermissions = {
 export function usePermissions() {
   // Get current user permissions
   const userPermissions = computed(() => {
-    return rolePermissions[currentUser.value.role] || []
+    return rolePermissions[safeCurrentUser.value.role] || []
   })
 
   // Check if user has specific permission

@@ -231,7 +231,7 @@ export const mockDb = {
     const index = mockDb.mockCampaigns.findIndex(c => c.id === id)
     if (index !== -1) {
       mockDb.mockCampaigns[index] = { ...mockDb.mockCampaigns[index], ...updates }
-      return Promise.resolve({ data: [mockDb.mockCampaigns[index]], error: null })
+      return Promise.resolve({ data: mockDb.mockCampaigns[index], error: null })
     }
     return Promise.resolve({ data: null, error: { message: 'Campaign not found' } })
   },

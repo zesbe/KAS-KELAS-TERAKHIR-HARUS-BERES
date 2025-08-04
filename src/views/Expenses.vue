@@ -342,7 +342,8 @@ const expenseForm = reactive({
   amount: 0,
   description: '',
   notes: '',
-  status: 'pending'
+  status: 'pending',
+  approved_by: ''
 })
 
 const totalExpenses = computed(() => {

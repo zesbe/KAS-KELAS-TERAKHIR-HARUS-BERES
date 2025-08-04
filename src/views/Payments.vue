@@ -591,6 +591,12 @@ const bulkMessage = reactive({
 })
 
 const sending = ref(false)
+const showCorsErrorModal = ref(false)
+const corsErrorData = ref({
+  phone: '',
+  message: '',
+  studentName: ''
+})
 
 const pendingPayments = computed(() => {
   return store.paymentLinks.filter(p => p.status === 'pending')

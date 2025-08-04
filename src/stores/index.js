@@ -199,13 +199,25 @@ export const useAppStore = defineStore('app', {
         if (!student) throw new Error('Student not found')
 
         const paymentData = pakasirService.createPaymentLink(student, amount, description)
-        
+
         const { data, error } = await db.addPaymentLink({
           ...paymentData,
           student_id: studentId,
           status: 'pending'
         })
-        
+
+        if (error) throw error
+        await this.fetchPaymentLinks()
+        return data
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
+    },
+
+    async deletePaymentLink(id) {
+      try {
+        const { data, error } = await db.deletePaymentLink(id)
         if (error) throw error
         await this.fetchPaymentLinks()
         return data

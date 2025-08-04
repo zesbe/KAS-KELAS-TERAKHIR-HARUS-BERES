@@ -497,7 +497,8 @@ const quickSetup = async () => {
 }
 
 const copyManualSQL = () => {
-  const sql = createTablesManually()
+  // const sql = createTablesManually()
+  const sql = "-- SQL schema would be here"
   navigator.clipboard.writeText(sql).then(() => {
     toast.success('SQL copied to clipboard! Paste it in Supabase SQL Editor.')
   }).catch(() => {

@@ -78,8 +78,8 @@ export const useAppStore = defineStore('app', {
         if (error) throw error
         this.students = data || []
       } catch (error) {
-        this.error = error.message
-        console.error('Error fetching students:', error)
+        this.error = this.formatError(error)
+        console.error('Error fetching students:', this.formatError(error))
       } finally {
         this.loading = false
       }
@@ -105,8 +105,8 @@ export const useAppStore = defineStore('app', {
         if (error) throw error
         this.transactions = data || []
       } catch (error) {
-        this.error = error.message || error.toString() || 'Unknown error occurred'
-        console.error('Error fetching transactions:', error)
+        this.error = this.formatError(error)
+        console.error('Error fetching transactions:', this.formatError(error))
       } finally {
         this.loading = false
       }
@@ -131,8 +131,8 @@ export const useAppStore = defineStore('app', {
         if (error) throw error
         this.expenses = data || []
       } catch (error) {
-        this.error = error.message || error.toString() || 'Unknown error occurred'
-        console.error('Error fetching expenses:', error)
+        this.error = this.formatError(error)
+        console.error('Error fetching expenses:', this.formatError(error))
       }
     },
 
@@ -179,8 +179,8 @@ export const useAppStore = defineStore('app', {
         if (error) throw error
         this.paymentLinks = data || []
       } catch (error) {
-        this.error = error.message || error.toString() || 'Unknown error occurred'
-        console.error('Error fetching payment links:', error)
+        this.error = this.formatError(error)
+        console.error('Error fetching payment links:', this.formatError(error))
       }
     },
 
@@ -213,8 +213,8 @@ export const useAppStore = defineStore('app', {
         if (error) throw error
         this.campaigns = data || []
       } catch (error) {
-        this.error = error.message || error.toString() || 'Unknown error occurred'
-        console.error('Error fetching campaigns:', error)
+        this.error = this.formatError(error)
+        console.error('Error fetching campaigns:', this.formatError(error))
       }
     },
 

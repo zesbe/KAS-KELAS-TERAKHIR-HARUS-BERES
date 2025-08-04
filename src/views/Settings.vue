@@ -14,6 +14,13 @@
         <!-- StarSender Configuration -->
         <div class="space-y-4">
           <h4 class="font-medium text-gray-900">StarSender WhatsApp API</h4>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs">
+            <p class="text-blue-800">
+              <strong>Production Note:</strong> StarSender API calls work best from a backend server due to CORS policies.
+              For production use, consider implementing API calls through your own backend endpoint.
+            </p>
+          </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Device API Key</label>

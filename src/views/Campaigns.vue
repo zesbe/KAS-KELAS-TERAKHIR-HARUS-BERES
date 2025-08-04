@@ -233,7 +233,7 @@
             <div v-if="needsPaymentLink" class="border rounded-lg p-4 bg-blue-50">
               <h4 class="font-medium text-blue-900 mb-3">💳 Auto Generate Payment Links</h4>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700">
                     Jumlah Pembayaran

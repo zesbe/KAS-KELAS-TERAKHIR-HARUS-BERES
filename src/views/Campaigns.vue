@@ -460,18 +460,18 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex justify-end space-x-3 pt-4">
+            <div class="flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-6 border-t border-gray-200">
               <button
                 type="button"
                 @click="closeModal"
-                class="btn-secondary"
+                class="btn-secondary w-full sm:w-auto order-2 sm:order-1"
               >
                 Batal
               </button>
               <button
                 type="submit"
                 :disabled="saving"
-                class="btn-primary"
+                class="btn-primary w-full sm:w-auto order-1 sm:order-2"
               >
                 {{ saving ? 'Menyimpan...' : (editingCampaign ? 'Update Campaign' : 'Buat Campaign') }}
               </button>

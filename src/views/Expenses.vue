@@ -6,13 +6,22 @@
         <h1 class="text-2xl font-semibold text-gray-900">Pengeluaran</h1>
         <p class="text-sm text-gray-500 mt-1">Kelola semua pengeluaran kas kelas</p>
       </div>
-      <button 
-        @click="showAddModal = true"
-        class="btn-primary"
-      >
-        <PlusIcon class="w-4 h-4 mr-2" />
-        Tambah Pengeluaran
-      </button>
+      <div class="flex space-x-3">
+        <button
+          @click="exportExpenses"
+          class="btn-secondary"
+        >
+          <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+          Export CSV
+        </button>
+        <button
+          @click="showAddModal = true"
+          class="btn-primary"
+        >
+          <PlusIcon class="w-4 h-4 mr-2" />
+          Tambah Pengeluaran
+        </button>
+      </div>
     </div>
 
     <!-- Summary Cards -->

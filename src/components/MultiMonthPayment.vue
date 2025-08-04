@@ -451,7 +451,7 @@ const multiMonthPayments = ref([
       { month: 4, label: 'April 2024', amount: 25000, paid: true },
       { month: 5, label: 'Mei 2024', amount: 25000, paid: false },
       { month: 6, label: 'Juni 2024', amount: 25000, paid: false },
-      { month: 7, label: 'Juli 2024', amount: 15000, paid: false } // With discount
+      { month: 7, label: 'Juli 2024', amount: 25000, paid: false }
     ]
   },
   {

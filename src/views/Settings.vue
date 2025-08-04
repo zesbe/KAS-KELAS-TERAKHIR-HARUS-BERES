@@ -54,8 +54,12 @@
           </div>
           
           <button @click="testStarSender" :disabled="testing.starsender" class="btn-primary">
-            {{ testing.starsender ? 'Testing...' : 'Test Koneksi' }}
+            {{ testing.starsender ? 'Testing...' : 'Test Configuration' }}
           </button>
+
+          <div class="text-xs text-gray-500 mt-2">
+            <p><strong>Note:</strong> Configuration test validates API key format. Actual API connectivity is tested when sending messages.</p>
+          </div>
         </div>
 
         <!-- Supabase Configuration -->

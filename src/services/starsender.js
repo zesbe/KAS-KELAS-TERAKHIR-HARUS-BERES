@@ -202,23 +202,25 @@ class StarSenderService {
     }
   }
 
-  // Check number via Supabase Edge Function proxy
-  async checkNumberViaProxy(number) {
+  // Check number via Vercel API route proxy
+  async checkNumberViaVercel(number) {
     try {
-      const { data, error } = await supabase.functions.invoke('starsender-proxy', {
-        body: {
+      const response = await fetch(this.vercelApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           action: 'check-number',
           number: number
-          // API key diambil dari environment variable di Edge Function
-        }
+          // API key diambil dari environment variable di Vercel
+        })
       })
 
-      if (error) {
-        // Check if Edge Function doesn't exist
-        if (error.message?.includes('Failed to send a request to the Edge Function')) {
-          throw new Error('Edge Function "starsender-proxy" not deployed. Please deploy it first: supabase functions deploy starsender-proxy')
-        }
-        throw new Error(`Supabase proxy error: ${error.message}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(`Vercel API error: ${data.message || response.statusText}`)
       }
 
       if (!data?.success) {
@@ -227,7 +229,7 @@ class StarSenderService {
 
       return data.data
     } catch (error) {
-      console.error('Error checking number via proxy:', error)
+      console.error('Error checking number via Vercel proxy:', error)
       throw error
     }
   }

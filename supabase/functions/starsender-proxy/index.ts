@@ -8,17 +8,20 @@ serve(async (req) => {
   }
 
   try {
-    const { action, number, message, apiKey } = await req.json()
+    // Get API key from environment variable (lebih aman!)
+    const apiKey = Deno.env.get('STARSENDER_DEVICE_API_KEY')
 
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: 'API key is required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        JSON.stringify({ error: 'StarSender API key not configured in environment' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
+
+    const { action, number, message } = await req.json()
 
     let url = ''
     let body = {}

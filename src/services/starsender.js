@@ -9,15 +9,23 @@ class StarSenderService {
 
   // Format phone number for StarSender API (62xxx format)
   formatPhoneNumber(phone) {
-    if (!phone) return null
+    console.log('Formatting phone number:', phone)
+
+    if (!phone || typeof phone !== 'string') {
+      console.error('Invalid phone input:', phone)
+      return null
+    }
 
     // Remove all non-digit characters except +
     let cleaned = phone.replace(/[^\d+]/g, '')
+    console.log('After removing non-digits:', cleaned)
 
-    // Remove leading + or 0
+    // Remove leading +
     if (cleaned.startsWith('+')) {
       cleaned = cleaned.substring(1)
     }
+
+    // Handle Indonesian mobile format starting with 0
     if (cleaned.startsWith('0')) {
       cleaned = '62' + cleaned.substring(1)
     }
@@ -27,6 +35,13 @@ class StarSenderService {
       cleaned = '62' + cleaned
     }
 
+    // Validate final format
+    if (cleaned.length < 10 || cleaned.length > 15) {
+      console.error('Invalid phone number length after formatting:', cleaned)
+      return null
+    }
+
+    console.log('Final formatted number:', cleaned)
     return cleaned
   }
 

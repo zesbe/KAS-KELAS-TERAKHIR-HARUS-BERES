@@ -29,7 +29,7 @@
             <div class="text-2xl font-bold text-primary-600">{{ template.months }}</div>
             <div class="text-sm font-medium text-gray-900 mt-1">{{ template.label }}</div>
             <div class="text-xs text-gray-500 mt-1">{{ formatCurrency(template.amount) }}</div>
-            <div class="text-xs text-green-600 mt-1">Hemat {{ formatCurrency(template.savings) }}</div>
+            <div class="text-xs text-gray-600 mt-1">{{ template.months }} × Rp 25.000</div>
           </div>
         </button>
       </div>

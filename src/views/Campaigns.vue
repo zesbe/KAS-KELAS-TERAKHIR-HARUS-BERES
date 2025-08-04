@@ -1,17 +1,18 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
       <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Campaign Pesan</h1>
+        <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Campaign Pesan</h1>
         <p class="text-sm text-gray-500 mt-1">Kelola kampanye pesan WhatsApp untuk komunikasi kelas</p>
       </div>
-      <button 
+      <button
         @click="showCreateModal = true"
-        class="btn-primary"
+        class="btn-primary w-full sm:w-auto"
       >
         <PlusIcon class="w-4 h-4 mr-2" />
-        Buat Campaign
+        <span class="hidden sm:inline">Buat Campaign</span>
+        <span class="sm:hidden">Buat Campaign</span>
       </button>
     </div>
 

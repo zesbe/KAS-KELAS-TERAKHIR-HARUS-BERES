@@ -1,12 +1,15 @@
 import axios from 'axios'
-import { supabase } from '@/lib/supabase'
 
 const BASE_URL = 'https://api.starsender.online'
-const USE_SUPABASE_PROXY = true // Toggle untuk menggunakan Supabase proxy
+const USE_VERCEL_PROXY = true // Toggle untuk menggunakan Vercel API proxy
 
 class StarSenderService {
   constructor() {
     this.deviceApiKey = import.meta.env.VITE_STARSENDER_DEVICE_API_KEY
+    // Vercel API route URL
+    this.vercelApiUrl = import.meta.env.VITE_VERCEL_API_URL
+      ? `${import.meta.env.VITE_VERCEL_API_URL}/api/starsender`
+      : '/api/starsender'
   }
 
   // Format phone number for StarSender API (62xxx format)

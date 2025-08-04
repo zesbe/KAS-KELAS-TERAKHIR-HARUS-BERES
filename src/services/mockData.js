@@ -187,7 +187,7 @@ export const mockDb = {
     if (link.student_id) {
       const student = mockStudents.find(s => s.id === link.student_id)
       if (student) {
-        newLink.student = { name: student.name, nickname: student.nickname }
+        newLink.student = { name: student.name, nickname: student.nickname, phone: student.phone }
       }
     }
     mockPaymentLinks.push(newLink)

@@ -210,22 +210,5 @@ export const mockDb = {
     return Promise.resolve({ data: null, error: { message: 'Payment link not found' } })
   },
 
-  getCampaigns: () => Promise.resolve({ data: mockCampaigns, error: null }),
-  addCampaign: (campaign) => {
-    const newCampaign = { 
-      ...campaign, 
-      id: String(mockCampaigns.length + 1), 
-      created_at: new Date().toISOString() 
-    }
-    mockCampaigns.push(newCampaign)
-    return Promise.resolve({ data: [newCampaign], error: null })
-  },
-  updateCampaign: (id, updates) => {
-    const index = mockCampaigns.findIndex(c => c.id === id)
-    if (index !== -1) {
-      mockCampaigns[index] = { ...mockCampaigns[index], ...updates }
-      return Promise.resolve({ data: [mockCampaigns[index]], error: null })
-    }
-    return Promise.resolve({ data: null, error: { message: 'Campaign not found' } })
-  }
+
 }

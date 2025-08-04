@@ -69,17 +69,30 @@ const shouldUseMockData = async () => {
   }
 }
 
+// Helper function to safely execute Supabase operations with fallback
+const safeSupabaseOperation = async (operation, fallback) => {
+  if (!isSupabaseConfigured) {
+    console.info('Supabase not configured, using mock data')
+    return fallback()
+  }
+
+  try {
+    const result = await operation()
+    return result
+  } catch (error) {
+    console.warn('Supabase operation failed, falling back to mock data:', error.message)
+    return fallback()
+  }
+}
+
 // Database helpers - use mock data when Supabase is not configured or not accessible
 export const db = {
   // Students
   getStudents: async () => {
-    if (!isSupabaseConfigured) return mockDb.getStudents()
-    try {
-      return await supabase.from('students').select('*').order('name')
-    } catch (error) {
-      console.warn('Falling back to mock data due to error:', error.message)
-      return mockDb.getStudents()
-    }
+    return safeSupabaseOperation(
+      () => supabase.from('students').select('*').order('name'),
+      () => mockDb.getStudents()
+    )
   },
   addStudent: (student) => isSupabaseConfigured ?
     supabase.from('students').insert(student) :

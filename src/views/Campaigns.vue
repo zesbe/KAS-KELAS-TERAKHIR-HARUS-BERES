@@ -186,12 +186,12 @@
     <div v-if="showCreateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-start justify-center pt-4 pb-20 px-4">
       <div class="relative w-full max-w-2xl mx-auto bg-white rounded-lg shadow-xl my-8 max-h-full overflow-y-auto"
            @click.stop>
-        <div class="mt-3">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-gray-900">
+        <div class="p-4 sm:p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg sm:text-xl font-medium text-gray-900">
               {{ editingCampaign ? 'Edit Campaign' : 'Buat Campaign Baru' }}
             </h3>
-            <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
+            <button @click="closeModal" class="text-gray-400 hover:text-gray-600 p-2 -mr-2">
               <XMarkIcon class="w-6 h-6" />
             </button>
           </div>

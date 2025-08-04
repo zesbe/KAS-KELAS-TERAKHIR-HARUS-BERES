@@ -287,12 +287,20 @@
           </div>
 
           <div class="bg-gray-50 rounded-lg p-4">
-            <h5 class="font-medium text-gray-900 mb-2">Quick Schema (Basic Tables):</h5>
-            <pre class="text-xs text-gray-600 overflow-x-auto bg-white p-3 rounded border">{{ basicSchema }}</pre>
+            <div class="flex items-center justify-between mb-2">
+              <h5 class="font-medium text-gray-900">Complete SQL Schema:</h5>
+              <button @click="copyManualSQL" class="btn-secondary text-xs py-1 px-2">
+                Copy SQL
+              </button>
+            </div>
+            <pre class="text-xs text-gray-600 overflow-x-auto bg-white p-3 rounded border max-h-64">{{ createTablesManually() }}</pre>
           </div>
         </div>
 
-        <div class="flex justify-end mt-6">
+        <div class="flex justify-between mt-6">
+          <button @click="copyManualSQL" class="btn-success">
+            Copy SQL to Clipboard
+          </button>
           <button @click="showSetupInstructions = false" class="btn-primary">
             Got it!
           </button>

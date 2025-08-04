@@ -868,20 +868,15 @@ const sendBulkMessages = async () => {
         }
 
         const message = generateMessageTemplate(payment)
-        const result = await starsenderService.sendMessage(payment.student?.phone, message)
+        await starsenderService.sendMessage(payment.student?.phone, message)
 
         results.push({
           recipient: payment.student?.name,
           phone: payment.student?.phone,
-          success: true,
-          simulation: result.simulation || false
+          success: true
         })
 
-        const messageText = result.simulation
-          ? `Pesan disimulasikan ke ${payment.student?.name} (Demo Mode)`
-          : `Pesan berhasil dikirim ke ${payment.student?.name}`
-
-        toast.success(messageText)
+        toast.success(`Pesan berhasil dikirim ke ${payment.student?.name}`)
       } catch (error) {
         results.push({
           recipient: payment.student?.name,

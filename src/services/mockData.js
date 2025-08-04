@@ -92,23 +92,7 @@ const mockPaymentLinks = [
   }
 ]
 
-const mockCampaigns = [
-  {
-    id: '1',
-    title: 'Pengingat Kas Februari',
-    message: 'Halo orang tua siswa, ini pengingat untuk pembayaran kas bulan Februari. Terima kasih.',
-    target: 'unpaid',
-    recipients: ['4', '5'],
-    delay_minutes: 2,
-    status: 'completed',
-    results: [
-      { recipient: 'Azma', phone: '+62 856-8500-062', success: true },
-      { recipient: 'Dizya', phone: '+62 812-8147-6276', success: true }
-    ],
-    created_at: '2024-01-30T09:00:00Z',
-    completed_at: '2024-01-30T09:05:00Z'
-  }
-]
+
 
 // Mock API responses
 export const mockDb = {

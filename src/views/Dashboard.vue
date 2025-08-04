@@ -270,6 +270,10 @@ const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL &&
   !import.meta.env.VITE_SUPABASE_URL.includes('your-project') &&
   !import.meta.env.VITE_SUPABASE_ANON_KEY.includes('your-anon-key')
 
+// Database diagnostics
+const diagnostics = ref(null)
+const setupRecommendation = ref(null)
+
 // Check if database setup is needed (no data loaded despite being configured)
 const needsDatabaseSetup = computed(() => {
   return isSupabaseConfigured &&
@@ -277,6 +281,21 @@ const needsDatabaseSetup = computed(() => {
     store.transactions.length === 0 &&
     store.expenses.length === 0
 })
+
+// Run diagnostics when there are data loading issues
+const runDiagnostics = async () => {
+  if (isSupabaseConfigured && needsDatabaseSetup.value) {
+    try {
+      console.log('Running database diagnostics...')
+      diagnostics.value = await runDatabaseDiagnostics()
+      setupRecommendation.value = generateSetupRecommendation(diagnostics.value)
+      console.log('Diagnostics results:', diagnostics.value)
+      console.log('Setup recommendation:', setupRecommendation.value)
+    } catch (error) {
+      console.error('Error running diagnostics:', error)
+    }
+  }
+}
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {

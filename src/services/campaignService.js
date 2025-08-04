@@ -35,6 +35,10 @@ class CampaignService {
       return { success: true, data: campaign }
     } catch (error) {
       console.error('Error creating campaign:', error)
+      // Ensure error has a message property
+      if (error && typeof error === 'object' && !error.message) {
+        error.message = 'Failed to create campaign'
+      }
       throw error
     }
   }

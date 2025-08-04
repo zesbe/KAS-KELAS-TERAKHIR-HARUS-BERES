@@ -7,23 +7,27 @@ export const useAppStore = defineStore('app', {
   state: () => ({
     // Students data
     students: [],
-    
+
     // Financial data
     transactions: [],
     expenses: [],
     totalBalance: 0,
-    
+
     // Campaigns
     campaigns: [],
     activeCampaign: null,
-    
+
     // Payment links
     paymentLinks: [],
-    
+
     // UI state
     loading: false,
     error: null,
-    
+
+    // Database status
+    isUsingMockData: false,
+    databaseStatus: 'unknown', // 'connected', 'mock', 'error'
+
     // Sidebar state
     sidebarOpen: false
   }),

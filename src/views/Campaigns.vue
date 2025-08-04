@@ -663,69 +663,42 @@ const saveCampaign = async () => {
 
 const executeCampaign = async (campaign) => {
   try {
-    campaign.status = 'sending'
-    
-    // Get recipients
-    const recipients = getRecipientsFromCampaign(campaign)
-    
-    // Prepare message with variables
-    const results = []
-    
-    for (let i = 0; i < recipients.length; i++) {
-      const recipient = recipients[i]
-      
-      try {
-        // Replace variables in message
-        const personalizedMessage = campaign.message
-          .replace(/\[\[NAME\]\]/g, recipient.name)
-          .replace(/\[\[NICKNAME\]\]/g, recipient.nickname)
-          .replace(/\[\[PHONE\]\]/g, recipient.phone)
-        
-        // Calculate schedule time for this message
-        const scheduleTime = campaign.scheduled_at ? 
-          new Date(campaign.scheduled_at).getTime() + (i * campaign.delay_minutes * 60 * 1000) :
-          Date.now() + (i * campaign.delay_minutes * 60 * 1000)
-        
-        // Send via StarSender with schedule
-        await starsenderService.sendMessage(recipient.phone, personalizedMessage, {
-          schedule: scheduleTime
-        })
-        
-        results.push({
-          phone: recipient.phone,
-          name: recipient.name,
-          success: true
-        })
-        
-        toast.success(`Pesan dijadwalkan untuk ${recipient.name}`)
-        
-      } catch (error) {
-        console.error(`Failed to schedule message for ${recipient.name}:`, error)
-        results.push({
-          phone: recipient.phone,
-          name: recipient.name,
-          success: false,
-          error: error.message
+    // Use campaignService to execute the campaign
+    const result = await campaignService.executeCampaign(campaign)
+
+    if (result.success) {
+      // Update local campaign data
+      const index = campaigns.value.findIndex(c => c.id === campaign.id)
+      if (index !== -1) {
+        campaigns.value[index] = result.campaign
+      }
+
+      const { successCount, totalSent } = result.campaign.results
+      toast.success(`Campaign berhasil dijadwalkan! ${successCount}/${totalSent} pesan terjadwal`)
+
+      // Show details of scheduled messages
+      if (result.results && result.results.length > 0) {
+        const firstSchedule = new Date(result.results[0].scheduledTime).toLocaleString('id-ID')
+        const lastSchedule = new Date(result.results[result.results.length - 1].scheduledTime).toLocaleString('id-ID')
+
+        toast.info(`Pesan pertama: ${firstSchedule}, Pesan terakhir: ${lastSchedule}`, {
+          timeout: 8000
         })
       }
     }
-    
-    // Update campaign with results
-    campaign.status = 'completed'
-    campaign.results = {
-      totalSent: recipients.length,
-      successCount: results.filter(r => r.success).length,
-      failedCount: results.filter(r => !r.success).length,
-      results: results
-    }
-    campaign.completed_at = new Date().toISOString()
-    
-    toast.success(`Campaign selesai! ${campaign.results.successCount}/${campaign.results.totalSent} pesan berhasil dijadwalkan`)
-    
+
   } catch (error) {
     console.error('Error executing campaign:', error)
+    toast.error(`Gagal menjalankan campaign: ${error.message}`)
+
+    // Update campaign status to failed
     campaign.status = 'failed'
-    toast.error('Gagal menjalankan campaign')
+    await campaignService.updateCampaign(campaign)
+
+    const index = campaigns.value.findIndex(c => c.id === campaign.id)
+    if (index !== -1) {
+      campaigns.value[index] = campaign
+    }
   }
 }
 

@@ -127,7 +127,7 @@ const formatDate = (dateString) => {
 const processWebhook = async () => {
   try {
     status.value = 'processing'
-    
+
     // Get webhook data from URL params or body
     const webhookData = {
       amount: parseInt(route.query.amount),
@@ -143,17 +143,35 @@ const processWebhook = async () => {
       throw new Error('Data pembayaran tidak lengkap')
     }
 
-    // Process the webhook
-    await store.handlePaymentWebhook(webhookData)
-    
-    paymentData.value = webhookData
-    status.value = 'success'
-    
-    toast.success('Pembayaran berhasil diproses!')
+    console.log('Processing webhook for order:', webhookData.order_id)
+
+    // Process webhook dengan auto notification
+    const result = await paymentNotificationService.processPaymentWebhook(webhookData)
+
+    if (result.success) {
+      // Update store juga
+      await store.handlePaymentWebhook(webhookData)
+
+      paymentData.value = {
+        ...webhookData,
+        student_name: result.student?.name,
+        student_nickname: result.student?.nickname
+      }
+
+      status.value = 'success'
+
+      toast.success(`🎉 Pembayaran berhasil! Notifikasi WhatsApp telah dikirim ke ${result.student?.name}`)
+    } else {
+      throw new Error('Gagal memproses webhook')
+    }
+
   } catch (error) {
     console.error('Webhook processing error:', error)
     errorMessage.value = error.message || 'Gagal memproses pembayaran'
     status.value = 'error'
+
+    // Still show error but log for investigation
+    toast.error('Pembayaran diterima tapi gagal kirim notifikasi WhatsApp')
   }
 }
 

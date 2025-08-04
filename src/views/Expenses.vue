@@ -275,6 +275,16 @@
               <option value="rejected">Ditolak</option>
             </select>
           </div>
+
+          <div v-if="expenseForm.status === 'approved'">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Disetujui Oleh</label>
+            <input
+              v-model="expenseForm.approved_by"
+              type="text"
+              class="input-field"
+              placeholder="Nama yang menyetujui"
+            />
+          </div>
           
           <div class="flex justify-end space-x-3 pt-4">
             <button 

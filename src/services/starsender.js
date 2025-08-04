@@ -150,10 +150,32 @@ class StarSenderService {
         success: true,
         message: 'StarSender configuration is valid. API keys are properly formatted.',
         note: 'Actual API connectivity will be tested when sending messages.',
-        config: configTest
+        config: configTest,
+        developmentNote: 'CORS policy prevents direct API testing from browser. In production, use backend proxy.',
+        productionRecommendation: 'Implement StarSender calls through your backend server for better security and to avoid CORS issues.'
       }
     } catch (error) {
       throw error
+    }
+  }
+
+  // Get connection status for UI display
+  getConnectionStatus() {
+    try {
+      const test = this.testConnection()
+      return {
+        configured: true,
+        deviceKeySet: !!this.deviceApiKey && this.deviceApiKey !== 'your-device-api-key',
+        accountKeySet: !!this.accountApiKey && this.accountApiKey !== 'your-account-api-key',
+        message: 'StarSender API keys are configured and valid'
+      }
+    } catch (error) {
+      return {
+        configured: false,
+        deviceKeySet: false,
+        accountKeySet: false,
+        message: error.message
+      }
     }
   }
 

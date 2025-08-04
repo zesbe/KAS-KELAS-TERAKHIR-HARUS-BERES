@@ -172,6 +172,14 @@
       </div>
     </div>
 
+    <!-- Analytics Insights -->
+    <AnalyticsInsights
+      :transactions="filteredTransactions"
+      :expenses="filteredExpenses"
+      :students="store.students"
+      :period="{ from: dateFrom, to: dateTo }"
+    />
+
     <!-- Payment Status by Student -->
     <div class="card p-6">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Status Pembayaran Siswa</h3>

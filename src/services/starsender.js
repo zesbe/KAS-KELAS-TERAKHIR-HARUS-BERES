@@ -162,14 +162,12 @@ class StarSenderService {
       return {
         configured: true,
         deviceKeySet: !!this.deviceApiKey && this.deviceApiKey !== 'your-device-api-key',
-        accountKeySet: !!this.accountApiKey && this.accountApiKey !== 'your-account-api-key',
-        message: 'StarSender API keys are configured and valid'
+        message: 'StarSender Device API key is configured and valid'
       }
     } catch (error) {
       return {
         configured: false,
         deviceKeySet: false,
-        accountKeySet: false,
         message: error.message
       }
     }

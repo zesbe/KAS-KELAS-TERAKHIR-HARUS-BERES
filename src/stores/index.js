@@ -310,6 +310,31 @@ export const useAppStore = defineStore('app', {
 
     clearError() {
       this.error = null
+    },
+
+    // Helper method to format errors properly
+    formatError(error) {
+      if (!error) return 'Unknown error occurred'
+
+      // Handle network errors
+      if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+        return 'Network connection failed. Please check your internet connection and try again.'
+      }
+
+      // Handle Supabase specific errors
+      if (error.message) {
+        return error.message
+      }
+
+      // Handle error objects
+      if (typeof error === 'object') {
+        if (error.error_description) return error.error_description
+        if (error.error) return error.error
+        return JSON.stringify(error, null, 2)
+      }
+
+      // Fallback
+      return error.toString()
     }
   }
 })

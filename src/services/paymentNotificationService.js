@@ -129,7 +129,7 @@ class PaymentNotificationService {
     return `✅ *Pembayaran Berhasil Diterima*
 SD Islam Al Husna
 
-Terima kasih ${student.name} (${student.nickname})! 🙏
+Terima kasih ${student.name} (${student.nickname})! ���
 
 💰 *Detail Pembayaran:*
 • Jumlah: Rp ${parseInt(webhookData.amount).toLocaleString('id-ID')}
@@ -350,6 +350,18 @@ _💻 Sistem Kas Digital SD Islam Al Husna_
       logs.push(logData)
       localStorage.setItem('webhookLogs', JSON.stringify(logs))
       return { data: logData, error: null }
+    } catch (error) {
+      return { data: null, error: error }
+    }
+  }
+
+  storePaymentLinkToStorage(linkData) {
+    try {
+      const stored = localStorage.getItem('paymentLinks')
+      const links = stored ? JSON.parse(stored) : []
+      links.push(linkData)
+      localStorage.setItem('paymentLinks', JSON.stringify(links))
+      return { data: linkData, error: null }
     } catch (error) {
       return { data: null, error: error }
     }

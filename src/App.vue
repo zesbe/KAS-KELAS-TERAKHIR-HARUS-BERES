@@ -157,13 +157,19 @@ const closeMobileSidebar = () => {
 }
 
 onMounted(async () => {
-  // Load initial data
-  await Promise.all([
-    store.fetchStudents(),
-    store.fetchTransactions(),
-    store.fetchExpenses(),
-    store.fetchPaymentLinks(),
-    store.fetchCampaigns()
-  ])
+  // Load initial data with error handling
+  try {
+    await Promise.all([
+      store.fetchStudents(),
+      store.fetchTransactions(),
+      store.fetchExpenses(),
+      store.fetchPaymentLinks(),
+      store.fetchCampaigns()
+    ])
+  } catch (error) {
+    console.error('Error loading initial data:', error)
+    // Clear the error in store to prevent showing failed fetch toast
+    store.clearError()
+  }
 })
 </script>

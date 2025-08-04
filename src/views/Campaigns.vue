@@ -210,24 +210,98 @@
               />
             </div>
 
-            <!-- Message Template -->
+            <!-- Template Selector -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Template Pesan Profesional
+              </label>
+              <select v-model="selectedTemplate" @change="applyTemplate" class="input-field mb-3">
+                <option value="">-- Pilih Template --</option>
+                <option value="payment_reminder">���� Reminder Pembayaran Kas</option>
+                <option value="payment_urgent">🚨 Urgent - Pembayaran Terlambat</option>
+                <option value="payment_first_notice">📋 Pemberitahuan Pembayaran</option>
+                <option value="info_announcement">📢 Pengumuman Kelas</option>
+                <option value="payment_confirmation">✅ Konfirmasi Pembayaran</option>
+                <option value="event_payment">🎉 Pembayaran Kegiatan</option>
+                <option value="thank_you">🙏 Terima Kasih & Apresiasi</option>
+                <option value="custom">✏️ Custom Message</option>
+              </select>
+            </div>
+
+            <!-- Auto Payment Link Generator -->
+            <div v-if="needsPaymentLink" class="border rounded-lg p-4 bg-blue-50">
+              <h4 class="font-medium text-blue-900 mb-3">💳 Auto Generate Payment Links</h4>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">
+                    Jumlah Pembayaran
+                  </label>
+                  <input
+                    v-model="paymentConfig.amount"
+                    type="number"
+                    min="1000"
+                    step="1000"
+                    class="input-field"
+                    placeholder="50000"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">
+                    Jatuh Tempo
+                  </label>
+                  <input
+                    v-model="paymentConfig.dueDate"
+                    type="date"
+                    class="input-field"
+                  />
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <label class="block text-sm font-medium text-gray-700">
+                  Keterangan Pembayaran
+                </label>
+                <input
+                  v-model="paymentConfig.description"
+                  type="text"
+                  class="input-field"
+                  placeholder="Kas Kelas Januari 2024"
+                />
+              </div>
+
+              <div class="mt-3 p-3 bg-white rounded border">
+                <p class="text-sm text-blue-700">
+                  ✅ Link PakaSir akan otomatis dibuat untuk setiap siswa<br>
+                  ✅ Variable [[PAYMENT_LINK]] akan diganti dengan link unik<br>
+                  ✅ Payment tracking otomatis terintegrasi
+                </p>
+              </div>
+            </div>
+
+            <!-- Message Template Editor -->
             <div>
               <label class="block text-sm font-medium text-gray-700">
                 Template Pesan
               </label>
               <textarea
                 v-model="campaignForm.message"
-                rows="6"
+                rows="12"
                 required
-                class="input-field"
-                placeholder="Ketik pesan Anda di sini..."
+                class="input-field font-mono text-sm"
+                placeholder="Ketik pesan Anda di sini atau pilih template di atas..."
               ></textarea>
               <div class="mt-2 text-sm text-gray-500">
-                <p>Variable yang bisa digunakan:</p>
-                <div class="flex flex-wrap gap-2 mt-1">
-                  <span class="px-2 py-1 bg-gray-100 rounded text-xs">[[NAME]] - Nama siswa</span>
-                  <span class="px-2 py-1 bg-gray-100 rounded text-xs">[[NICKNAME]] - Panggilan</span>
-                  <span class="px-2 py-1 bg-gray-100 rounded text-xs">[[PHONE]] - No HP</span>
+                <p><strong>Variable tersedia:</strong></p>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-1 mt-1">
+                  <span class="px-2 py-1 bg-gray-100 rounded text-xs">[[NAME]]</span>
+                  <span class="px-2 py-1 bg-gray-100 rounded text-xs">[[NICKNAME]]</span>
+                  <span class="px-2 py-1 bg-gray-100 rounded text-xs">[[PHONE]]</span>
+                  <span class="px-2 py-1 bg-blue-100 rounded text-xs">[[TIME_GREETING]]</span>
+                  <span class="px-2 py-1 bg-blue-100 rounded text-xs">[[MONTH]]</span>
+                  <span class="px-2 py-1 bg-green-100 rounded text-xs">[[PAYMENT_LINK]]</span>
+                  <span class="px-2 py-1 bg-green-100 rounded text-xs">[[AMOUNT]]</span>
+                  <span class="px-2 py-1 bg-green-100 rounded text-xs">[[DUE_DATE]]</span>
                 </div>
               </div>
             </div>

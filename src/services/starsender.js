@@ -33,28 +33,22 @@ class StarSenderService {
   // Test API key validity without making actual requests
   testConnection() {
     const hasDeviceKey = this.deviceApiKey && this.deviceApiKey !== 'your-device-api-key'
-    const hasAccountKey = this.accountApiKey && this.accountApiKey !== 'your-account-api-key'
 
-    if (!hasDeviceKey || !hasAccountKey) {
-      throw new Error('StarSender API keys not configured properly')
+    if (!hasDeviceKey) {
+      throw new Error('StarSender Device API key not configured properly')
     }
 
-    // Validate UUID format for API keys
+    // Validate UUID format for API key
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
     if (!uuidRegex.test(this.deviceApiKey)) {
       throw new Error('Device API key format is invalid (should be UUID)')
     }
 
-    if (!uuidRegex.test(this.accountApiKey)) {
-      throw new Error('Account API key format is invalid (should be UUID)')
-    }
-
     return {
       success: true,
-      message: 'API keys are properly configured',
-      deviceKeyValid: true,
-      accountKeyValid: true
+      message: 'Device API key is properly configured',
+      deviceKeyValid: true
     }
   }
 

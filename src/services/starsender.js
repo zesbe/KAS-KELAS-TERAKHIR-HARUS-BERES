@@ -287,12 +287,12 @@ class StarSenderService {
 
   // Get status konfigurasi
   getConfigurationStatus() {
+    const supabaseConfigured = !!SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY
     return {
-      deviceApiKey: {
-        configured: !!this.deviceApiKey && this.deviceApiKey !== 'your-device-api-key',
-        masked: this.deviceApiKey ? `${this.deviceApiKey.substring(0, 8)}...` : 'Not set'
-      },
-      ready: !!this.deviceApiKey && this.deviceApiKey !== 'your-device-api-key'
+      proxyUrl: PROXY_URL,
+      supabaseConfigured: supabaseConfigured,
+      supabaseUrl: SUPABASE_URL ? `${SUPABASE_URL.substring(0, 30)}...` : 'Not set',
+      ready: supabaseConfigured
     }
   }
 

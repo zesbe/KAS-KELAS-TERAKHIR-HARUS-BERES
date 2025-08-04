@@ -361,6 +361,7 @@ const toast = useToast()
 const showAddModal = ref(false)
 const editingExpense = ref(null)
 const saving = ref(false)
+const showExportMenu = ref(false)
 
 const filters = reactive({
   status: '',

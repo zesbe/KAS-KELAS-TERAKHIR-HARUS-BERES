@@ -1,23 +1,21 @@
 // Vercel API Route for StarSender WhatsApp Integration
-// Replace Supabase Edge Function
+// Updated dengan API format terbaru
 
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
-  // Handle preflight requests
   if (req.method === 'OPTIONS') {
     res.status(200).end()
     return
   }
 
-  // Only allow POST requests
   if (req.method !== 'POST') {
-    return res.status(405).json({ 
+    return res.status(405).json({
       error: 'Method not allowed',
-      message: 'Only POST requests are allowed'
+      message: 'Only POST method is supported'
     })
   }
 
@@ -32,82 +30,132 @@ export default async function handler(req, res) {
       })
     }
 
-    const { action, number, message } = req.body
+    const { action, phoneNumber, message, fileUrl, delay, schedule } = req.body
 
-    if (!action) {
+    // Format phone number
+    function formatPhoneNumber(phone) {
+      if (!phone) return null
+      
+      let cleaned = phone.replace(/\D/g, '')
+      
+      if (cleaned.startsWith('0')) {
+        cleaned = '62' + cleaned.substring(1)
+      } else if (cleaned.startsWith('8')) {
+        cleaned = '62' + cleaned
+      } else if (!cleaned.startsWith('62')) {
+        cleaned = '62' + cleaned
+      }
+      
+      return cleaned
+    }
+
+    const formattedPhone = formatPhoneNumber(phoneNumber)
+    if (!formattedPhone) {
       return res.status(400).json({
-        error: 'Missing required parameter',
-        message: 'Action parameter is required'
+        error: 'Invalid phone number',
+        message: 'Please provide a valid phone number'
       })
     }
 
-    let url = ''
-    let body = {}
-
-    switch (action) {
-      case 'send':
-        if (!number || !message) {
-          return res.status(400).json({
-            error: 'Missing required parameters',
-            message: 'Number and message are required for send action'
-          })
-        }
-        url = 'https://api.starsender.online/api/send'
-        body = { number, message }
-        break
-
-      case 'check-number':
-        if (!number) {
-          return res.status(400).json({
-            error: 'Missing required parameter',
-            message: 'Number is required for check-number action'
-          })
-        }
-        url = 'https://api.starsender.online/api/check-number'
-        body = { number }
-        break
-
-      default:
+    let payload
+    
+    if (action === 'send' || !action) {
+      // Send message (default action)
+      if (!message && !fileUrl) {
         return res.status(400).json({
-          error: 'Invalid action',
-          message: 'Valid actions are: send, check-number'
+          error: 'Missing message content',
+          message: 'Either message text or file URL is required'
         })
+      }
+
+      if (fileUrl) {
+        // Media message
+        payload = {
+          messageType: 'media',
+          to: formattedPhone,
+          body: message || '',
+          file: fileUrl
+        }
+      } else {
+        // Text message
+        payload = {
+          messageType: 'text',
+          to: formattedPhone,
+          body: message
+        }
+      }
+
+      // Add optional parameters
+      if (delay) {
+        payload.delay = parseInt(delay)
+      }
+      
+      if (schedule) {
+        payload.schedule = schedule
+      }
+
+    } else {
+      return res.status(400).json({
+        error: 'Invalid action',
+        message: 'Supported actions: send'
+      })
     }
 
-    // Make request to StarSender API
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
+    console.log('Making request to StarSender API:', {
+      to: formattedPhone,
+      messageType: payload.messageType,
+      hasFile: !!payload.file,
+      hasDelay: !!payload.delay,
+      hasSchedule: !!payload.schedule
     })
 
-    const data = await response.text()
-    let jsonData
+    // Make request to StarSender API
+    const response = await fetch('https://api.starsender.online/api/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': apiKey
+      },
+      body: JSON.stringify(payload)
+    })
 
-    try {
-      jsonData = JSON.parse(data)
-    } catch {
-      jsonData = { message: data }
+    const responseData = await response.json()
+
+    if (!response.ok) {
+      console.error('StarSender API error:', response.status, responseData)
+      return res.status(response.status).json({
+        error: 'StarSender API error',
+        message: responseData.message || 'Unknown error from StarSender API',
+        details: responseData
+      })
     }
 
-    // Return response
-    return res.status(response.ok ? 200 : response.status).json({
-      success: response.ok,
-      status: response.status,
-      data: jsonData,
-      timestamp: new Date().toISOString()
+    if (!responseData.success) {
+      console.error('StarSender operation failed:', responseData)
+      return res.status(400).json({
+        error: 'StarSender operation failed',
+        message: responseData.message || 'Unknown error',
+        details: responseData
+      })
+    }
+
+    console.log('StarSender API success:', responseData)
+
+    // Return success response
+    res.status(200).json({
+      success: true,
+      data: responseData.data,
+      message: responseData.message,
+      phone: formattedPhone
     })
 
   } catch (error) {
     console.error('StarSender API error:', error)
     
-    return res.status(500).json({
+    res.status(500).json({
       error: 'Internal server error',
       message: error.message,
-      timestamp: new Date().toISOString()
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     })
   }
 }

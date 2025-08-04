@@ -62,9 +62,14 @@ class StarSenderService {
   // Send single message
   async sendMessage(number, message) {
     try {
+      const formattedNumber = this.formatPhoneNumber(number)
+      if (!formattedNumber) {
+        throw new Error('Invalid phone number format')
+      }
+
       const response = await axios.post(
         `${BASE_URL}/api/send`,
-        { number, message },
+        { number: formattedNumber, message },
         {
           headers: {
             'Authorization': this.deviceApiKey,

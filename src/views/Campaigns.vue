@@ -499,7 +499,7 @@
 
           <div v-if="selectedCampaign" class="space-y-4">
             <!-- Campaign Info -->
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="text-sm font-medium text-gray-500">Status</label>
                 <p :class="getStatusClass(selectedCampaign.status)" class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">

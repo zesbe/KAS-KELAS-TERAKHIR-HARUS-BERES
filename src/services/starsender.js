@@ -74,12 +74,12 @@ class StarSenderService {
         throw new Error(`Invalid phone number format: "${number}"`)
       }
 
-      // Gunakan Supabase proxy jika tersedia
-      if (USE_SUPABASE_PROXY && supabase) {
+      // Gunakan Vercel API proxy jika tersedia
+      if (USE_VERCEL_PROXY) {
         try {
-          return await this.sendMessageViaProxy(formattedNumber, message)
+          return await this.sendMessageViaVercel(formattedNumber, message)
         } catch (proxyError) {
-          console.warn('Edge Function failed, falling back to direct API:', proxyError.message)
+          console.warn('Vercel API failed, falling back to direct API:', proxyError.message)
           // Fall through to direct API call
         }
       }

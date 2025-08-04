@@ -62,7 +62,7 @@ export function usePermissions() {
 
   // Check if user has specific permission
   const hasPermission = (permission) => {
-    return userPermissions.value.includes(permission) || currentUser.value.role === 'admin'
+    return userPermissions.value.includes(permission) || safeCurrentUser.value.role === 'admin'
   }
 
   // Check if user has any of the permissions

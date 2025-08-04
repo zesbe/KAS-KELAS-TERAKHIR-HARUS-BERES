@@ -42,18 +42,15 @@ class PakasirService {
 
   // Create payment link for student
   createPaymentLink(student, amount, description = 'Kas Kelas') {
-    const orderId = this.generateOrderId(student.nickname)
-    const paymentUrl = this.generatePaymentUrl(amount, orderId)
-    
+    const order_id = this.generateOrderId(student.nickname)
+    const payment_url = this.generatePaymentUrl(amount, order_id)
+
     return {
-      orderId,
-      paymentUrl,
+      order_id,
+      payment_url,
       amount,
-      studentId: student.id,
-      studentName: student.name,
-      studentNickname: student.nickname,
       description,
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString()
     }
   }
 

@@ -323,23 +323,17 @@ const testStarSender = async () => {
   try {
     testing.starsender = true
 
-    // Test via proxy first
-    try {
-      await starsenderService.checkNumber('628123456789') // Test number
-      toast.success('StarSender proxy connection successful!')
-    } catch (proxyError) {
-      console.warn('Proxy test failed, trying direct connection:', proxyError)
+    // Test konfigurasi API key
+    const result = await starsenderService.testConnectionSafe()
 
-      if (proxyError.message.includes('not deployed')) {
-        toast.error('Edge Function not deployed. Please deploy starsender-proxy first.')
-      } else {
-        // Fallback to direct test
-        await starsenderService.testConnectionSafe()
-        toast.success('StarSender configuration is valid! (Direct connection)')
-      }
+    if (result.success) {
+      toast.success('StarSender konfigurasi berhasil! API key valid dan siap digunakan.')
+    } else {
+      toast.error('StarSender test gagal: Konfigurasi tidak valid')
     }
+
   } catch (error) {
-    toast.error(`StarSender test failed: ${error.message}`)
+    toast.error(`StarSender test gagal: ${error.message}`)
   } finally {
     testing.starsender = false
   }

@@ -14,7 +14,19 @@
         <!-- StarSender Configuration -->
         <div class="space-y-4">
           <h4 class="font-medium text-gray-900">StarSender WhatsApp API</h4>
-          
+
+          <!-- Proxy Status -->
+          <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div class="flex items-center">
+              <CheckCircleIcon class="h-4 w-4 text-green-400 mr-2" />
+              <span class="text-sm text-green-800 font-medium">Supabase Proxy: Active</span>
+            </div>
+            <p class="text-xs text-green-700 mt-1">
+              Menggunakan Supabase Edge Function untuk mengatasi CORS issues.
+              Pesan WhatsApp akan dikirim melalui proxy server.
+            </p>
+          </div>
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Device API Key</label>
             <div class="flex items-center space-x-2">

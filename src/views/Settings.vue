@@ -261,11 +261,15 @@ import { useAppStore } from '@/stores'
 import { useToast } from 'vue-toastification'
 import starsenderService from '@/services/starsender'
 import { supabase } from '@/lib/supabase'
+import { setupDatabase, checkDatabaseStatus } from '@/utils/setupDatabase'
 import {
   EyeIcon,
   EyeSlashIcon,
   DocumentArrowDownIcon,
-  TrashIcon
+  TrashIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  XMarkIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()

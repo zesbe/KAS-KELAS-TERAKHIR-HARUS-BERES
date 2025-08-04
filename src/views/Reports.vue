@@ -281,10 +281,61 @@ import {
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
+const toast = useToast()
 
 const selectedPeriod = ref('thisMonth')
 const dateFrom = ref('')
 const dateTo = ref('')
+
+const filteredTransactions = computed(() => {
+  if (!dateFrom.value || !dateTo.value) return []
+
+  const fromDate = new Date(dateFrom.value)
+  const toDate = new Date(dateTo.value + 'T23:59:59')
+
+  return store.transactions.filter(t => {
+    const transactionDate = new Date(t.created_at)
+    return transactionDate >= fromDate && transactionDate <= toDate
+  })
+})
+
+const filteredExpenses = computed(() => {
+  if (!dateFrom.value || !dateTo.value) return []
+
+  const fromDate = new Date(dateFrom.value)
+  const toDate = new Date(dateTo.value + 'T23:59:59')
+
+  return store.expenses.filter(e => {
+    const expenseDate = new Date(e.created_at)
+    return expenseDate >= fromDate && expenseDate <= toDate
+  })
+})
+
+const paymentRate = computed(() => {
+  if (store.students.length === 0) return 0
+  return Math.round((reportData.paidStudents.length / store.students.length) * 100)
+})
+
+const averagePayment = computed(() => {
+  if (reportData.paidStudents.length === 0) return 0
+  return reportData.totalIncome / reportData.paidStudents.length
+})
+
+const topExpenseCategories = computed(() => {
+  const categoryTotals = {}
+
+  filteredExpenses.value
+    .filter(e => e.status === 'approved')
+    .forEach(e => {
+      const category = getCategoryLabel(e.category)
+      categoryTotals[category] = (categoryTotals[category] || 0) + e.amount
+    })
+
+  return Object.entries(categoryTotals)
+    .map(([name, amount]) => ({ name, amount }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 5)
+})
 
 const reportData = reactive({
   totalIncome: 0,

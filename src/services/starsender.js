@@ -46,12 +46,23 @@ class StarSenderService {
           headers: {
             'Authorization': this.deviceApiKey,
             'Content-Type': 'application/json'
-          }
+          },
+          timeout: 30000 // 30 second timeout for sending messages
         }
       )
       return response.data
     } catch (error) {
       console.error('Error sending message:', error)
+
+      if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
+        throw new Error('Network error: Unable to send message via StarSender API')
+      } else if (error.response?.status === 401) {
+        throw new Error('StarSender API: Invalid device API key')
+      } else if (error.response?.status === 429) {
+        throw new Error('StarSender API: Rate limit exceeded')
+      } else if (error.response) {
+        throw new Error(`StarSender API error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`)
+      }
       throw error
     }
   }

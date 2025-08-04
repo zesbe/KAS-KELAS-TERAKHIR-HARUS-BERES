@@ -442,7 +442,7 @@ const multiMonthPayments = ref([
     monthly_amount: 25000,
     total_amount: 150000,
     paid_amount: 75000,
-    progress_percentage: 54,
+    progress_percentage: 50,
     status: 'partial',
     payment_url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/140000?order_id=NAFI240201ABC123',
     month_details: [

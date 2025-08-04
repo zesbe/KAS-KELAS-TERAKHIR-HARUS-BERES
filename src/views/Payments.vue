@@ -6,14 +6,24 @@
         <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Link Pembayaran</h1>
         <p class="text-sm text-gray-500 mt-1">Kelola link pembayaran untuk kas kelas</p>
       </div>
-      <button
-        @click="showCreateModal = true"
-        class="btn-primary w-full sm:w-auto"
-      >
-        <PlusIcon class="w-4 h-4 mr-2" />
-        <span class="hidden sm:inline">Buat Link Bayar</span>
-        <span class="sm:hidden">Buat Link</span>
-      </button>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <router-link
+          to="/invoice"
+          class="btn-outline w-full sm:w-auto inline-flex items-center justify-center"
+        >
+          <DocumentTextIcon class="w-4 h-4 mr-2" />
+          <span class="hidden sm:inline">Lihat Invoice</span>
+          <span class="sm:hidden">Invoice</span>
+        </router-link>
+        <button
+          @click="showCreateModal = true"
+          class="btn-primary w-full sm:w-auto"
+        >
+          <PlusIcon class="w-4 h-4 mr-2" />
+          <span class="hidden sm:inline">Buat Link Bayar</span>
+          <span class="sm:hidden">Buat Link</span>
+        </button>
+      </div>
     </div>
 
     <!-- Tabs -->

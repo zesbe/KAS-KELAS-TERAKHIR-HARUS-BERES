@@ -111,29 +111,62 @@
       </div>
     </div>
 
-    <!-- Charts -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Income vs Expenses Chart -->
+    <!-- Analytics Dashboard -->
+    <FinancialCharts
+      :transactions="filteredTransactions"
+      :expenses="filteredExpenses"
+      :students="store.students"
+      :period="{ from: dateFrom, to: dateTo }"
+    />
+
+    <!-- Quick Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Payment Rate -->
       <div class="card p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Pemasukan vs Pengeluaran</h3>
-        <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-          <p class="text-gray-500">Chart akan ditampilkan di sini</p>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Tingkat Pembayaran</h3>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600">Rate Pembayaran</span>
+            <span class="text-lg font-semibold text-primary-600">{{ paymentRate }}%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div
+              class="bg-primary-600 h-2 rounded-full"
+              :style="{ width: paymentRate + '%' }"
+            ></div>
+          </div>
+          <div class="text-xs text-gray-500">
+            {{ reportData.paidStudents.length }} dari {{ store.students.length }} siswa
+          </div>
         </div>
       </div>
 
-      <!-- Payment Methods Chart -->
+      <!-- Average Payment -->
       <div class="card p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Metode Pembayaran</h3>
-        <div class="space-y-4">
-          <div v-for="method in paymentMethods" :key="method.name" class="flex items-center justify-between">
-            <div class="flex items-center">
-              <div :class="['w-4 h-4 rounded-full mr-3', method.color]"></div>
-              <span class="text-sm font-medium text-gray-700">{{ method.name }}</span>
-            </div>
-            <div class="text-right">
-              <p class="text-sm font-semibold text-gray-900">{{ method.count }}</p>
-              <p class="text-xs text-gray-500">{{ method.percentage }}%</p>
-            </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Rata-rata Pembayaran</h3>
+        <div class="space-y-2">
+          <div class="text-2xl font-bold text-gray-900">
+            {{ formatCurrency(averagePayment) }}
+          </div>
+          <div class="text-sm text-gray-500">
+            Per siswa yang sudah bayar
+          </div>
+          <div class="text-xs text-gray-400">
+            Total: {{ formatCurrency(reportData.totalIncome) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense Categories -->
+      <div class="card p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Kategori Pengeluaran</h3>
+        <div class="space-y-2">
+          <div v-for="category in topExpenseCategories" :key="category.name" class="flex justify-between items-center">
+            <span class="text-sm text-gray-600">{{ category.name }}</span>
+            <span class="text-sm font-medium text-gray-900">{{ formatCurrency(category.amount) }}</span>
+          </div>
+          <div v-if="topExpenseCategories.length === 0" class="text-sm text-gray-500 text-center py-4">
+            Belum ada pengeluaran
           </div>
         </div>
       </div>

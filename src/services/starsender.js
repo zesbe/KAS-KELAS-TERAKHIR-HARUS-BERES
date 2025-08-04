@@ -267,6 +267,49 @@ class StarSenderService {
     }
   }
 
+  // Check if Edge Function is deployed
+  async checkEdgeFunctionStatus() {
+    if (!supabase) {
+      return {
+        available: false,
+        message: 'Supabase not configured'
+      }
+    }
+
+    try {
+      // Try to call the Edge Function with a test request
+      const { data, error } = await supabase.functions.invoke('starsender-proxy', {
+        body: {
+          action: 'check-number',
+          number: '628123456789' // Test number
+        }
+      })
+
+      if (error) {
+        if (error.message?.includes('Failed to send a request to the Edge Function')) {
+          return {
+            available: false,
+            message: 'Edge Function not deployed'
+          }
+        }
+        return {
+          available: true,
+          message: 'Edge Function deployed but API key might be missing'
+        }
+      }
+
+      return {
+        available: true,
+        message: 'Edge Function deployed and working'
+      }
+    } catch (error) {
+      return {
+        available: false,
+        message: `Edge Function error: ${error.message}`
+      }
+    }
+  }
+
   // Send campaign with delay
   async sendCampaign(recipients, message, delayMinutes = 1) {
     const results = []

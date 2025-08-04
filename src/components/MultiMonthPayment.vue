@@ -579,9 +579,7 @@ const createMultiMonthPayment = async () => {
       startMonth: new Date().getMonth() + 1,
       year: new Date().getFullYear(),
       months: 6,
-      monthlyAmount: 25000,
-      discountType: 'none',
-      discountValue: 0
+      monthlyAmount: 25000
     })
     
   } catch (error) {

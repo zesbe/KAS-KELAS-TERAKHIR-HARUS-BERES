@@ -253,17 +253,22 @@ class CampaignService {
   // Get all campaigns
   async getCampaigns() {
     try {
-      const { data, error } = await db.getCampaigns ? 
+      const { data, error } = await db.getCampaigns ?
         await db.getCampaigns() :
         // Fallback to localStorage
         this.getCampaignsFromStorage()
 
-      if (error) throw error
+      if (error) {
+        const errorMessage = error.message || error.toString() || 'Failed to get campaigns'
+        throw new Error(errorMessage)
+      }
 
       return { success: true, data: data || [] }
     } catch (error) {
       console.error('Error getting campaigns:', error)
-      return { success: false, data: [] }
+      // Make sure we have a proper error message
+      const errorMessage = error?.message || error?.toString() || 'Unknown error getting campaigns'
+      return { success: false, data: [], error: errorMessage }
     }
   }
 

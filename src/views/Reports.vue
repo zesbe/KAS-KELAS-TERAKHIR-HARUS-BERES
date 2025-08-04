@@ -23,6 +23,11 @@
             <span class="hidden sm:inline">Export Lengkap</span>
             <span class="sm:hidden">Lengkap</span>
           </button>
+          <button @click="generatePDFReport" class="btn-secondary w-full sm:w-auto">
+            <PrinterIcon class="w-4 h-4 mr-2" />
+            <span class="hidden sm:inline">Generate PDF</span>
+            <span class="sm:hidden">PDF</span>
+          </button>
         </div>
       </div>
     </div>

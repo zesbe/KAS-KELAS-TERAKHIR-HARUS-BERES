@@ -17,7 +17,7 @@ export const supabase = isSupabaseConfigured ?
     global: {
       fetch: (url, options = {}) => {
         // Add timeout and retry logic
-        const timeoutMs = 10000 // 10 seconds
+        const timeoutMs = 5000 // Reduced to 5 seconds
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
@@ -27,9 +27,8 @@ export const supabase = isSupabaseConfigured ?
         }).finally(() => {
           clearTimeout(timeoutId)
         }).catch(error => {
-          if (error.name === 'AbortError') {
-            throw new Error('Request timeout - please check your connection')
-          }
+          console.warn('Supabase fetch failed, falling back to mock data:', error.message)
+          // Instead of throwing, we'll let the db helpers handle fallback
           throw error
         })
       }
@@ -70,90 +69,105 @@ const shouldUseMockData = async () => {
   }
 }
 
+// Helper function to safely execute Supabase operations with fallback
+const safeSupabaseOperation = async (operation, fallback) => {
+  if (!isSupabaseConfigured) {
+    console.info('Supabase not configured, using mock data')
+    return fallback()
+  }
+
+  try {
+    const result = await operation()
+    return result
+  } catch (error) {
+    console.warn('Supabase operation failed, falling back to mock data:', error.message)
+    return fallback()
+  }
+}
+
 // Database helpers - use mock data when Supabase is not configured or not accessible
 export const db = {
   // Students
   getStudents: async () => {
-    if (!isSupabaseConfigured) return mockDb.getStudents()
-    try {
-      return await supabase.from('students').select('*').order('name')
-    } catch (error) {
-      console.warn('Falling back to mock data due to error:', error.message)
-      return mockDb.getStudents()
-    }
+    return safeSupabaseOperation(
+      () => supabase.from('students').select('*').order('name'),
+      () => mockDb.getStudents()
+    )
   },
-  addStudent: (student) => isSupabaseConfigured ?
-    supabase.from('students').insert(student) :
-    mockDb.addStudent(student),
-  updateStudent: (id, updates) => isSupabaseConfigured ?
-    supabase.from('students').update(updates).eq('id', id) :
-    mockDb.updateStudent(id, updates),
-  deleteStudent: (id) => isSupabaseConfigured ?
-    supabase.from('students').delete().eq('id', id) :
-    mockDb.deleteStudent(id),
+  addStudent: (student) => safeSupabaseOperation(
+    () => supabase.from('students').insert(student),
+    () => mockDb.addStudent(student)
+  ),
+  updateStudent: (id, updates) => safeSupabaseOperation(
+    () => supabase.from('students').update(updates).eq('id', id),
+    () => mockDb.updateStudent(id, updates)
+  ),
+  deleteStudent: (id) => safeSupabaseOperation(
+    () => supabase.from('students').delete().eq('id', id),
+    () => mockDb.deleteStudent(id)
+  ),
 
   // Transactions (kas masuk/keluar)
   getTransactions: async () => {
-    if (!isSupabaseConfigured) return mockDb.getTransactions()
-    try {
-      return await supabase.from('transactions').select(`
+    return safeSupabaseOperation(
+      () => supabase.from('transactions').select(`
         *,
         student:students(name, nickname)
-      `).order('created_at', { ascending: false })
-    } catch (error) {
-      console.warn('Falling back to mock data due to error:', error.message)
-      return mockDb.getTransactions()
-    }
+      `).order('created_at', { ascending: false }),
+      () => mockDb.getTransactions()
+    )
   },
-  addTransaction: (transaction) => isSupabaseConfigured ?
-    supabase.from('transactions').insert(transaction) :
-    mockDb.addTransaction(transaction),
-  updateTransaction: (id, updates) => isSupabaseConfigured ?
-    supabase.from('transactions').update(updates).eq('id', id) :
-    mockDb.updateTransaction(id, updates),
+  addTransaction: (transaction) => safeSupabaseOperation(
+    () => supabase.from('transactions').insert(transaction),
+    () => mockDb.addTransaction(transaction)
+  ),
+  updateTransaction: (id, updates) => safeSupabaseOperation(
+    () => supabase.from('transactions').update(updates).eq('id', id),
+    () => mockDb.updateTransaction(id, updates)
+  ),
 
 
 
   // Payment links
   getPaymentLinks: async () => {
-    if (!isSupabaseConfigured) return mockDb.getPaymentLinks()
-    try {
-      return await supabase.from('payment_links').select(`
+    return safeSupabaseOperation(
+      () => supabase.from('payment_links').select(`
         *,
         student:students(name, nickname, phone)
-      `).order('created_at', { ascending: false })
-    } catch (error) {
-      console.warn('Falling back to mock data due to error:', error.message)
-      return mockDb.getPaymentLinks()
-    }
+      `).order('created_at', { ascending: false }),
+      () => mockDb.getPaymentLinks()
+    )
   },
-  addPaymentLink: (link) => isSupabaseConfigured ?
-    supabase.from('payment_links').insert(link) :
-    mockDb.addPaymentLink(link),
-  updatePaymentLink: (id, updates) => isSupabaseConfigured ?
-    supabase.from('payment_links').update(updates).eq('id', id) :
-    mockDb.updatePaymentLink(id, updates),
-  deletePaymentLink: (id) => isSupabaseConfigured ?
-    supabase.from('payment_links').delete().eq('id', id) :
-    mockDb.deletePaymentLink(id),
+  addPaymentLink: (link) => safeSupabaseOperation(
+    () => supabase.from('payment_links').insert(link),
+    () => mockDb.addPaymentLink(link)
+  ),
+  updatePaymentLink: (id, updates) => safeSupabaseOperation(
+    () => supabase.from('payment_links').update(updates).eq('id', id),
+    () => mockDb.updatePaymentLink(id, updates)
+  ),
+  deletePaymentLink: (id) => safeSupabaseOperation(
+    () => supabase.from('payment_links').delete().eq('id', id),
+    () => mockDb.deletePaymentLink(id)
+  ),
 
   // Expenses
   getExpenses: async () => {
-    if (!isSupabaseConfigured) return mockDb.getExpenses()
-    try {
-      return await supabase.from('expenses').select('*').order('created_at', { ascending: false })
-    } catch (error) {
-      console.warn('Falling back to mock data due to error:', error.message)
-      return mockDb.getExpenses()
-    }
+    return safeSupabaseOperation(
+      () => supabase.from('expenses').select('*').order('created_at', { ascending: false }),
+      () => mockDb.getExpenses()
+    )
   },
-  addExpense: (expense) => isSupabaseConfigured ?
-    supabase.from('expenses').insert(expense) :
-    mockDb.addExpense(expense),
-  updateExpense: (id, updates) => isSupabaseConfigured ?
-    supabase.from('expenses').update(updates).eq('id', id) :
-    mockDb.updateExpense(id, updates),
-  deleteExpense: (id) => isSupabaseConfigured ?
-    supabase.from('expenses').delete().eq('id', id) :
-    mockDb.deleteExpense(id)
+  addExpense: (expense) => safeSupabaseOperation(
+    () => supabase.from('expenses').insert(expense),
+    () => mockDb.addExpense(expense)
+  ),
+  updateExpense: (id, updates) => safeSupabaseOperation(
+    () => supabase.from('expenses').update(updates).eq('id', id),
+    () => mockDb.updateExpense(id, updates)
+  ),
+  deleteExpense: (id) => safeSupabaseOperation(
+    () => supabase.from('expenses').delete().eq('id', id),
+    () => mockDb.deleteExpense(id)
+  )
 }

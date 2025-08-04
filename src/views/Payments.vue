@@ -16,8 +16,41 @@
       </button>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <!-- Tabs -->
+    <div class="border-b border-gray-200">
+      <nav class="-mb-px flex space-x-8">
+        <button
+          @click="activeTab = 'single'"
+          :class="[
+            'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm',
+            activeTab === 'single'
+              ? 'border-primary-500 text-primary-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          ]"
+        >
+          Pembayaran Bulanan
+        </button>
+        <button
+          @click="activeTab = 'multi'"
+          :class="[
+            'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm',
+            activeTab === 'multi'
+              ? 'border-primary-500 text-primary-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          ]"
+        >
+          Multi-Bulan
+          <span class="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">
+            NEW
+          </span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Tab Content -->
+    <div v-if="activeTab === 'single'">
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div class="card p-6">
         <div class="flex items-center">
           <div class="p-2 bg-primary-100 rounded-lg">
@@ -87,7 +120,7 @@
             min="1000"
             step="1000"
             class="input-field"
-            placeholder="Contoh: 25000"
+            placeholder="Contoh: 50000"
           />
         </div>
         
@@ -616,6 +649,12 @@
         </div>
       </div>
     </div>
+    </div>
+
+    <!-- Multi-Month Tab -->
+    <div v-else-if="activeTab === 'multi'">
+      <MultiMonthPayment />
+    </div>
   </div>
 </template>
 
@@ -625,6 +664,7 @@ import { useAppStore } from '@/stores'
 import { useToast } from 'vue-toastification'
 import pakasirService from '@/services/pakasir'
 import starsenderService from '@/services/starsender'
+import MultiMonthPayment from '@/components/MultiMonthPayment.vue'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import {
@@ -649,9 +689,10 @@ const previewPayment = ref(null)
 const statusFilter = ref('')
 const generating = ref(false)
 const creating = ref(false)
+const activeTab = ref('single')
 
 const quickGenerate = reactive({
-  amount: 25000,
+  amount: 50000,
   description: 'Kas Bulanan',
   target: 'all',
   selectedStudents: []
@@ -883,8 +924,7 @@ const checkPaymentStatus = async (payment) => {
 const deletePaymentLink = async (payment) => {
   if (confirm('Apakah Anda yakin ingin menghapus link pembayaran ini?')) {
     try {
-      await store.db.deletePaymentLink(payment.id)
-      await store.fetchPaymentLinks()
+      await store.deletePaymentLink(payment.id)
       toast.success('Link pembayaran berhasil dihapus')
     } catch (error) {
       toast.error('Gagal menghapus link pembayaran')

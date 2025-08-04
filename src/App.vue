@@ -31,7 +31,7 @@
         <!-- Navigation -->
         <nav class="flex-1 px-4 py-4 space-y-1">
           <router-link
-            v-for="item in navigation"
+            v-for="item in filteredNavigation"
             :key="item.name"
             :to="item.href"
             @click="closeMobileSidebar"
@@ -47,14 +47,25 @@
 
         <!-- User info -->
         <div class="px-4 py-4 border-t border-gray-200">
-          <div class="flex items-center">
-            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <span class="text-gray-600 font-medium text-sm">A</span>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                <span class="text-primary-600 font-medium text-sm">
+                  {{ (permissions.currentUser?.name || 'U').charAt(0).toUpperCase() }}
+                </span>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm font-medium text-gray-900">{{ permissions.currentUser?.name || 'User' }}</p>
+                <p class="text-xs text-gray-500">{{ permissions.getRoleDisplayInfo(permissions.currentUser?.role || 'viewer').name }}</p>
+              </div>
             </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900">Admin</p>
-              <p class="text-xs text-gray-500">Administrator</p>
-            </div>
+            <button
+              @click="handleLogout"
+              class="p-1 text-gray-400 hover:text-gray-600"
+              title="Logout"
+            >
+              <ArrowRightOnRectangleIcon class="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>
@@ -162,8 +173,11 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores'
+import { usePermissions } from '@/composables/usePermissions'
+import { useToast } from 'vue-toastification'
 import {
   Bars3Icon,
   XMarkIcon,
@@ -174,20 +188,31 @@ import {
   CreditCardIcon,
   DocumentChartBarIcon,
   CogIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
+const permissions = usePermissions()
+const router = useRouter()
+const toast = useToast()
 
 const navigation = [
-  { name: 'Dashboard', label: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'Students', label: 'Data Siswa', href: '/students', icon: UsersIcon },
-  { name: 'Transactions', label: 'Transaksi Kas', href: '/transactions', icon: BanknotesIcon },
-  { name: 'Expenses', label: 'Pengeluaran', href: '/expenses', icon: ReceiptPercentIcon },
-  { name: 'Payments', label: 'Link Pembayaran', href: '/payments', icon: CreditCardIcon },
-  { name: 'Reports', label: 'Laporan', href: '/reports', icon: DocumentChartBarIcon },
-  { name: 'Settings', label: 'Pengaturan', href: '/settings', icon: CogIcon }
+  { name: 'Dashboard', label: 'Dashboard', href: '/', icon: HomeIcon, requiresPermission: 'dashboard' },
+  { name: 'Students', label: 'Data Siswa', href: '/students', icon: UsersIcon, requiresPermission: 'students' },
+  { name: 'Transactions', label: 'Transaksi Kas', href: '/transactions', icon: BanknotesIcon, requiresPermission: 'transactions' },
+  { name: 'Expenses', label: 'Pengeluaran', href: '/expenses', icon: ReceiptPercentIcon, requiresPermission: 'expenses' },
+  { name: 'Payments', label: 'Link Pembayaran', href: '/payments', icon: CreditCardIcon, requiresPermission: 'payments' },
+  { name: 'Reports', label: 'Laporan', href: '/reports', icon: DocumentChartBarIcon, requiresPermission: 'reports' },
+  { name: 'Settings', label: 'Pengaturan', href: '/settings', icon: CogIcon, requiresPermission: 'settings' }
 ]
+
+const filteredNavigation = computed(() => {
+  return navigation.filter(item => {
+    if (!item.requiresPermission) return true
+    return permissions.canAccessPage(item.requiresPermission)
+  })
+})
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {
@@ -201,6 +226,14 @@ const formatCurrency = (amount) => {
 const closeMobileSidebar = () => {
   if (window.innerWidth < 1024) {
     store.sidebarOpen = false
+  }
+}
+
+const handleLogout = () => {
+  if (confirm('Apakah Anda yakin ingin logout?')) {
+    permissions.logout()
+    toast.success('Berhasil logout')
+    router.push('/login')
   }
 }
 

@@ -202,6 +202,11 @@
       </div>
     </div>
 
+    <!-- Role Management -->
+    <div v-if="permissions.hasPermission('manage_users')" class="card p-6">
+      <RoleManagement />
+    </div>
+
     <!-- System Info -->
     <div class="card p-6">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Sistem</h3>
@@ -222,6 +227,14 @@
           <span class="font-medium text-gray-700">Total Transaksi:</span>
           <span class="ml-2 text-gray-600">{{ store.transactions.length }}</span>
         </div>
+        <div>
+          <span class="font-medium text-gray-700">Pengguna Saat Ini:</span>
+          <span class="ml-2 text-gray-600">{{ permissions.currentUser.name }} ({{ permissions.getRoleDisplayInfo(permissions.currentUser.role).name }})</span>
+        </div>
+        <div>
+          <span class="font-medium text-gray-700">Hak Akses:</span>
+          <span class="ml-2 text-gray-600">{{ permissions.userPermissions.length }} permission(s)</span>
+        </div>
       </div>
     </div>
   </div>
@@ -231,6 +244,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useAppStore } from '@/stores'
 import { useToast } from 'vue-toastification'
+import { usePermissions } from '@/composables/usePermissions'
+import RoleManagement from '@/components/RoleManagement.vue'
 import starsenderService from '@/services/starsender'
 import { supabase } from '@/lib/supabase'
 import {
@@ -243,6 +258,7 @@ import {
 
 const store = useAppStore()
 const toast = useToast()
+const permissions = usePermissions()
 
 const settings = reactive({
   starsender: {

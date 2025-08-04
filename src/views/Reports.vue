@@ -23,6 +23,11 @@
             <span class="hidden sm:inline">Export Lengkap</span>
             <span class="sm:hidden">Lengkap</span>
           </button>
+          <button @click="generatePDFReport" class="btn-secondary w-full sm:w-auto">
+            <PrinterIcon class="w-4 h-4 mr-2" />
+            <span class="hidden sm:inline">Generate PDF</span>
+            <span class="sm:hidden">PDF</span>
+          </button>
         </div>
       </div>
     </div>
@@ -111,33 +116,74 @@
       </div>
     </div>
 
-    <!-- Charts -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Income vs Expenses Chart -->
+    <!-- Analytics Dashboard -->
+    <FinancialCharts
+      :transactions="filteredTransactions"
+      :expenses="filteredExpenses"
+      :students="store.students"
+      :period="{ from: dateFrom, to: dateTo }"
+    />
+
+    <!-- Quick Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Payment Rate -->
       <div class="card p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Pemasukan vs Pengeluaran</h3>
-        <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-          <p class="text-gray-500">Chart akan ditampilkan di sini</p>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Tingkat Pembayaran</h3>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600">Rate Pembayaran</span>
+            <span class="text-lg font-semibold text-primary-600">{{ paymentRate }}%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div
+              class="bg-primary-600 h-2 rounded-full"
+              :style="{ width: paymentRate + '%' }"
+            ></div>
+          </div>
+          <div class="text-xs text-gray-500">
+            {{ reportData.paidStudents.length }} dari {{ store.students.length }} siswa
+          </div>
         </div>
       </div>
 
-      <!-- Payment Methods Chart -->
+      <!-- Average Payment -->
       <div class="card p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Metode Pembayaran</h3>
-        <div class="space-y-4">
-          <div v-for="method in paymentMethods" :key="method.name" class="flex items-center justify-between">
-            <div class="flex items-center">
-              <div :class="['w-4 h-4 rounded-full mr-3', method.color]"></div>
-              <span class="text-sm font-medium text-gray-700">{{ method.name }}</span>
-            </div>
-            <div class="text-right">
-              <p class="text-sm font-semibold text-gray-900">{{ method.count }}</p>
-              <p class="text-xs text-gray-500">{{ method.percentage }}%</p>
-            </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Rata-rata Pembayaran</h3>
+        <div class="space-y-2">
+          <div class="text-2xl font-bold text-gray-900">
+            {{ formatCurrency(averagePayment) }}
+          </div>
+          <div class="text-sm text-gray-500">
+            Per siswa yang sudah bayar
+          </div>
+          <div class="text-xs text-gray-400">
+            Total: {{ formatCurrency(reportData.totalIncome) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense Categories -->
+      <div class="card p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Kategori Pengeluaran</h3>
+        <div class="space-y-2">
+          <div v-for="category in topExpenseCategories" :key="category.name" class="flex justify-between items-center">
+            <span class="text-sm text-gray-600">{{ category.name }}</span>
+            <span class="text-sm font-medium text-gray-900">{{ formatCurrency(category.amount) }}</span>
+          </div>
+          <div v-if="topExpenseCategories.length === 0" class="text-sm text-gray-500 text-center py-4">
+            Belum ada pengeluaran
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Analytics Insights -->
+    <AnalyticsInsights
+      :transactions="filteredTransactions"
+      :expenses="filteredExpenses"
+      :students="store.students"
+      :period="{ from: dateFrom, to: dateTo }"
+    />
 
     <!-- Payment Status by Student -->
     <div class="card p-6">
@@ -233,9 +279,12 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAppStore } from '@/stores'
+import { useToast } from 'vue-toastification'
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from 'date-fns'
 import { id } from 'date-fns/locale'
 import exportService from '@/services/export'
+import FinancialCharts from '@/components/FinancialCharts.vue'
+import AnalyticsInsights from '@/components/AnalyticsInsights.vue'
 import {
   BanknotesIcon,
   ReceiptPercentIcon,
@@ -246,10 +295,61 @@ import {
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
+const toast = useToast()
 
 const selectedPeriod = ref('thisMonth')
 const dateFrom = ref('')
 const dateTo = ref('')
+
+const filteredTransactions = computed(() => {
+  if (!dateFrom.value || !dateTo.value) return []
+
+  const fromDate = new Date(dateFrom.value)
+  const toDate = new Date(dateTo.value + 'T23:59:59')
+
+  return store.transactions.filter(t => {
+    const transactionDate = new Date(t.created_at)
+    return transactionDate >= fromDate && transactionDate <= toDate
+  })
+})
+
+const filteredExpenses = computed(() => {
+  if (!dateFrom.value || !dateTo.value) return []
+
+  const fromDate = new Date(dateFrom.value)
+  const toDate = new Date(dateTo.value + 'T23:59:59')
+
+  return store.expenses.filter(e => {
+    const expenseDate = new Date(e.created_at)
+    return expenseDate >= fromDate && expenseDate <= toDate
+  })
+})
+
+const paymentRate = computed(() => {
+  if (store.students.length === 0) return 0
+  return Math.round((reportData.paidStudents.length / store.students.length) * 100)
+})
+
+const averagePayment = computed(() => {
+  if (reportData.paidStudents.length === 0) return 0
+  return reportData.totalIncome / reportData.paidStudents.length
+})
+
+const topExpenseCategories = computed(() => {
+  const categoryTotals = {}
+
+  filteredExpenses.value
+    .filter(e => e.status === 'approved')
+    .forEach(e => {
+      const category = getCategoryLabel(e.category)
+      categoryTotals[category] = (categoryTotals[category] || 0) + e.amount
+    })
+
+  return Object.entries(categoryTotals)
+    .map(([name, amount]) => ({ name, amount }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 5)
+})
 
 const reportData = reactive({
   totalIncome: 0,
@@ -261,26 +361,7 @@ const reportData = reactive({
   detailedTransactions: []
 })
 
-const paymentMethods = computed(() => {
-  const methods = {}
-  const total = store.transactions.length
 
-  store.transactions.forEach(t => {
-    const method = t.payment_method || 'Manual'
-    if (!methods[method]) {
-      methods[method] = { count: 0, name: method }
-    }
-    methods[method].count++
-  })
-
-  const colors = ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-purple-500']
-  
-  return Object.values(methods).map((method, index) => ({
-    ...method,
-    percentage: total > 0 ? Math.round((method.count / total) * 100) : 0,
-    color: colors[index % colors.length]
-  }))
-})
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {
@@ -322,40 +403,25 @@ const updatePeriod = () => {
 const filterData = () => {
   if (!dateFrom.value || !dateTo.value) return
 
-  const fromDate = new Date(dateFrom.value)
-  const toDate = new Date(dateTo.value + 'T23:59:59')
-
-  // Filter transactions
-  const filteredTransactions = store.transactions.filter(t => {
-    const transactionDate = new Date(t.created_at)
-    return transactionDate >= fromDate && transactionDate <= toDate
-  })
-
-  // Filter expenses
-  const filteredExpenses = store.expenses.filter(e => {
-    const expenseDate = new Date(e.created_at)
-    return expenseDate >= fromDate && expenseDate <= toDate
-  })
-
-  // Calculate totals
-  reportData.totalIncome = filteredTransactions
+  // Calculate totals using computed filtered data
+  reportData.totalIncome = filteredTransactions.value
     .filter(t => t.type === 'income' && t.status === 'completed')
     .reduce((sum, t) => sum + t.amount, 0)
 
-  reportData.totalExpenses = filteredExpenses
+  reportData.totalExpenses = filteredExpenses.value
     .filter(e => e.status === 'approved')
     .reduce((sum, e) => sum + e.amount, 0)
 
   reportData.balance = reportData.totalIncome - reportData.totalExpenses
-  reportData.transactionCount = filteredTransactions.length + filteredExpenses.length
+  reportData.transactionCount = filteredTransactions.value.length + filteredExpenses.value.length
 
   // Calculate student payment status
-  const paidStudentIds = filteredTransactions
+  const paidStudentIds = filteredTransactions.value
     .filter(t => t.type === 'income' && t.status === 'completed')
     .map(t => t.student_id)
 
   const studentPayments = {}
-  filteredTransactions
+  filteredTransactions.value
     .filter(t => t.type === 'income' && t.status === 'completed')
     .forEach(t => {
       if (!studentPayments[t.student_id]) {
@@ -376,13 +442,13 @@ const filterData = () => {
 
   // Create detailed transaction list
   const allTransactions = [
-    ...filteredTransactions.map(t => ({
+    ...filteredTransactions.value.map(t => ({
       date: t.created_at,
       type: t.type,
       description: t.description + (t.student?.name ? ` - ${t.student.name}` : ''),
       amount: t.amount
     })),
-    ...filteredExpenses.map(e => ({
+    ...filteredExpenses.value.map(e => ({
       date: e.created_at,
       type: 'expense',
       description: e.description,
@@ -487,6 +553,167 @@ const getPeriodString = () => {
   const from = dateFrom.value.replace(/-/g, '')
   const to = dateTo.value.replace(/-/g, '')
   return `${from}_${to}`
+}
+
+const generatePDFReport = () => {
+  try {
+    // Create HTML content for PDF
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Laporan Keuangan Kas Kelas</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .header { text-align: center; margin-bottom: 30px; }
+          .summary { margin-bottom: 30px; }
+          .table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          .table th { background-color: #f8f9fa; }
+          .positive { color: #22c55e; }
+          .negative { color: #ef4444; }
+          .section { margin-bottom: 30px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Laporan Keuangan Kas Kelas</h1>
+          <h2>Kelas 1 Ibnu Sina</h2>
+          <p>Periode: ${formatDate(dateFrom.value)} - ${formatDate(dateTo.value)}</p>
+          <p>Tanggal Cetak: ${formatDate(new Date().toISOString().split('T')[0])}</p>
+        </div>
+
+        <div class="section summary">
+          <h3>Ringkasan Keuangan</h3>
+          <table class="table">
+            <tr>
+              <td><strong>Total Pemasukan</strong></td>
+              <td class="positive"><strong>${formatCurrency(reportData.totalIncome)}</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Total Pengeluaran</strong></td>
+              <td class="negative"><strong>${formatCurrency(reportData.totalExpenses)}</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Saldo Akhir</strong></td>
+              <td class="${reportData.balance >= 0 ? 'positive' : 'negative'}">
+                <strong>${formatCurrency(reportData.balance)}</strong>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Total Transaksi</strong></td>
+              <td><strong>${reportData.transactionCount}</strong></td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="section">
+          <h3>Status Pembayaran Siswa</h3>
+          <table class="table">
+            <tr>
+              <td><strong>Siswa Sudah Bayar</strong></td>
+              <td class="positive">${reportData.paidStudents.length} siswa (${paymentRate.value}%)</td>
+            </tr>
+            <tr>
+              <td><strong>Siswa Belum Bayar</strong></td>
+              <td class="negative">${reportData.unpaidStudents.length} siswa (${100 - paymentRate.value}%)</td>
+            </tr>
+            <tr>
+              <td><strong>Rata-rata Pembayaran</strong></td>
+              <td>${formatCurrency(averagePayment.value)}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="section">
+          <h3>Detail Transaksi</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Jenis</th>
+                <th>Keterangan</th>
+                <th>Pemasukan</th>
+                <th>Pengeluaran</th>
+                <th>Saldo</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.detailedTransactions.map(item => `
+                <tr>
+                  <td>${formatDate(item.date)}</td>
+                  <td>${item.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</td>
+                  <td>${item.description}</td>
+                  <td class="${item.type === 'income' ? 'positive' : ''}">${item.type === 'income' ? formatCurrency(item.amount) : '-'}</td>
+                  <td class="${item.type === 'expense' ? 'negative' : ''}">${item.type === 'expense' ? formatCurrency(item.amount) : '-'}</td>
+                  <td class="${item.balance >= 0 ? 'positive' : 'negative'}">${formatCurrency(item.balance)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <h3>Siswa Sudah Bayar</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nama Siswa</th>
+                <th>Total Pembayaran</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.paidStudents.map(student => `
+                <tr>
+                  <td>${student.name}</td>
+                  <td class="positive">${formatCurrency(student.totalPaid)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <h3>Siswa Belum Bayar</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nama Siswa</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.unpaidStudents.map(student => `
+                <tr>
+                  <td>${student.name}</td>
+                  <td class="negative">Belum Bayar</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </body>
+      </html>
+    `
+
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank')
+    printWindow.document.write(htmlContent)
+    printWindow.document.close()
+
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.print()
+      // Optionally close the window after printing
+      // printWindow.close()
+    }
+
+    toast.success('PDF report berhasil di-generate. Silakan print atau save as PDF.')
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    toast.error('Gagal generate PDF report')
+  }
 }
 
 onMounted(() => {

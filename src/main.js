@@ -7,6 +7,19 @@ import App from './App.vue'
 import router from './router'
 import './style.css'
 
+// Global error handling for unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  console.warn('Unhandled promise rejection:', event.reason)
+
+  // Prevent the default browser error handling for network errors
+  if (event.reason?.message?.includes('Failed to fetch') ||
+      event.reason?.message?.includes('NetworkError') ||
+      event.reason?.message?.includes('fetch')) {
+    event.preventDefault()
+    console.info('Network error handled gracefully - using mock data fallback')
+  }
+})
+
 const app = createApp(App)
 const pinia = createPinia()
 

@@ -41,7 +41,7 @@ const routes = [
   {
     path: '/settings',
     name: 'Settings',
-    component: () => import('@/views/SettingsTest.vue'),
+    component: () => import('@/views/Settings.vue'),
     meta: { title: 'Pengaturan' }
   },
   {

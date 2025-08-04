@@ -189,8 +189,8 @@ class StarSenderService {
       const { data, error } = await supabase.functions.invoke('starsender-proxy', {
         body: {
           action: 'check-number',
-          number: number,
-          apiKey: this.deviceApiKey
+          number: number
+          // API key diambil dari environment variable di Edge Function
         }
       })
 

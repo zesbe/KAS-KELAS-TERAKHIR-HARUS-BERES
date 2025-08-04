@@ -120,7 +120,7 @@ export const db = {
     try {
       return await supabase.from('payment_links').select(`
         *,
-        student:students(name, nickname)
+        student:students(name, nickname, phone)
       `).order('created_at', { ascending: false })
     } catch (error) {
       console.warn('Falling back to mock data due to error:', error.message)

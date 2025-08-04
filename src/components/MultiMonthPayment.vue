@@ -553,17 +553,18 @@ const createMultiMonthPayment = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     const student = students.value.find(s => s.id === form.studentId)
+    const totalAmount = calculateTotal()
     const newPayment = {
       id: Date.now().toString(),
       student,
       period_label: getPeriodLabel(),
       months: form.months,
       monthly_amount: form.monthlyAmount,
-      total_amount: calculatedTotal.value,
+      total_amount: totalAmount,
       paid_amount: 0,
       progress_percentage: 0,
       status: 'pending',
-      payment_url: `https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/${calculatedTotal.value}?order_id=${student.nickname.toUpperCase()}${Date.now()}`,
+      payment_url: `https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/${totalAmount}?order_id=${student.nickname.toUpperCase()}${Date.now()}`,
       month_details: []
     }
     

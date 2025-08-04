@@ -12,6 +12,10 @@
         <div class="card p-6 text-left mb-6">
           <h3 class="font-semibold text-gray-900 mb-3">Detail Pembayaran</h3>
           <div class="space-y-2 text-sm">
+            <div v-if="paymentData.student_name" class="flex justify-between border-b pb-2 mb-2">
+              <span class="text-gray-600">Siswa:</span>
+              <span class="font-medium">{{ paymentData.student_name }} ({{ paymentData.student_nickname }})</span>
+            </div>
             <div class="flex justify-between">
               <span class="text-gray-600">Jumlah:</span>
               <span class="font-medium">{{ formatCurrency(paymentData.amount) }}</span>
@@ -22,11 +26,18 @@
             </div>
             <div class="flex justify-between">
               <span class="text-gray-600">Metode:</span>
-              <span class="font-medium">{{ paymentData.payment_method?.toUpperCase() }}</span>
+              <span class="font-medium">{{ formatPaymentMethod(paymentData.payment_method) }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-gray-600">Waktu:</span>
               <span class="font-medium">{{ formatDate(paymentData.completed_at) }}</span>
+            </div>
+          </div>
+
+          <div v-if="paymentData.student_name" class="mt-4 p-3 bg-green-50 rounded-lg">
+            <div class="flex items-center text-green-800">
+              <CheckCircleIcon class="w-4 h-4 mr-2" />
+              <span class="text-sm">✅ Notifikasi WhatsApp telah dikirim ke {{ paymentData.student_name }}</span>
             </div>
           </div>
         </div>

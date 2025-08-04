@@ -252,6 +252,52 @@
         </button>
       </div>
     </div>
+
+    <!-- Setup Instructions Modal -->
+    <div
+      v-if="showSetupInstructions"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    >
+      <div class="bg-white rounded-lg max-w-4xl w-full p-6 max-h-screen overflow-y-auto">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Database Setup Instructions</h3>
+          <button @click="showSetupInstructions = false" class="text-gray-400 hover:text-gray-600">
+            <XMarkIcon class="w-6 h-6" />
+          </button>
+        </div>
+
+        <div class="space-y-4 text-sm">
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p class="text-yellow-800">
+              <strong>Important:</strong> You need to run the SQL schema in your Supabase SQL Editor first.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-medium text-gray-900 mb-2">Steps to setup your database:</h4>
+            <ol class="list-decimal list-inside space-y-2 text-gray-600">
+              <li>Go to your Supabase project dashboard</li>
+              <li>Navigate to <strong>SQL Editor</strong> in the sidebar</li>
+              <li>Create a new query</li>
+              <li>Copy and paste the schema from <code>database/schema.sql</code></li>
+              <li>Run the query to create all tables and sample data</li>
+              <li>Come back here and click "Initialize with Sample Data"</li>
+            </ol>
+          </div>
+
+          <div class="bg-gray-50 rounded-lg p-4">
+            <h5 class="font-medium text-gray-900 mb-2">Quick Schema (Basic Tables):</h5>
+            <pre class="text-xs text-gray-600 overflow-x-auto bg-white p-3 rounded border">{{ basicSchema }}</pre>
+          </div>
+        </div>
+
+        <div class="flex justify-end mt-6">
+          <button @click="showSetupInstructions = false" class="btn-primary">
+            Got it!
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 

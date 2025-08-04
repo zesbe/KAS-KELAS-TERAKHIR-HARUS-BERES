@@ -153,21 +153,21 @@ export const db = {
 
   // Expenses
   getExpenses: async () => {
-    if (!isSupabaseConfigured) return mockDb.getExpenses()
-    try {
-      return await supabase.from('expenses').select('*').order('created_at', { ascending: false })
-    } catch (error) {
-      console.warn('Falling back to mock data due to error:', error.message)
-      return mockDb.getExpenses()
-    }
+    return safeSupabaseOperation(
+      () => supabase.from('expenses').select('*').order('created_at', { ascending: false }),
+      () => mockDb.getExpenses()
+    )
   },
-  addExpense: (expense) => isSupabaseConfigured ?
-    supabase.from('expenses').insert(expense) :
-    mockDb.addExpense(expense),
-  updateExpense: (id, updates) => isSupabaseConfigured ?
-    supabase.from('expenses').update(updates).eq('id', id) :
-    mockDb.updateExpense(id, updates),
-  deleteExpense: (id) => isSupabaseConfigured ?
-    supabase.from('expenses').delete().eq('id', id) :
-    mockDb.deleteExpense(id)
+  addExpense: (expense) => safeSupabaseOperation(
+    () => supabase.from('expenses').insert(expense),
+    () => mockDb.addExpense(expense)
+  ),
+  updateExpense: (id, updates) => safeSupabaseOperation(
+    () => supabase.from('expenses').update(updates).eq('id', id),
+    () => mockDb.updateExpense(id, updates)
+  ),
+  deleteExpense: (id) => safeSupabaseOperation(
+    () => supabase.from('expenses').delete().eq('id', id),
+    () => mockDb.deleteExpense(id)
+  )
 }

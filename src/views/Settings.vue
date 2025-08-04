@@ -258,6 +258,7 @@ import {
 
 const store = useAppStore()
 const toast = useToast()
+const permissions = usePermissions()
 
 const settings = reactive({
   starsender: {

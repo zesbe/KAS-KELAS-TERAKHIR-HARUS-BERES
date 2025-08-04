@@ -71,6 +71,12 @@ class StarSenderService {
         throw new Error(`Invalid phone number format: "${number}"`)
       }
 
+      // Gunakan Supabase proxy jika tersedia
+      if (USE_SUPABASE_PROXY && supabase) {
+        return await this.sendMessageViaProxy(formattedNumber, message)
+      }
+
+      // Fallback ke direct API call
       const response = await axios.post(
         `${BASE_URL}/api/send`,
         { number: formattedNumber, message },
@@ -95,6 +101,33 @@ class StarSenderService {
       } else if (error.response) {
         throw new Error(`StarSender API error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`)
       }
+      throw error
+    }
+  }
+
+  // Send message via Supabase Edge Function proxy
+  async sendMessageViaProxy(number, message) {
+    try {
+      const { data, error } = await supabase.functions.invoke('starsender-proxy', {
+        body: {
+          action: 'send',
+          number: number,
+          message: message,
+          apiKey: this.deviceApiKey
+        }
+      })
+
+      if (error) {
+        throw new Error(`Supabase proxy error: ${error.message}`)
+      }
+
+      if (!data.success) {
+        throw new Error(`StarSender API error: ${data.status} - ${data.data?.message || 'Unknown error'}`)
+      }
+
+      return data.data
+    } catch (error) {
+      console.error('Error sending message via proxy:', error)
       throw error
     }
   }

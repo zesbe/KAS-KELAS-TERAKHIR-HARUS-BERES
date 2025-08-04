@@ -9,6 +9,15 @@ const currentUser = ref({
   status: 'active'
 })
 
+// Ensure currentUser is always defined with defaults
+const safeCurrentUser = computed(() => ({
+  id: currentUser.value?.id || '1',
+  name: currentUser.value?.name || 'User',
+  email: currentUser.value?.email || 'user@example.com',
+  role: currentUser.value?.role || 'viewer',
+  status: currentUser.value?.status || 'active'
+}))
+
 // Role definitions with permissions
 const rolePermissions = {
   admin: [

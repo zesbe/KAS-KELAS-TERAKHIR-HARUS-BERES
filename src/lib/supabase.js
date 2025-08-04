@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { mockDb } from '@/services/mockData'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -14,45 +15,89 @@ export const supabase = isSupabaseConfigured ?
 
 // Auth helpers
 export const auth = {
-  signUp: (email, password) => supabase.auth.signUp({ email, password }),
-  signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
-  signOut: () => supabase.auth.signOut(),
-  getUser: () => supabase.auth.getUser(),
-  onAuthStateChange: (callback) => supabase.auth.onAuthStateChange(callback)
+  signUp: (email, password) => isSupabaseConfigured ?
+    supabase.auth.signUp({ email, password }) :
+    Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+  signIn: (email, password) => isSupabaseConfigured ?
+    supabase.auth.signInWithPassword({ email, password }) :
+    Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+  signOut: () => isSupabaseConfigured ?
+    supabase.auth.signOut() :
+    Promise.resolve({ error: null }),
+  getUser: () => isSupabaseConfigured ?
+    supabase.auth.getUser() :
+    Promise.resolve({ data: { user: null }, error: null }),
+  onAuthStateChange: (callback) => isSupabaseConfigured ?
+    supabase.auth.onAuthStateChange(callback) :
+    callback('SIGNED_OUT', null)
 }
 
-// Database helpers
+// Database helpers - use mock data when Supabase is not configured
 export const db = {
   // Students
-  getStudents: () => supabase.from('students').select('*').order('name'),
-  addStudent: (student) => supabase.from('students').insert(student),
-  updateStudent: (id, updates) => supabase.from('students').update(updates).eq('id', id),
-  deleteStudent: (id) => supabase.from('students').delete().eq('id', id),
+  getStudents: () => isSupabaseConfigured ?
+    supabase.from('students').select('*').order('name') :
+    mockDb.getStudents(),
+  addStudent: (student) => isSupabaseConfigured ?
+    supabase.from('students').insert(student) :
+    mockDb.addStudent(student),
+  updateStudent: (id, updates) => isSupabaseConfigured ?
+    supabase.from('students').update(updates).eq('id', id) :
+    mockDb.updateStudent(id, updates),
+  deleteStudent: (id) => isSupabaseConfigured ?
+    supabase.from('students').delete().eq('id', id) :
+    mockDb.deleteStudent(id),
 
   // Transactions (kas masuk/keluar)
-  getTransactions: () => supabase.from('transactions').select(`
-    *,
-    student:students(name, nickname)
-  `).order('created_at', { ascending: false }),
-  addTransaction: (transaction) => supabase.from('transactions').insert(transaction),
-  updateTransaction: (id, updates) => supabase.from('transactions').update(updates).eq('id', id),
+  getTransactions: () => isSupabaseConfigured ?
+    supabase.from('transactions').select(`
+      *,
+      student:students(name, nickname)
+    `).order('created_at', { ascending: false }) :
+    mockDb.getTransactions(),
+  addTransaction: (transaction) => isSupabaseConfigured ?
+    supabase.from('transactions').insert(transaction) :
+    mockDb.addTransaction(transaction),
+  updateTransaction: (id, updates) => isSupabaseConfigured ?
+    supabase.from('transactions').update(updates).eq('id', id) :
+    mockDb.updateTransaction(id, updates),
 
   // Campaigns
-  getCampaigns: () => supabase.from('campaigns').select('*').order('created_at', { ascending: false }),
-  addCampaign: (campaign) => supabase.from('campaigns').insert(campaign),
-  updateCampaign: (id, updates) => supabase.from('campaigns').update(updates).eq('id', id),
+  getCampaigns: () => isSupabaseConfigured ?
+    supabase.from('campaigns').select('*').order('created_at', { ascending: false }) :
+    mockDb.getCampaigns(),
+  addCampaign: (campaign) => isSupabaseConfigured ?
+    supabase.from('campaigns').insert(campaign) :
+    mockDb.addCampaign(campaign),
+  updateCampaign: (id, updates) => isSupabaseConfigured ?
+    supabase.from('campaigns').update(updates).eq('id', id) :
+    mockDb.updateCampaign(id, updates),
 
   // Payment links
-  getPaymentLinks: () => supabase.from('payment_links').select(`
-    *,
-    student:students(name, nickname)
-  `).order('created_at', { ascending: false }),
-  addPaymentLink: (link) => supabase.from('payment_links').insert(link),
-  updatePaymentLink: (id, updates) => supabase.from('payment_links').update(updates).eq('id', id),
+  getPaymentLinks: () => isSupabaseConfigured ?
+    supabase.from('payment_links').select(`
+      *,
+      student:students(name, nickname)
+    `).order('created_at', { ascending: false }) :
+    mockDb.getPaymentLinks(),
+  addPaymentLink: (link) => isSupabaseConfigured ?
+    supabase.from('payment_links').insert(link) :
+    mockDb.addPaymentLink(link),
+  updatePaymentLink: (id, updates) => isSupabaseConfigured ?
+    supabase.from('payment_links').update(updates).eq('id', id) :
+    mockDb.updatePaymentLink(id, updates),
 
   // Expenses
-  getExpenses: () => supabase.from('expenses').select('*').order('created_at', { ascending: false }),
-  addExpense: (expense) => supabase.from('expenses').insert(expense),
-  updateExpense: (id, updates) => supabase.from('expenses').update(updates).eq('id', id),
-  deleteExpense: (id) => supabase.from('expenses').delete().eq('id', id)
+  getExpenses: () => isSupabaseConfigured ?
+    supabase.from('expenses').select('*').order('created_at', { ascending: false }) :
+    mockDb.getExpenses(),
+  addExpense: (expense) => isSupabaseConfigured ?
+    supabase.from('expenses').insert(expense) :
+    mockDb.addExpense(expense),
+  updateExpense: (id, updates) => isSupabaseConfigured ?
+    supabase.from('expenses').update(updates).eq('id', id) :
+    mockDb.updateExpense(id, updates),
+  deleteExpense: (id) => isSupabaseConfigured ?
+    supabase.from('expenses').delete().eq('id', id) :
+    mockDb.deleteExpense(id)
 }

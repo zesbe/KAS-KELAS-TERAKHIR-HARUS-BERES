@@ -8,6 +8,34 @@ class StarSenderService {
     this.accountApiKey = import.meta.env.VITE_STARSENDER_ACCOUNT_API_KEY
   }
 
+  // Test API key validity without making actual requests
+  testConnection() {
+    const hasDeviceKey = this.deviceApiKey && this.deviceApiKey !== 'your-device-api-key'
+    const hasAccountKey = this.accountApiKey && this.accountApiKey !== 'your-account-api-key'
+
+    if (!hasDeviceKey || !hasAccountKey) {
+      throw new Error('StarSender API keys not configured properly')
+    }
+
+    // Validate UUID format for API keys
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+    if (!uuidRegex.test(this.deviceApiKey)) {
+      throw new Error('Device API key format is invalid (should be UUID)')
+    }
+
+    if (!uuidRegex.test(this.accountApiKey)) {
+      throw new Error('Account API key format is invalid (should be UUID)')
+    }
+
+    return {
+      success: true,
+      message: 'API keys are properly configured',
+      deviceKeyValid: true,
+      accountKeyValid: true
+    }
+  }
+
   // Send single message
   async sendMessage(number, message) {
     try {

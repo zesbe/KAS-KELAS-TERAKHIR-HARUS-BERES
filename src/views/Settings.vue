@@ -469,6 +469,41 @@ const checkDatabase = async () => {
   }
 }
 
+const quickSetup = async () => {
+  loading.setup = true
+  try {
+    const result = await quickDatabaseSetup()
+
+    if (result.success) {
+      toast.success(result.message)
+      // Refresh data after setup
+      await store.fetchStudents()
+      await store.fetchTransactions()
+      await store.fetchExpenses()
+      await checkDatabase()
+    } else {
+      toast.error('Quick setup failed: ' + result.error)
+      // Show manual setup instructions
+      showSetupInstructions.value = true
+    }
+  } catch (error) {
+    toast.error('Error in quick setup: ' + error.message)
+    showSetupInstructions.value = true
+    console.error('Quick setup error:', error)
+  } finally {
+    loading.setup = false
+  }
+}
+
+const copyManualSQL = () => {
+  const sql = createTablesManually()
+  navigator.clipboard.writeText(sql).then(() => {
+    toast.success('SQL copied to clipboard! Paste it in Supabase SQL Editor.')
+  }).catch(() => {
+    toast.error('Failed to copy SQL. Please copy it manually from the modal.')
+  })
+}
+
 const setupDatabaseAction = async () => {
   loading.setup = true
   try {

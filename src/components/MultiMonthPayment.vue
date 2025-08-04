@@ -543,7 +543,6 @@ const calculateTotal = () => {
 const useTemplate = (template) => {
   form.months = template.months
   form.monthlyAmount = 25000
-  calculateTotal()
   showCreateModal.value = true
 }
 

@@ -308,6 +308,7 @@ import { useToast } from 'vue-toastification'
 import starsenderService from '@/services/starsender'
 import { supabase } from '@/lib/supabase'
 import { setupDatabase, checkDatabaseStatus } from '@/utils/setupDatabase'
+import { quickDatabaseSetup, createTablesManually } from '@/utils/quickSetup'
 import {
   EyeIcon,
   EyeSlashIcon,

@@ -183,8 +183,9 @@
     </div>
 
     <!-- Create/Edit Campaign Modal -->
-    <div v-if="showCreateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+    <div v-if="showCreateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-start justify-center pt-4 pb-20 px-4">
+      <div class="relative w-full max-w-2xl mx-auto bg-white rounded-lg shadow-xl my-8 max-h-full overflow-y-auto"
+           @click.stop>
         <div class="mt-3">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-medium text-gray-900">

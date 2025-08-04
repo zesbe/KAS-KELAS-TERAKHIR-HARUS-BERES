@@ -125,21 +125,22 @@
           {{ checking ? 'Checking...' : 'Check Database Status' }}
         </button>
 
-        <button
-          v-if="dbStatus.connected && !dbStatus.tablesExist"
-          @click="showSetupInstructions = true"
-          class="btn-warning"
-        >
-          Show Setup Instructions
-        </button>
+        <div v-if="dbStatus.connected && !dbStatus.tablesExist" class="flex space-x-3">
+          <button @click="quickSetup" :disabled="loading.setup" class="btn-primary">
+            {{ loading.setup ? 'Setting up...' : 'Quick Setup (Auto)' }}
+          </button>
+          <button @click="showSetupInstructions = true" class="btn-secondary">
+            Manual Setup
+          </button>
+        </div>
 
         <button
           v-if="dbStatus.connected && dbStatus.tablesExist"
           @click="setupDatabaseAction"
           :disabled="loading.setup"
-          class="btn-primary"
+          class="btn-success"
         >
-          {{ loading.setup ? 'Setting up...' : 'Initialize with Sample Data' }}
+          {{ loading.setup ? 'Adding data...' : 'Add More Sample Data' }}
         </button>
       </div>
     </div>

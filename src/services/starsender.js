@@ -125,11 +125,6 @@ class StarSenderService {
         throw new Error('Invalid phone number format')
       }
 
-      // In development mode, simulate the check
-      if (import.meta.env.DEV) {
-        return this.simulateNumberCheck(formattedNumber)
-      }
-
       const response = await axios.post(
         `${BASE_URL}/api/check-number`,
         { number: formattedNumber },
@@ -143,26 +138,8 @@ class StarSenderService {
       return response.data
     } catch (error) {
       console.error('Error checking number:', error)
-      if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
-        throw new Error('CORS Error: Cannot check numbers directly from browser. In production, use a backend server.')
-      }
       throw error
     }
-  }
-
-  // Simulate number checking for development
-  simulateNumberCheck(number) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log(`[DEV MODE] Simulated number check for ${number}`)
-        resolve({
-          exists: true,
-          number: number,
-          message: 'Number check completed (simulated)',
-          simulation: true
-        })
-      }, 500)
-    })
   }
 
 

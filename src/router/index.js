@@ -101,6 +101,16 @@ const routes = [
       hideInNav: true,
       requiresAuth: false
     }
+  },
+  {
+    path: '/invoice',
+    name: 'Invoice',
+    component: () => import('@/views/Invoice.vue'),
+    meta: {
+      title: 'Invoice Pembayaran',
+      hideInNav: true,
+      requiresAuth: false
+    }
   }
 ]
 

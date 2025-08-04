@@ -298,8 +298,49 @@ const testing = reactive({
 })
 
 const loading = reactive({
-  students: false
+  students: false,
+  setup: false
 })
+
+const checking = ref(false)
+const showSetupInstructions = ref(false)
+
+const dbStatus = reactive({
+  connected: false,
+  tablesExist: false,
+  message: 'Click "Check Database Status" to test connection'
+})
+
+const basicSchema = `CREATE TABLE students (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  nickname VARCHAR(100) NOT NULL,
+  phone VARCHAR(20) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE transactions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  student_id UUID REFERENCES students(id),
+  type VARCHAR(20) DEFAULT 'income',
+  amount INTEGER NOT NULL,
+  description TEXT NOT NULL,
+  status VARCHAR(20) DEFAULT 'completed',
+  payment_method VARCHAR(50),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE expenses (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  category VARCHAR(50) NOT NULL,
+  amount INTEGER NOT NULL,
+  description TEXT NOT NULL,
+  notes TEXT,
+  status VARCHAR(20) DEFAULT 'pending',
+  approved_by VARCHAR(255),
+  approved_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);`
 
 // Default students data from PERINTAH.md
 const defaultStudents = [

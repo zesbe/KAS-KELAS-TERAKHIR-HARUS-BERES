@@ -47,8 +47,10 @@
       </nav>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <!-- Tab Content -->
+    <div v-if="activeTab === 'single'">
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div class="card p-6">
         <div class="flex items-center">
           <div class="p-2 bg-primary-100 rounded-lg">
@@ -647,6 +649,12 @@
         </div>
       </div>
     </div>
+    </div>
+
+    <!-- Multi-Month Tab -->
+    <div v-else-if="activeTab === 'multi'">
+      <MultiMonthPayment />
+    </div>
   </div>
 </template>
 
@@ -656,6 +664,7 @@ import { useAppStore } from '@/stores'
 import { useToast } from 'vue-toastification'
 import pakasirService from '@/services/pakasir'
 import starsenderService from '@/services/starsender'
+import MultiMonthPayment from '@/components/MultiMonthPayment.vue'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import {
@@ -680,6 +689,7 @@ const previewPayment = ref(null)
 const statusFilter = ref('')
 const generating = ref(false)
 const creating = ref(false)
+const activeTab = ref('single')
 
 const quickGenerate = reactive({
   amount: 25000,

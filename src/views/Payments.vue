@@ -895,6 +895,24 @@ const copyToClipboard = async (text) => {
   }
 }
 
+const copyMessageAndNumber = async () => {
+  const text = `Nomor: ${corsErrorData.value.phone}\n\nPesan:\n${corsErrorData.value.message}`
+  try {
+    await navigator.clipboard.writeText(text)
+    toast.success('Pesan dan nomor berhasil disalin!')
+  } catch (error) {
+    toast.error('Gagal menyalin')
+  }
+}
+
+const openWhatsAppWeb = () => {
+  const phone = corsErrorData.value.phone.replace(/[^\d]/g, '') // Remove non-digits
+  const message = encodeURIComponent(corsErrorData.value.message)
+  const whatsappUrl = `https://web.whatsapp.com/send?phone=${phone}&text=${message}`
+  window.open(whatsappUrl, '_blank')
+  toast.info('WhatsApp Web dibuka di tab baru')
+}
+
 const getTargetPayments = () => {
   if (bulkMessage.target === 'pending') {
     return store.paymentLinks.filter(p => p.status === 'pending')

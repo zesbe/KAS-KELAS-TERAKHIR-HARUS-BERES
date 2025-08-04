@@ -102,7 +102,7 @@
     </div>
 
     <!-- Error toast -->
-    <div v-if="store.error" class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50">
+    <div v-if="store.error && !store.isUsingMockData" class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50">
       <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
         <div class="flex items-start">
           <div class="flex-shrink-0">
@@ -121,6 +121,35 @@
             <button
               @click="store.clearError()"
               class="text-red-400 hover:text-red-600"
+            >
+              <span class="sr-only">Dismiss</span>
+              <XMarkIcon class="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demo mode notification -->
+    <div v-if="store.isUsingMockData" class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50">
+      <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <ExclamationTriangleIcon class="h-5 w-5 text-yellow-400" />
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-yellow-800">Demo Mode Active</h3>
+            <div class="mt-1 text-sm text-yellow-700">
+              <p>Using sample data. Database not configured yet.</p>
+              <router-link to="/settings" class="mt-2 inline-block font-medium underline hover:no-underline">
+                Setup Database
+              </router-link>
+            </div>
+          </div>
+          <div class="ml-auto pl-3">
+            <button
+              @click="store.isUsingMockData = false"
+              class="text-yellow-400 hover:text-yellow-600"
             >
               <span class="sr-only">Dismiss</span>
               <XMarkIcon class="w-4 h-4" />

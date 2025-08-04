@@ -86,6 +86,9 @@ export const db = {
   updatePaymentLink: (id, updates) => isSupabaseConfigured ?
     supabase.from('payment_links').update(updates).eq('id', id) :
     mockDb.updatePaymentLink(id, updates),
+  deletePaymentLink: (id) => isSupabaseConfigured ?
+    supabase.from('payment_links').delete().eq('id', id) :
+    mockDb.deletePaymentLink(id),
 
   // Expenses
   getExpenses: () => isSupabaseConfigured ?

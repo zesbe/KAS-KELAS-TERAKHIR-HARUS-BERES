@@ -503,4 +503,48 @@ const deleteExpense = async (expense) => {
     }
   }
 }
+
+const exportExpenses = () => {
+  const headers = [
+    'Tanggal',
+    'Kategori',
+    'Keterangan',
+    'Catatan',
+    'Jumlah',
+    'Status',
+    'Disetujui Oleh',
+    'Tanggal Disetujui'
+  ]
+
+  const csvData = filteredExpenses.value.map(expense => [
+    formatDate(expense.created_at),
+    getCategoryLabel(expense.category),
+    expense.description,
+    expense.notes || '',
+    expense.amount,
+    getStatusLabel(expense.status),
+    expense.approved_by || '',
+    expense.approved_at ? formatDate(expense.approved_at) : ''
+  ])
+
+  const csvContent = [
+    headers.join(','),
+    ...csvData.map(row =>
+      row.map(field => `"${field.toString().replace(/"/g, '""')}"`).join(',')
+    )
+  ].join('\n')
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+
+  const dateStr = new Date().toISOString().slice(0, 10)
+  const filterStr = filters.status || filters.category ?
+    `_${filters.status || 'all'}_${filters.category || 'all'}` : ''
+
+  link.download = `pengeluaran_kas_kelas${filterStr}_${dateStr}.csv`
+  link.click()
+
+  toast.success('Data pengeluaran berhasil di-export')
+}
 </script>

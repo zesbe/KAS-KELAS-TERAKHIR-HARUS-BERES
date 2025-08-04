@@ -98,13 +98,59 @@
       </div>
     </div>
 
+    <!-- Database Setup -->
+    <div class="card p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Database Setup</h3>
+
+      <!-- Connection Status -->
+      <div class="mb-4 p-4 rounded-lg" :class="dbStatus.connected ? 'bg-success-50 border border-success-200' : 'bg-red-50 border border-red-200'">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <CheckCircleIcon v-if="dbStatus.connected" class="h-5 w-5 text-success-400" />
+            <ExclamationTriangleIcon v-else class="h-5 w-5 text-red-400" />
+          </div>
+          <div class="ml-3">
+            <h4 class="text-sm font-medium" :class="dbStatus.connected ? 'text-success-800' : 'text-red-800'">
+              {{ dbStatus.connected ? 'Database Connected' : 'Database Connection Issue' }}
+            </h4>
+            <p class="text-sm mt-1" :class="dbStatus.connected ? 'text-success-700' : 'text-red-700'">
+              {{ dbStatus.message }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <button @click="checkDatabase" :disabled="checking" class="btn-secondary">
+          {{ checking ? 'Checking...' : 'Check Database Status' }}
+        </button>
+
+        <button
+          v-if="dbStatus.connected && !dbStatus.tablesExist"
+          @click="showSetupInstructions = true"
+          class="btn-warning"
+        >
+          Show Setup Instructions
+        </button>
+
+        <button
+          v-if="dbStatus.connected && dbStatus.tablesExist"
+          @click="setupDatabase"
+          :disabled="loading.setup"
+          class="btn-primary"
+        >
+          {{ loading.setup ? 'Setting up...' : 'Initialize with Sample Data' }}
+        </button>
+      </div>
+    </div>
+
     <!-- Default Students Data -->
     <div class="card p-6">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Data Siswa Default</h3>
       <p class="text-sm text-gray-600 mb-4">
         Klik tombol di bawah untuk mengisi data siswa dari daftar yang telah tersedia
       </p>
-      
+
       <button @click="loadDefaultStudents" :disabled="loading.students" class="btn-primary">
         {{ loading.students ? 'Memuat...' : 'Muat Data Siswa Default' }}
       </button>

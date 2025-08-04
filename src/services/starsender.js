@@ -118,9 +118,14 @@ class StarSenderService {
   // Check WhatsApp number
   async checkNumber(number) {
     try {
+      const formattedNumber = this.formatPhoneNumber(number)
+      if (!formattedNumber) {
+        throw new Error('Invalid phone number format')
+      }
+
       const response = await axios.post(
         `${BASE_URL}/api/check-number`,
-        { number },
+        { number: formattedNumber },
         {
           headers: {
             'Authorization': this.deviceApiKey,

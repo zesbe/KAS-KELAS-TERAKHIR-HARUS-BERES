@@ -273,15 +273,16 @@ class StarSenderService {
   async testConnectionSafe() {
     try {
       this.validateConfiguration()
-      
+
       return {
         success: true,
-        message: 'StarSender konfigurasi valid',
-        deviceKeyConfigured: true,
-        note: 'API key format valid. Test pengiriman akan dilakukan saat mengirim pesan.'
+        message: 'StarSender proxy konfigurasi valid',
+        proxyConfigured: true,
+        proxyUrl: PROXY_URL,
+        note: 'Proxy tersedia. Test pengiriman akan dilakukan saat mengirim pesan.'
       }
     } catch (error) {
-      throw new Error(`Konfigurasi StarSender error: ${error.message}`)
+      throw new Error(`Konfigurasi StarSender proxy error: ${error.message}`)
     }
   }
 

@@ -2,6 +2,7 @@
   "name": "kas-kelas-management",
   "version": "1.0.0",
   "description": "Sistem Manajemen Kas Kelas SD Islam Al Husna",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "dev": "vite",

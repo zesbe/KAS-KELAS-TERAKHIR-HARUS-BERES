@@ -801,4 +801,100 @@ const copyToClipboard = async (text) => {
     toast.error('Gagal menyalin')
   }
 }
+
+const getTargetPayments = () => {
+  if (bulkMessage.target === 'pending') {
+    return store.paymentLinks.filter(p => p.status === 'pending')
+  } else if (bulkMessage.target === 'all') {
+    return store.paymentLinks
+  } else if (bulkMessage.target === 'selected') {
+    return store.paymentLinks.filter(p => bulkMessage.selectedPayments.includes(p.id))
+  }
+  return []
+}
+
+const generateMessageTemplate = (payment) => {
+  if (bulkMessage.template === 'custom') {
+    return bulkMessage.customMessage
+      .replace('{nama}', payment.student?.name || '')
+      .replace('{jumlah}', formatCurrency(payment.amount))
+      .replace('{keterangan}', payment.description)
+      .replace('{link}', payment.payment_url)
+  }
+
+  // Default reminder template
+  return `Halo ${payment.student?.name} (${payment.student?.nickname}),
+
+Silakan lakukan pembayaran kas kelas dengan detail berikut:
+
+💰 Jumlah: ${formatCurrency(payment.amount)}
+📝 Keterangan: ${payment.description}
+🆔 Order ID: ${payment.order_id}
+
+🔗 Link Pembayaran:
+${payment.payment_url}
+
+Terima kasih!
+
+_Kas Kelas 1B SD Islam Al Husna_`
+}
+
+const sendBulkMessages = async () => {
+  try {
+    sending.value = true
+    const targetPayments = getTargetPayments()
+
+    if (targetPayments.length === 0) {
+      toast.error('Tidak ada pembayaran yang dipilih')
+      return
+    }
+
+    const results = []
+    const delay = bulkMessage.delayMinutes * 60 * 1000 // Convert to milliseconds
+
+    for (let i = 0; i < targetPayments.length; i++) {
+      const payment = targetPayments[i]
+
+      try {
+        if (i > 0) {
+          // Add delay between messages
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
+
+        const message = generateMessageTemplate(payment)
+        await starsenderService.sendMessage(payment.student?.phone, message)
+
+        results.push({
+          recipient: payment.student?.name,
+          phone: payment.student?.phone,
+          success: true
+        })
+
+        toast.success(`Pesan berhasil dikirim ke ${payment.student?.name}`)
+      } catch (error) {
+        results.push({
+          recipient: payment.student?.name,
+          phone: payment.student?.phone,
+          success: false,
+          error: error.message
+        })
+
+        toast.error(`Gagal mengirim pesan ke ${payment.student?.name}: ${error.message}`)
+      }
+    }
+
+    const successCount = results.filter(r => r.success).length
+    const failCount = results.filter(r => !r.success).length
+
+    toast.success(`Selesai! ${successCount} pesan berhasil dikirim${failCount > 0 ? `, ${failCount} gagal` : ''}`)
+
+    // Reset form
+    bulkMessage.selectedPayments = []
+  } catch (error) {
+    toast.error('Gagal mengirim pesan massal')
+    console.error('Error sending bulk messages:', error)
+  } finally {
+    sending.value = false
+  }
+}
 </script>

@@ -130,26 +130,26 @@ export const db = {
 
   // Payment links
   getPaymentLinks: async () => {
-    if (!isSupabaseConfigured) return mockDb.getPaymentLinks()
-    try {
-      return await supabase.from('payment_links').select(`
+    return safeSupabaseOperation(
+      () => supabase.from('payment_links').select(`
         *,
         student:students(name, nickname, phone)
-      `).order('created_at', { ascending: false })
-    } catch (error) {
-      console.warn('Falling back to mock data due to error:', error.message)
-      return mockDb.getPaymentLinks()
-    }
+      `).order('created_at', { ascending: false }),
+      () => mockDb.getPaymentLinks()
+    )
   },
-  addPaymentLink: (link) => isSupabaseConfigured ?
-    supabase.from('payment_links').insert(link) :
-    mockDb.addPaymentLink(link),
-  updatePaymentLink: (id, updates) => isSupabaseConfigured ?
-    supabase.from('payment_links').update(updates).eq('id', id) :
-    mockDb.updatePaymentLink(id, updates),
-  deletePaymentLink: (id) => isSupabaseConfigured ?
-    supabase.from('payment_links').delete().eq('id', id) :
-    mockDb.deletePaymentLink(id),
+  addPaymentLink: (link) => safeSupabaseOperation(
+    () => supabase.from('payment_links').insert(link),
+    () => mockDb.addPaymentLink(link)
+  ),
+  updatePaymentLink: (id, updates) => safeSupabaseOperation(
+    () => supabase.from('payment_links').update(updates).eq('id', id),
+    () => mockDb.updatePaymentLink(id, updates)
+  ),
+  deletePaymentLink: (id) => safeSupabaseOperation(
+    () => supabase.from('payment_links').delete().eq('id', id),
+    () => mockDb.deletePaymentLink(id)
+  ),
 
   // Expenses
   getExpenses: async () => {

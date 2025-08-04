@@ -103,13 +103,45 @@ class StarSenderService {
         `${BASE_URL}/api/devices`,
         {
           headers: {
-            'Authorization': this.accountApiKey
-          }
+            'Authorization': this.accountApiKey,
+            'Content-Type': 'application/json'
+          },
+          timeout: 10000 // 10 second timeout
         }
       )
       return response.data
     } catch (error) {
       console.error('Error getting devices:', error)
+
+      // Handle different types of errors
+      if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
+        throw new Error('Network error: Unable to connect to StarSender API. This might be due to CORS policy or network connectivity issues.')
+      } else if (error.response) {
+        // Server responded with error status
+        throw new Error(`StarSender API error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`)
+      } else if (error.request) {
+        // Request was made but no response received
+        throw new Error('StarSender API timeout: No response received from server')
+      } else {
+        throw new Error(`StarSender configuration error: ${error.message}`)
+      }
+    }
+  }
+
+  // Test connection without making external API calls (for development)
+  async testConnectionSafe() {
+    try {
+      // First validate the configuration
+      const configTest = this.testConnection()
+
+      // Return a simulated successful response
+      return {
+        success: true,
+        message: 'StarSender configuration is valid. API keys are properly formatted.',
+        note: 'Actual API connectivity will be tested when sending messages.',
+        config: configTest
+      }
+    } catch (error) {
       throw error
     }
   }

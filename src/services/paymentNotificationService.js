@@ -112,19 +112,22 @@ class PaymentNotificationService {
     const paymentDate = new Date(webhookData.completed_at || Date.now())
     const formattedDate = paymentDate.toLocaleDateString('id-ID', {
       day: 'numeric',
-      month: 'long', 
+      month: 'long',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     })
 
-    const currentMonth = new Date().toLocaleDateString('id-ID', { 
-      month: 'long', 
-      year: 'numeric' 
+    const currentMonth = new Date().toLocaleDateString('id-ID', {
+      month: 'long',
+      year: 'numeric'
     })
 
     // Generate referensi number (last 8 digits of order_id)
     const referenceNumber = webhookData.order_id.slice(-8).toUpperCase()
+
+    // Generate invoice URL
+    const invoiceUrl = `${window.location.origin}/invoice?orderId=${webhookData.order_id}`
 
     return `✅ *Pembayaran Berhasil Diterima*
 SD Islam Al Husna

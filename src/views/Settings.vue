@@ -16,14 +16,16 @@
           <h4 class="font-medium text-gray-900">StarSender WhatsApp API</h4>
 
           <!-- Proxy Status -->
-          <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+          <div class="rounded-lg p-3" :class="edgeFunctionStatus.available ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'">
             <div class="flex items-center">
-              <CheckCircleIcon class="h-4 w-4 text-green-400 mr-2" />
-              <span class="text-sm text-green-800 font-medium">Supabase Proxy: Active</span>
+              <CheckCircleIcon v-if="edgeFunctionStatus.available" class="h-4 w-4 text-green-400 mr-2" />
+              <ExclamationTriangleIcon v-else class="h-4 w-4 text-yellow-400 mr-2" />
+              <span class="text-sm font-medium" :class="edgeFunctionStatus.available ? 'text-green-800' : 'text-yellow-800'">
+                Supabase Proxy: {{ edgeFunctionStatus.available ? 'Active' : 'Not Deployed' }}
+              </span>
             </div>
-            <p class="text-xs text-green-700 mt-1">
-              Menggunakan Supabase Edge Function untuk mengatasi CORS issues.
-              Pesan WhatsApp akan dikirim melalui proxy server.
+            <p class="text-xs mt-1" :class="edgeFunctionStatus.available ? 'text-green-700' : 'text-yellow-700'">
+              {{ edgeFunctionStatus.message }}
             </p>
           </div>
 

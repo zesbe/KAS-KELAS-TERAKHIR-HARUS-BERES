@@ -1,14 +1,14 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
       <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Data Siswa</h1>
+        <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Data Siswa</h1>
         <p class="text-sm text-gray-500 mt-1">Kelola data siswa kelas 1B SD Islam Al Husna</p>
       </div>
-      <button 
+      <button
         @click="showAddModal = true"
-        class="btn-primary"
+        class="btn-primary w-full sm:w-auto"
       >
         <PlusIcon class="w-4 h-4 mr-2" />
         Tambah Siswa
@@ -16,11 +16,11 @@
     </div>
 
     <!-- Students Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <div 
-        v-for="student in store.students" 
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+      <div
+        v-for="student in store.students"
         :key="student.id"
-        class="card p-6 hover:shadow-md transition-shadow"
+        class="card p-4 sm:p-6 hover:shadow-md transition-shadow"
       >
         <div class="flex items-center space-x-4">
           <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
@@ -79,11 +79,11 @@
     </div>
 
     <!-- Add/Edit Modal -->
-    <div 
+    <div
       v-if="showAddModal || editingStudent"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white rounded-lg max-w-md w-full p-6">
+      <div class="bg-white rounded-lg max-w-md w-full mx-4 p-4 sm:p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">
           {{ editingStudent ? 'Edit Siswa' : 'Tambah Siswa Baru' }}
         </h3>
@@ -143,11 +143,11 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div 
+    <div
       v-if="deletingStudent"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white rounded-lg max-w-md w-full p-6">
+      <div class="bg-white rounded-lg max-w-md w-full mx-4 p-4 sm:p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Hapus Siswa</h3>
         <p class="text-gray-600 mb-6">
           Apakah Anda yakin ingin menghapus <strong>{{ deletingStudent.name }}</strong>? 

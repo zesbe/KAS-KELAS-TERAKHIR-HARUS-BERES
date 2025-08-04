@@ -192,10 +192,7 @@ class StarSenderService {
   // Send campaign with delay
   async sendCampaign(recipients, message, delayMinutes = 1) {
     const results = []
-    const delay = Math.max(delayMinutes * 60 * 1000, 1000) // Convert to milliseconds, minimum 1 second
-
-    // In development mode, use shorter delays for better UX
-    const actualDelay = import.meta.env.DEV ? Math.min(delay, 2000) : delay
+    const delay = delayMinutes * 60 * 1000 // Convert to milliseconds
 
     for (let i = 0; i < recipients.length; i++) {
       const recipient = recipients[i]
@@ -203,7 +200,7 @@ class StarSenderService {
       try {
         if (i > 0) {
           // Add delay between messages
-          await new Promise(resolve => setTimeout(resolve, actualDelay))
+          await new Promise(resolve => setTimeout(resolve, delay))
         }
 
         const result = await this.sendMessage(recipient.phone, message)
@@ -211,8 +208,7 @@ class StarSenderService {
           recipient: recipient.name,
           phone: recipient.phone,
           success: true,
-          response: result,
-          simulation: result.simulation || false
+          response: result
         })
       } catch (error) {
         results.push({

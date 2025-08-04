@@ -429,7 +429,7 @@ const form = reactive({
   startMonth: new Date().getMonth() + 1,
   year: new Date().getFullYear(),
   months: 6,
-  monthlyAmount: 25000
+  monthlyAmount: 50000
 })
 
 // Sample data for demo

@@ -612,12 +612,16 @@ const totalCollected = computed(() => {
 
 const filteredPayments = computed(() => {
   let payments = [...store.paymentLinks]
-  
+
   if (statusFilter.value) {
     payments = payments.filter(p => p.status === statusFilter.value)
   }
-  
+
   return payments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+})
+
+const isDevelopmentMode = computed(() => {
+  return import.meta.env.DEV
 })
 
 const formatCurrency = (amount) => {

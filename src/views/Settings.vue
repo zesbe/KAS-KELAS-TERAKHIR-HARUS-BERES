@@ -274,8 +274,17 @@ const defaultStudents = [
 const testStarSender = async () => {
   try {
     testing.starsender = true
-    await starsenderService.testConnectionSafe()
-    toast.success('StarSender configuration is valid!')
+
+    // Test via proxy first
+    try {
+      await starsenderService.checkNumber('628123456789') // Test number
+      toast.success('StarSender proxy connection successful!')
+    } catch (proxyError) {
+      console.warn('Proxy test failed, trying direct connection:', proxyError)
+      // Fallback to direct test
+      await starsenderService.testConnectionSafe()
+      toast.success('StarSender configuration is valid! (Direct connection)')
+    }
   } catch (error) {
     toast.error(`StarSender test failed: ${error.message}`)
   } finally {

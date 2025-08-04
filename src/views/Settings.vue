@@ -401,22 +401,66 @@ const testSupabase = async () => {
   }
 }
 
+const checkDatabase = async () => {
+  checking.value = true
+  try {
+    const status = await checkDatabaseStatus()
+    Object.assign(dbStatus, status)
+
+    if (status.connected && status.tablesExist) {
+      toast.success('Database connection successful!')
+    } else if (status.connected && !status.tablesExist) {
+      toast.warning('Connected but tables do not exist')
+    } else {
+      toast.error('Database connection failed')
+    }
+  } catch (error) {
+    toast.error('Error checking database: ' + error.message)
+    console.error('Database check error:', error)
+  } finally {
+    checking.value = false
+  }
+}
+
+const setupDatabaseAction = async () => {
+  loading.setup = true
+  try {
+    const result = await setupDatabase()
+
+    if (result.success) {
+      toast.success(result.message)
+      // Refresh data after setup
+      await store.fetchStudents()
+      await store.fetchTransactions()
+      await store.fetchExpenses()
+      await checkDatabase()
+    } else {
+      toast.error('Setup failed: ' + result.error)
+    }
+  } catch (error) {
+    toast.error('Error setting up database: ' + error.message)
+    console.error('Database setup error:', error)
+  } finally {
+    loading.setup = false
+  }
+}
+
 const loadDefaultStudents = async () => {
   try {
     loading.students = true
-    
+
     // Check if students already exist
     if (store.students.length > 0) {
       if (!confirm('Data siswa sudah ada. Apakah Anda ingin mengganti dengan data default?')) {
         return
       }
     }
-    
+
     // Add default students
     for (const student of defaultStudents) {
       await store.addStudent(student)
     }
-    
+
     toast.success(`Berhasil memuat ${defaultStudents.length} data siswa default`)
   } catch (error) {
     toast.error('Gagal memuat data siswa: ' + error.message)

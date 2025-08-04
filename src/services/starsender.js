@@ -160,6 +160,12 @@ class StarSenderService {
         throw new Error('Invalid phone number format')
       }
 
+      // Gunakan Supabase proxy jika tersedia
+      if (USE_SUPABASE_PROXY && supabase) {
+        return await this.checkNumberViaProxy(formattedNumber)
+      }
+
+      // Fallback ke direct API call
       const response = await axios.post(
         `${BASE_URL}/api/check-number`,
         { number: formattedNumber },
@@ -173,6 +179,32 @@ class StarSenderService {
       return response.data
     } catch (error) {
       console.error('Error checking number:', error)
+      throw error
+    }
+  }
+
+  // Check number via Supabase Edge Function proxy
+  async checkNumberViaProxy(number) {
+    try {
+      const { data, error } = await supabase.functions.invoke('starsender-proxy', {
+        body: {
+          action: 'check-number',
+          number: number,
+          apiKey: this.deviceApiKey
+        }
+      })
+
+      if (error) {
+        throw new Error(`Supabase proxy error: ${error.message}`)
+      }
+
+      if (!data.success) {
+        throw new Error(`StarSender API error: ${data.status} - ${data.data?.message || 'Unknown error'}`)
+      }
+
+      return data.data
+    } catch (error) {
+      console.error('Error checking number via proxy:', error)
       throw error
     }
   }

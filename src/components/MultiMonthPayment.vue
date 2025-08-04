@@ -440,7 +440,7 @@ const multiMonthPayments = ref([
     period_label: 'Feb - Jul 2024',
     months: 6,
     monthly_amount: 25000,
-    total_amount: 140000,
+    total_amount: 150000,
     paid_amount: 75000,
     progress_percentage: 54,
     status: 'partial',

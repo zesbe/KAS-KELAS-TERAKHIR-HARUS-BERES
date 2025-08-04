@@ -56,7 +56,21 @@ export const auth = {
     callback('SIGNED_OUT', null)
 }
 
-// Database helpers - use mock data when Supabase is not configured
+// Helper function to check if we should use mock data
+const shouldUseMockData = async () => {
+  if (!isSupabaseConfigured) return true
+
+  try {
+    // Quick connectivity test
+    const { error } = await supabase.from('students').select('count', { count: 'exact', head: true })
+    return !!error
+  } catch (error) {
+    console.warn('Supabase connection failed, falling back to mock data:', error.message)
+    return true
+  }
+}
+
+// Database helpers - use mock data when Supabase is not configured or not accessible
 export const db = {
   // Students
   getStudents: () => isSupabaseConfigured ?

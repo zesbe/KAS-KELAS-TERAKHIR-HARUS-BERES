@@ -11,11 +11,11 @@
             <h3 class="text-sm font-medium text-blue-800">Database Setup Required</h3>
             <div class="mt-2 text-sm text-blue-700">
               <p>Your Supabase database is connected but tables need to be created.</p>
-              <div class="mt-2 flex space-x-3">
-                <router-link to="/settings" class="font-medium underline hover:no-underline">
-                  Go to Settings → Database Setup
+              <div class="mt-3 flex flex-wrap gap-2">
+                <router-link to="/settings" class="btn-primary text-xs py-1 px-3">
+                  Go to Settings
                 </router-link>
-                <button @click="runDiagnostics" class="font-medium underline hover:no-underline">
+                <button @click="runDiagnostics" class="btn-secondary text-xs py-1 px-3">
                   Run Diagnostics
                 </button>
               </div>

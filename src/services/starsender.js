@@ -149,7 +149,7 @@ class StarSenderService {
         payload.schedule = options.schedule
       }
 
-      console.log('Sending media message to StarSender:', {
+      console.log('Sending media message to StarSender via proxy:', {
         to: formattedPhone,
         fileUrl,
         messageLength: message?.length || 0,
@@ -157,13 +157,20 @@ class StarSenderService {
         hasSchedule: !!options.schedule
       })
 
-      const response = await fetch(`${BASE_URL}/api/send`, {
+      const response = await fetch(PROXY_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': this.deviceApiKey
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          action: 'send',
+          phoneNumber: formattedPhone,
+          message: message || '',
+          fileUrl: fileUrl,
+          delay: options.delay,
+          schedule: options.schedule
+        })
       })
 
       if (!response.ok) {

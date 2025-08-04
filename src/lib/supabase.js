@@ -147,9 +147,15 @@ export const db = {
     mockDb.deletePaymentLink(id),
 
   // Expenses
-  getExpenses: () => isSupabaseConfigured ?
-    supabase.from('expenses').select('*').order('created_at', { ascending: false }) :
-    mockDb.getExpenses(),
+  getExpenses: async () => {
+    if (!isSupabaseConfigured) return mockDb.getExpenses()
+    try {
+      return await supabase.from('expenses').select('*').order('created_at', { ascending: false })
+    } catch (error) {
+      console.warn('Falling back to mock data due to error:', error.message)
+      return mockDb.getExpenses()
+    }
+  },
   addExpense: (expense) => isSupabaseConfigured ?
     supabase.from('expenses').insert(expense) :
     mockDb.addExpense(expense),

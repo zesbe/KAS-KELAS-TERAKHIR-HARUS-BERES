@@ -439,11 +439,22 @@
             <div class="border rounded-lg p-4 bg-gray-50">
               <h4 class="font-medium text-gray-900 mb-2">📋 Preview Campaign</h4>
               <div class="text-sm space-y-1">
+                <p><strong>Template:</strong> {{ getTemplatePreview() }}</p>
                 <p><strong>Target:</strong> {{ getTargetPreview() }}</p>
                 <p><strong>Total Penerima:</strong> {{ getTotalRecipients() }} nomor</p>
                 <p><strong>Jadwal:</strong> {{ getSchedulePreview() }}</p>
                 <p><strong>Jeda:</strong> {{ campaignForm.delayMinutes }} menit antar pesan</p>
                 <p><strong>Estimasi Selesai:</strong> {{ getEstimatedCompletion() }}</p>
+
+                <div v-if="needsPaymentLink && paymentConfig.generateLinks" class="mt-3 pt-3 border-t">
+                  <p class="font-medium text-blue-900">💳 Payment Links:</p>
+                  <p><strong>Jumlah:</strong> Rp {{ paymentConfig.amount?.toLocaleString('id-ID') }}</p>
+                  <p><strong>Deskripsi:</strong> {{ paymentConfig.description || 'Kas Kelas' }}</p>
+                  <p><strong>Jatuh Tempo:</strong> {{ paymentConfig.dueDate || 'Belum diatur' }}</p>
+                  <p class="text-blue-600 text-xs mt-1">
+                    ✅ {{ getTotalRecipients() }} link PakaSir akan dibuat otomatis
+                  </p>
+                </div>
               </div>
             </div>
 

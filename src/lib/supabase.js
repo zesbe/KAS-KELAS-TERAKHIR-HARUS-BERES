@@ -93,12 +93,18 @@ export const db = {
     mockDb.deleteStudent(id),
 
   // Transactions (kas masuk/keluar)
-  getTransactions: () => isSupabaseConfigured ?
-    supabase.from('transactions').select(`
-      *,
-      student:students(name, nickname)
-    `).order('created_at', { ascending: false }) :
-    mockDb.getTransactions(),
+  getTransactions: async () => {
+    if (!isSupabaseConfigured) return mockDb.getTransactions()
+    try {
+      return await supabase.from('transactions').select(`
+        *,
+        student:students(name, nickname)
+      `).order('created_at', { ascending: false })
+    } catch (error) {
+      console.warn('Falling back to mock data due to error:', error.message)
+      return mockDb.getTransactions()
+    }
+  },
   addTransaction: (transaction) => isSupabaseConfigured ?
     supabase.from('transactions').insert(transaction) :
     mockDb.addTransaction(transaction),

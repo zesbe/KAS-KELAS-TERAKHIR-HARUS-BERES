@@ -217,6 +217,14 @@ export const mockDb = {
     }
     return Promise.resolve({ data: null, error: { message: 'Payment link not found' } })
   },
+  deletePaymentLink: (id) => {
+    const index = mockPaymentLinks.findIndex(p => p.id === id)
+    if (index !== -1) {
+      const deleted = mockPaymentLinks.splice(index, 1)
+      return Promise.resolve({ data: deleted, error: null })
+    }
+    return Promise.resolve({ data: null, error: { message: 'Payment link not found' } })
+  },
 
   getCampaigns: () => Promise.resolve({ data: mockCampaigns, error: null }),
   addCampaign: (campaign) => {

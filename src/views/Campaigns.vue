@@ -603,58 +603,59 @@ _Pesan otomatis dari Sistem Kas Kelas_`,
 const saveCampaign = async () => {
   try {
     saving.value = true
-    
+
     // Validate form
     if (!campaignForm.title || !campaignForm.message) {
       toast.error('Judul dan pesan harus diisi')
       return
     }
-    
+
     if (getTotalRecipients() === 0) {
       toast.error('Pilih minimal 1 penerima')
       return
     }
-    
+
     // Prepare campaign data
     const campaignData = {
-      id: editingCampaign.value?.id || Date.now().toString(),
+      id: editingCampaign.value?.id || campaignService.generateCampaignId(),
       title: campaignForm.title,
       message: campaignForm.message,
       target: campaignForm.target,
       recipients: getRecipientIds(),
       delay_minutes: parseInt(campaignForm.delayMinutes),
       status: 'draft',
-      scheduled_at: campaignForm.sendType === 'scheduled' ? 
-        new Date(campaignForm.scheduledDateTime).toISOString() : null,
-      created_at: new Date().toISOString(),
-      results: null
+      scheduled_at: campaignForm.sendType === 'scheduled' ?
+        new Date(campaignForm.scheduledDateTime).toISOString() : null
     }
-    
+
     if (editingCampaign.value) {
       // Update existing campaign
+      await campaignService.updateCampaign(campaignData)
       const index = campaigns.value.findIndex(c => c.id === editingCampaign.value.id)
       campaigns.value[index] = campaignData
       toast.success('Campaign berhasil diupdate')
     } else {
       // Create new campaign
+      await campaignService.createCampaign(campaignData)
       campaigns.value.push(campaignData)
       toast.success('Campaign berhasil dibuat')
     }
-    
+
     // Execute campaign if immediate
     if (campaignForm.sendType === 'immediate') {
+      toast.info('Memulai pengiriman campaign...')
       await executeCampaign(campaignData)
-    } else {
-      // Schedule campaign
-      campaignData.status = 'scheduled'
-      toast.info('Campaign dijadwalkan dan akan dijalankan otomatis')
+    } else if (campaignData.scheduled_at) {
+      // Execute scheduled campaign
+      toast.info('Menjadwalkan campaign...')
+      await executeCampaign(campaignData)
     }
-    
+
     closeModal()
-    
+
   } catch (error) {
     console.error('Error saving campaign:', error)
-    toast.error('Gagal menyimpan campaign')
+    toast.error(`Gagal menyimpan campaign: ${error.message}`)
   } finally {
     saving.value = false
   }

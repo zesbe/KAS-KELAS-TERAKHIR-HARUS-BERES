@@ -31,12 +31,7 @@ const routes = [
     component: () => import('@/views/Payments.vue'),
     meta: { title: 'Link Pembayaran' }
   },
-  {
-    path: '/campaigns',
-    name: 'Campaigns',
-    component: () => import('@/views/Campaigns.vue'),
-    meta: { title: 'Campaign Pesan' }
-  },
+
   {
     path: '/reports',
     name: 'Reports',

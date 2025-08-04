@@ -1,5 +1,5 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { corsHeaders } from '../_shared/cors.ts'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { corsHeaders } from "../_shared/cors.ts"
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -16,83 +16,154 @@ serve(async (req) => {
         JSON.stringify({ error: 'StarSender API key not configured in environment' }),
         {
           status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       )
     }
 
-    const { action, number, message } = await req.json()
+    const { action, phoneNumber, message, fileUrl, delay, schedule } = await req.json()
 
-    let url = ''
-    let body = {}
+    // Format phone number
+    function formatPhoneNumber(phone: string): string | null {
+      if (!phone) return null
+      
+      let cleaned = phone.replace(/\D/g, '')
+      
+      if (cleaned.startsWith('0')) {
+        cleaned = '62' + cleaned.substring(1)
+      } else if (cleaned.startsWith('8')) {
+        cleaned = '62' + cleaned
+      } else if (!cleaned.startsWith('62')) {
+        cleaned = '62' + cleaned
+      }
+      
+      return cleaned
+    }
 
-    switch (action) {
-      case 'send':
-        if (!number || !message) {
-          return new Response(
-            JSON.stringify({ error: 'Number and message are required for send action' }),
-            { 
-              status: 400, 
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-            }
-          )
+    const formattedPhone = formatPhoneNumber(phoneNumber)
+    if (!formattedPhone) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid phone number format' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
-        url = 'https://api.starsender.online/api/send'
-        body = { number, message }
-        break
+      )
+    }
 
-      case 'check-number':
-        if (!number) {
-          return new Response(
-            JSON.stringify({ error: 'Number is required for check-number action' }),
-            { 
-              status: 400, 
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-            }
-          )
-        }
-        url = 'https://api.starsender.online/api/check-number'
-        body = { number }
-        break
+    let payload: any
 
-      default:
+    if (action === 'send' || !action) {
+      // Send message (default action)
+      if (!message && !fileUrl) {
         return new Response(
-          JSON.stringify({ error: 'Invalid action. Use "send" or "check-number"' }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          JSON.stringify({ error: 'Either message text or file URL is required' }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         )
+      }
+
+      if (fileUrl) {
+        // Media message
+        payload = {
+          messageType: 'media',
+          to: formattedPhone,
+          body: message || '',
+          file: fileUrl
+        }
+      } else {
+        // Text message
+        payload = {
+          messageType: 'text',
+          to: formattedPhone,
+          body: message
+        }
+      }
+
+      // Add optional parameters
+      if (delay) {
+        payload.delay = parseInt(delay)
+      }
+      
+      if (schedule) {
+        payload.schedule = schedule
+      }
+
+    } else {
+      return new Response(
+        JSON.stringify({ error: 'Invalid action. Supported actions: send' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      )
     }
 
-    // Make request to StarSender API
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
+    console.log('Making request to StarSender API:', {
+      to: formattedPhone,
+      messageType: payload.messageType,
+      hasFile: !!payload.file,
+      hasDelay: !!payload.delay,
+      hasSchedule: !!payload.schedule
     })
 
-    const data = await response.text()
-    let jsonData
+    // Make request to StarSender API
+    const response = await fetch('https://api.starsender.online/api/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': apiKey
+      },
+      body: JSON.stringify(payload)
+    })
 
-    try {
-      jsonData = JSON.parse(data)
-    } catch {
-      jsonData = { message: data }
+    const responseData = await response.json()
+
+    if (!response.ok) {
+      console.error('StarSender API error:', response.status, responseData)
+      return new Response(
+        JSON.stringify({
+          error: 'StarSender API error',
+          message: responseData.message || 'Unknown error from StarSender API',
+          details: responseData
+        }),
+        {
+          status: response.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      )
     }
 
+    if (!responseData.success) {
+      console.error('StarSender operation failed:', responseData)
+      return new Response(
+        JSON.stringify({
+          error: 'StarSender operation failed',
+          message: responseData.message || 'Unknown error',
+          details: responseData
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      )
+    }
+
+    console.log('StarSender API success:', responseData)
+
+    // Return success response
     return new Response(
       JSON.stringify({
-        success: response.ok,
-        status: response.status,
-        data: jsonData
+        success: true,
+        data: responseData.data,
+        message: responseData.message,
+        phone: formattedPhone
       }),
       {
-        status: response.ok ? 200 : response.status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     )
 
@@ -100,13 +171,13 @@ serve(async (req) => {
     console.error('StarSender proxy error:', error)
     
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Internal server error',
-        message: error.message 
+        message: error.message
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     )
   }

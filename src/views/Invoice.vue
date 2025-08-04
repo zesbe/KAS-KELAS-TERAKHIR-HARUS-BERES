@@ -1,0 +1,590 @@
+<template>
+  <div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Invoice Container -->
+      <div class="bg-white shadow-xl rounded-lg overflow-hidden" id="invoice-content">
+        <!-- Header dengan Logo dan Branding -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-6">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="flex items-center space-x-3 mb-4">
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+                  <span class="text-blue-600 font-bold text-lg">SD</span>
+                </div>
+                <div>
+                  <h1 class="text-2xl font-bold">SD Islam Al Husna</h1>
+                  <p class="text-blue-100">Kelas 1B - Sistem Kas Digital</p>
+                </div>
+              </div>
+              <div class="text-sm text-blue-100 space-y-1">
+                <p>📍 Jl. Pendidikan No. 123, Jakarta Selatan</p>
+                <p>📞 (021) 7654-321 | 📧 admin@sdislamalhusnakelas1b.sch.id</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="bg-white bg-opacity-20 rounded-lg px-4 py-3">
+                <h2 class="text-xl font-bold">INVOICE</h2>
+                <p class="text-sm">Bukti Pembayaran</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Invoice Details -->
+        <div class="px-8 py-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <!-- Student Information -->
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <UserIcon class="w-5 h-5 mr-2 text-blue-600" />
+                Informasi Siswa
+              </h3>
+              <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Nama Lengkap:</span>
+                  <span class="font-medium">{{ invoice.student.name }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Nama Panggilan:</span>
+                  <span class="font-medium">{{ invoice.student.nickname }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Nomor HP:</span>
+                  <span class="font-medium">{{ invoice.student.phone }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Kelas:</span>
+                  <span class="font-medium">1B</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <DocumentTextIcon class="w-5 h-5 mr-2 text-green-600" />
+                Detail Invoice
+              </h3>
+              <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">No. Invoice:</span>
+                  <span class="font-medium font-mono">{{ invoice.invoiceNumber }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Tanggal Invoice:</span>
+                  <span class="font-medium">{{ formatDate(invoice.createdAt) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Order ID:</span>
+                  <span class="font-medium font-mono">{{ invoice.orderId }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Status:</span>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <CheckCircleIcon class="w-3 h-3 mr-1" />
+                    LUNAS
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Details Table -->
+          <div class="mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <CreditCardIcon class="w-5 h-5 mr-2 text-purple-600" />
+              Rincian Pembayaran
+            </h3>
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <table class="w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Keterangan
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Periode
+                    </th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Jumlah
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-gray-900">{{ invoice.description }}</div>
+                      <div class="text-sm text-gray-500">Kas Kelas 1B</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">{{ invoice.period || getCurrentMonth() }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                      <div class="text-sm font-medium text-gray-900">{{ formatCurrency(invoice.amount) }}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Payment Summary -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <!-- Payment Method -->
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <CreditCardIcon class="w-5 h-5 mr-2 text-indigo-600" />
+                Metode Pembayaran
+              </h3>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-gray-600">Metode:</span>
+                  <span class="font-medium">{{ formatPaymentMethod(invoice.paymentMethod) }}</span>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-gray-600">Tanggal Bayar:</span>
+                  <span class="font-medium">{{ formatDateTime(invoice.paidAt) }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-600">Referensi:</span>
+                  <span class="font-medium font-mono text-sm">{{ invoice.reference }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Total Summary -->
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <CalculatorIcon class="w-5 h-5 mr-2 text-emerald-600" />
+                Ringkasan Total
+              </h3>
+              <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+                <div class="space-y-2">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Subtotal:</span>
+                    <span>{{ formatCurrency(invoice.amount) }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Biaya Admin:</span>
+                    <span>Rp 0</span>
+                  </div>
+                  <div class="border-t border-green-200 pt-2">
+                    <div class="flex justify-between items-center">
+                      <span class="text-lg font-semibold text-gray-900">Total Dibayar:</span>
+                      <span class="text-xl font-bold text-green-600">{{ formatCurrency(invoice.amount) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Success Message -->
+          <div class="bg-gradient-to-r from-green-100 to-emerald-100 border border-green-200 rounded-lg p-6 mb-8">
+            <div class="flex items-center">
+              <CheckCircleIcon class="w-8 h-8 text-green-600 mr-4" />
+              <div>
+                <h4 class="text-lg font-semibold text-green-800">Pembayaran Berhasil!</h4>
+                <p class="text-green-700 mt-1">
+                  Terima kasih atas pembayaran kas kelas. Pembayaran Anda telah berhasil diproses dan dicatat dalam sistem.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Important Notes -->
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+            <h4 class="text-lg font-semibold text-blue-800 mb-3 flex items-center">
+              <InformationCircleIcon class="w-5 h-5 mr-2" />
+              Catatan Penting
+            </h4>
+            <ul class="text-blue-700 space-y-2 text-sm">
+              <li class="flex items-start">
+                <span class="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                Simpan invoice ini sebagai bukti pembayaran yang sah
+              </li>
+              <li class="flex items-start">
+                <span class="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                Pembayaran telah dikonfirmasi dan tercatat dalam sistem kas kelas
+              </li>
+              <li class="flex items-start">
+                <span class="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                Untuk pertanyaan, hubungi bendahara kelas atau wali kelas
+              </li>
+              <li class="flex items-start">
+                <span class="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                Invoice ini dibuat otomatis oleh sistem dan tidak memerlukan tanda tangan
+              </li>
+            </ul>
+          </div>
+
+          <!-- Contact Information -->
+          <div class="border-t border-gray-200 pt-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h5 class="font-semibold text-gray-900 mb-2">Bendahara Kelas 1B</h5>
+                <p class="text-sm text-gray-600">Bu Siti Nurhayati</p>
+                <p class="text-sm text-gray-600">📱 0812-3456-7890</p>
+                <p class="text-sm text-gray-600">✉️ bendahara.1b@sdislamalhusnakelas1b.sch.id</p>
+              </div>
+              <div>
+                <h5 class="font-semibold text-gray-900 mb-2">Wali Kelas 1B</h5>
+                <p class="text-sm text-gray-600">Bu Aminah Rahmawati, S.Pd</p>
+                <p class="text-sm text-gray-600">📱 0813-9876-5432</p>
+                <p class="text-sm text-gray-600">✉️ walikelas.1b@sdislamalhusnakelas1b.sch.id</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-gray-100 px-8 py-4 border-t border-gray-200">
+          <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
+            <div>
+              <p>&copy; {{ new Date().getFullYear() }} SD Islam Al Husna - Sistem Kas Digital Kelas 1B</p>
+            </div>
+            <div class="mt-2 md:mt-0">
+              <p>Dicetak pada: {{ formatDateTime(new Date()) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+        <button
+          @click="printInvoice"
+          class="btn-primary inline-flex items-center justify-center"
+        >
+          <PrinterIcon class="w-5 h-5 mr-2" />
+          Cetak Invoice
+        </button>
+        <button
+          @click="downloadPDF"
+          class="btn-secondary inline-flex items-center justify-center"
+        >
+          <ArrowDownTrayIcon class="w-5 h-5 mr-2" />
+          Download PDF
+        </button>
+        <button
+          @click="shareInvoice"
+          class="btn-outline inline-flex items-center justify-center"
+        >
+          <ShareIcon class="w-5 h-5 mr-2" />
+          Bagikan
+        </button>
+        <router-link
+          to="/payments"
+          class="btn-outline inline-flex items-center justify-center"
+        >
+          <ArrowLeftIcon class="w-5 h-5 mr-2" />
+          Kembali
+        </router-link>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  UserIcon,
+  DocumentTextIcon,
+  CreditCardIcon,
+  CheckCircleIcon,
+  CalculatorIcon,
+  InformationCircleIcon,
+  PrinterIcon,
+  ArrowDownTrayIcon,
+  ShareIcon,
+  ArrowLeftIcon
+} from '@heroicons/vue/24/outline'
+
+const route = useRoute()
+const router = useRouter()
+
+// Invoice data
+const invoice = ref({
+  id: '',
+  invoiceNumber: '',
+  orderId: '',
+  student: {
+    name: '',
+    nickname: '',
+    phone: ''
+  },
+  description: 'Kas Kelas',
+  amount: 0,
+  period: '',
+  paymentMethod: '',
+  paidAt: '',
+  createdAt: '',
+  reference: '',
+  status: 'completed'
+})
+
+// Loading state
+const loading = ref(true)
+
+onMounted(async () => {
+  await loadInvoiceData()
+})
+
+// Load invoice data from URL params or localStorage
+async function loadInvoiceData() {
+  try {
+    const { orderId, studentId } = route.query
+    
+    if (orderId) {
+      // Load from URL parameters (coming from payment success)
+      await loadFromOrderId(orderId)
+    } else if (studentId) {
+      // Load from student ID
+      await loadFromStudentId(studentId)
+    } else {
+      // Try to load from localStorage (last payment)
+      loadFromStorage()
+    }
+  } catch (error) {
+    console.error('Error loading invoice:', error)
+    // Fallback to demo data
+    loadDemoData()
+  } finally {
+    loading.value = false
+  }
+}
+
+async function loadFromOrderId(orderId) {
+  // Try to find payment link data
+  const stored = localStorage.getItem('paymentLinks')
+  if (stored) {
+    const links = JSON.parse(stored)
+    const paymentLink = links.find(link => link.order_id === orderId)
+    
+    if (paymentLink) {
+      // Get student data
+      const studentsData = localStorage.getItem('students')
+      if (studentsData) {
+        const students = JSON.parse(studentsData)
+        const student = students.find(s => s.id === paymentLink.student_id)
+        
+        if (student) {
+          invoice.value = {
+            id: paymentLink.id,
+            invoiceNumber: `INV-${orderId.slice(-8).toUpperCase()}`,
+            orderId: orderId,
+            student: student,
+            description: paymentLink.description || 'Kas Kelas',
+            amount: paymentLink.amount,
+            period: getCurrentMonth(),
+            paymentMethod: paymentLink.payment_method || 'qris',
+            paidAt: paymentLink.completed_at || new Date().toISOString(),
+            createdAt: paymentLink.created_at || new Date().toISOString(),
+            reference: orderId.slice(-8).toUpperCase(),
+            status: 'completed'
+          }
+          return
+        }
+      }
+    }
+  }
+  
+  // If not found, load demo data
+  loadDemoData()
+}
+
+async function loadFromStudentId(studentId) {
+  // Get student data
+  const studentsData = localStorage.getItem('students')
+  if (studentsData) {
+    const students = JSON.parse(studentsData)
+    const student = students.find(s => s.id === studentId)
+    
+    if (student) {
+      const orderId = `KAS${Date.now()}`
+      invoice.value = {
+        id: `inv_${Date.now()}`,
+        invoiceNumber: `INV-${orderId.slice(-8)}`,
+        orderId: orderId,
+        student: student,
+        description: 'Kas Kelas',
+        amount: 50000,
+        period: getCurrentMonth(),
+        paymentMethod: 'qris',
+        paidAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        reference: orderId.slice(-8),
+        status: 'completed'
+      }
+      return
+    }
+  }
+  
+  loadDemoData()
+}
+
+function loadFromStorage() {
+  const stored = localStorage.getItem('lastInvoice')
+  if (stored) {
+    invoice.value = JSON.parse(stored)
+  } else {
+    loadDemoData()
+  }
+}
+
+function loadDemoData() {
+  const orderId = `KAS${Date.now()}`
+  invoice.value = {
+    id: `inv_${Date.now()}`,
+    invoiceNumber: `INV-${orderId.slice(-8)}`,
+    orderId: orderId,
+    student: {
+      name: 'Aqilnafi Segara',
+      nickname: 'Nafi',
+      phone: '+62 856-2468-7313'
+    },
+    description: 'Kas Kelas Bulan ' + getCurrentMonth(),
+    amount: 50000,
+    period: getCurrentMonth(),
+    paymentMethod: 'qris',
+    paidAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    reference: orderId.slice(-8),
+    status: 'completed'
+  }
+}
+
+// Utility functions
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0
+  }).format(amount)
+}
+
+function formatDate(dateString) {
+  return new Date(dateString).toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+}
+
+function formatDateTime(dateString) {
+  return new Date(dateString).toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+function formatPaymentMethod(method) {
+  const methodMap = {
+    'qris': 'QRIS',
+    'bca': 'Transfer BCA',
+    'mandiri': 'Transfer Mandiri',
+    'bni': 'Transfer BNI',
+    'bri': 'Transfer BRI',
+    'gopay': 'GoPay',
+    'ovo': 'OVO',
+    'dana': 'DANA',
+    'linkaja': 'LinkAja'
+  }
+  return methodMap[method?.toLowerCase()] || method?.toUpperCase() || 'Transfer Bank'
+}
+
+function getCurrentMonth() {
+  return new Date().toLocaleDateString('id-ID', {
+    month: 'long',
+    year: 'numeric'
+  })
+}
+
+// Actions
+function printInvoice() {
+  // Hide action buttons before printing
+  const actionButtons = document.querySelector('.mt-8.flex')
+  if (actionButtons) {
+    actionButtons.style.display = 'none'
+  }
+  
+  window.print()
+  
+  // Show buttons again after printing
+  setTimeout(() => {
+    if (actionButtons) {
+      actionButtons.style.display = 'flex'
+    }
+  }, 1000)
+}
+
+function downloadPDF() {
+  // In a real application, you would use a library like jsPDF
+  alert('Fitur download PDF akan segera tersedia!')
+}
+
+function shareInvoice() {
+  if (navigator.share) {
+    navigator.share({
+      title: `Invoice ${invoice.value.invoiceNumber}`,
+      text: `Invoice pembayaran kas kelas untuk ${invoice.value.student.name}`,
+      url: window.location.href
+    })
+  } else {
+    // Fallback: copy to clipboard
+    navigator.clipboard.writeText(window.location.href)
+    alert('Link invoice telah disalin ke clipboard!')
+  }
+}
+
+// Save to localStorage for future reference
+function saveInvoice() {
+  localStorage.setItem('lastInvoice', JSON.stringify(invoice.value))
+}
+
+// Save when data changes
+computed(() => {
+  if (invoice.value.id) {
+    saveInvoice()
+  }
+  return invoice.value
+})
+</script>
+
+<style scoped>
+@media print {
+  .btn-primary,
+  .btn-secondary,
+  .btn-outline {
+    display: none !important;
+  }
+  
+  .min-h-screen {
+    min-height: auto;
+  }
+  
+  .shadow-xl {
+    box-shadow: none !important;
+  }
+  
+  .bg-gray-50 {
+    background-color: white !important;
+  }
+}
+
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+}
+
+.btn-secondary {
+  @apply bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+}
+
+.btn-outline {
+  @apply border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-medium py-2 px-4 rounded-lg transition-colors duration-200 bg-white hover:bg-gray-50;
+}
+</style>

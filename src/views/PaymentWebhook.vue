@@ -12,6 +12,10 @@
         <div class="card p-6 text-left mb-6">
           <h3 class="font-semibold text-gray-900 mb-3">Detail Pembayaran</h3>
           <div class="space-y-2 text-sm">
+            <div v-if="paymentData.student_name" class="flex justify-between border-b pb-2 mb-2">
+              <span class="text-gray-600">Siswa:</span>
+              <span class="font-medium">{{ paymentData.student_name }} ({{ paymentData.student_nickname }})</span>
+            </div>
             <div class="flex justify-between">
               <span class="text-gray-600">Jumlah:</span>
               <span class="font-medium">{{ formatCurrency(paymentData.amount) }}</span>
@@ -22,11 +26,18 @@
             </div>
             <div class="flex justify-between">
               <span class="text-gray-600">Metode:</span>
-              <span class="font-medium">{{ paymentData.payment_method?.toUpperCase() }}</span>
+              <span class="font-medium">{{ formatPaymentMethod(paymentData.payment_method) }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-gray-600">Waktu:</span>
               <span class="font-medium">{{ formatDate(paymentData.completed_at) }}</span>
+            </div>
+          </div>
+
+          <div v-if="paymentData.student_name" class="mt-4 p-3 bg-green-50 rounded-lg">
+            <div class="flex items-center text-green-800">
+              <CheckCircleIcon class="w-4 h-4 mr-2" />
+              <span class="text-sm">✅ Notifikasi WhatsApp telah dikirim ke {{ paymentData.student_name }}</span>
             </div>
           </div>
         </div>
@@ -93,6 +104,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores'
 import { useToast } from 'vue-toastification'
 import pakasirService from '@/services/pakasir'
+import paymentNotificationService from '@/services/paymentNotificationService'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import {
@@ -123,10 +135,28 @@ const formatDate = (dateString) => {
   return format(new Date(dateString), 'dd MMMM yyyy, HH:mm', { locale: id })
 }
 
+const formatPaymentMethod = (method) => {
+  if (!method) return 'Transfer Bank'
+
+  const methodMap = {
+    'qris': 'QRIS',
+    'bca': 'Transfer BCA',
+    'mandiri': 'Transfer Mandiri',
+    'bni': 'Transfer BNI',
+    'bri': 'Transfer BRI',
+    'gopay': 'GoPay',
+    'ovo': 'OVO',
+    'dana': 'DANA',
+    'linkaja': 'LinkAja'
+  }
+
+  return methodMap[method.toLowerCase()] || method.toUpperCase()
+}
+
 const processWebhook = async () => {
   try {
     status.value = 'processing'
-    
+
     // Get webhook data from URL params or body
     const webhookData = {
       amount: parseInt(route.query.amount),
@@ -142,17 +172,35 @@ const processWebhook = async () => {
       throw new Error('Data pembayaran tidak lengkap')
     }
 
-    // Process the webhook
-    await store.handlePaymentWebhook(webhookData)
-    
-    paymentData.value = webhookData
-    status.value = 'success'
-    
-    toast.success('Pembayaran berhasil diproses!')
+    console.log('Processing webhook for order:', webhookData.order_id)
+
+    // Process webhook dengan auto notification
+    const result = await paymentNotificationService.processPaymentWebhook(webhookData)
+
+    if (result.success) {
+      // Update store juga
+      await store.handlePaymentWebhook(webhookData)
+
+      paymentData.value = {
+        ...webhookData,
+        student_name: result.student?.name,
+        student_nickname: result.student?.nickname
+      }
+
+      status.value = 'success'
+
+      toast.success(`🎉 Pembayaran berhasil! Notifikasi WhatsApp telah dikirim ke ${result.student?.name}`)
+    } else {
+      throw new Error('Gagal memproses webhook')
+    }
+
   } catch (error) {
     console.error('Webhook processing error:', error)
     errorMessage.value = error.message || 'Gagal memproses pembayaran'
     status.value = 'error'
+
+    // Still show error but log for investigation
+    toast.error('Pembayaran diterima tapi gagal kirim notifikasi WhatsApp')
   }
 }
 

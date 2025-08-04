@@ -11,6 +11,12 @@
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Konfigurasi API</h3>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <!-- Payment Notification Testing -->
+        <div class="space-y-4">
+          <h4 class="font-medium text-gray-900">Payment Notification Testing</h4>
+          <PaymentNotificationTester :students="students" />
+        </div>
+
         <!-- StarSender Configuration -->
         <div class="space-y-4">
           <h4 class="font-medium text-gray-900">StarSender WhatsApp API</h4>
@@ -246,6 +252,7 @@ import { useAppStore } from '@/stores'
 import { useToast } from 'vue-toastification'
 import { usePermissions } from '@/composables/usePermissions'
 import RoleManagement from '@/components/RoleManagement.vue'
+import PaymentNotificationTester from '@/components/PaymentNotificationTester.vue'
 import starsenderService from '@/services/starsender'
 import { supabase } from '@/lib/supabase'
 import {
@@ -259,6 +266,9 @@ import {
 const store = useAppStore()
 const toast = useToast()
 const permissions = usePermissions()
+
+// Students data for testing
+const students = ref([])
 
 const settings = reactive({
   starsender: {
@@ -323,23 +333,17 @@ const testStarSender = async () => {
   try {
     testing.starsender = true
 
-    // Test via proxy first
-    try {
-      await starsenderService.checkNumber('628123456789') // Test number
-      toast.success('StarSender proxy connection successful!')
-    } catch (proxyError) {
-      console.warn('Proxy test failed, trying direct connection:', proxyError)
+    // Test konfigurasi API key
+    const result = await starsenderService.testConnectionSafe()
 
-      if (proxyError.message.includes('not deployed')) {
-        toast.error('Edge Function not deployed. Please deploy starsender-proxy first.')
-      } else {
-        // Fallback to direct test
-        await starsenderService.testConnectionSafe()
-        toast.success('StarSender configuration is valid! (Direct connection)')
-      }
+    if (result.success) {
+      toast.success('StarSender konfigurasi berhasil! API key valid dan siap digunakan.')
+    } else {
+      toast.error('StarSender test gagal: Konfigurasi tidak valid')
     }
+
   } catch (error) {
-    toast.error(`StarSender test failed: ${error.message}`)
+    toast.error(`StarSender test gagal: ${error.message}`)
   } finally {
     testing.starsender = false
   }
@@ -507,6 +511,14 @@ onMounted(async () => {
   if (isConfigured) {
     await checkDatabase()
     await checkEdgeFunctionStatus()
+  }
+
+  // Load students for payment notification testing
+  try {
+    await store.fetchStudents()
+    students.value = store.students
+  } catch (error) {
+    console.error('Error loading students:', error)
   }
 })
 </script>

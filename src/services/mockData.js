@@ -210,5 +210,51 @@ export const mockDb = {
     return Promise.resolve({ data: null, error: { message: 'Payment link not found' } })
   },
 
+  // Mock campaigns data
+  mockCampaigns: [],
 
+  getCampaigns: () => {
+    return Promise.resolve({ data: mockDb.mockCampaigns, error: null })
+  },
+
+  addCampaign: (campaign) => {
+    const newCampaign = {
+      ...campaign,
+      id: campaign.id || String(mockDb.mockCampaigns.length + 1),
+      created_at: new Date().toISOString()
+    }
+    mockDb.mockCampaigns.push(newCampaign)
+    return Promise.resolve({ data: newCampaign, error: null })
+  },
+
+  updateCampaign: (id, updates) => {
+    const index = mockDb.mockCampaigns.findIndex(c => c.id === id)
+    if (index !== -1) {
+      mockDb.mockCampaigns[index] = { ...mockDb.mockCampaigns[index], ...updates }
+      return Promise.resolve({ data: mockDb.mockCampaigns[index], error: null })
+    }
+    return Promise.resolve({ data: null, error: { message: 'Campaign not found' } })
+  },
+
+  deleteCampaign: (id) => {
+    const index = mockDb.mockCampaigns.findIndex(c => c.id === id)
+    if (index !== -1) {
+      const deleted = mockDb.mockCampaigns.splice(index, 1)
+      return Promise.resolve({ data: deleted, error: null })
+    }
+    return Promise.resolve({ data: null, error: { message: 'Campaign not found' } })
+  },
+
+  // Mock webhook logs
+  mockWebhookLogs: [],
+
+  addWebhookLog: (log) => {
+    const newLog = {
+      ...log,
+      id: log.id || String(mockDb.mockWebhookLogs.length + 1),
+      created_at: new Date().toISOString()
+    }
+    mockDb.mockWebhookLogs.push(newLog)
+    return Promise.resolve({ data: [newLog], error: null })
+  }
 }

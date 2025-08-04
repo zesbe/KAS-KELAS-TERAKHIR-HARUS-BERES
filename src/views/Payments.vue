@@ -6,14 +6,24 @@
         <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Link Pembayaran</h1>
         <p class="text-sm text-gray-500 mt-1">Kelola link pembayaran untuk kas kelas</p>
       </div>
-      <button
-        @click="showCreateModal = true"
-        class="btn-primary w-full sm:w-auto"
-      >
-        <PlusIcon class="w-4 h-4 mr-2" />
-        <span class="hidden sm:inline">Buat Link Bayar</span>
-        <span class="sm:hidden">Buat Link</span>
-      </button>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <router-link
+          to="/invoice"
+          class="btn-outline w-full sm:w-auto inline-flex items-center justify-center"
+        >
+          <DocumentTextIcon class="w-4 h-4 mr-2" />
+          <span class="hidden sm:inline">Lihat Invoice</span>
+          <span class="sm:hidden">Invoice</span>
+        </router-link>
+        <button
+          @click="showCreateModal = true"
+          class="btn-primary w-full sm:w-auto"
+        >
+          <PlusIcon class="w-4 h-4 mr-2" />
+          <span class="hidden sm:inline">Buat Link Bayar</span>
+          <span class="sm:hidden">Buat Link</span>
+        </button>
+      </div>
     </div>
 
     <!-- Tabs -->
@@ -677,7 +687,8 @@ import {
   ChatBubbleLeftIcon,
   ArrowPathIcon,
   TrashIcon,
-  DocumentDuplicateIcon
+  DocumentDuplicateIcon,
+  DocumentTextIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
@@ -851,20 +862,16 @@ const sendPaymentLink = (payment) => {
 
 const sendWhatsAppMessage = async (payment) => {
   try {
-    const message = `Halo ${payment.student?.name} (${payment.student?.nickname}),
+    const paymentData = {
+      studentName: payment.student?.name,
+      amount: payment.amount,
+      description: payment.description,
+      orderId: payment.order_id,
+      paymentUrl: payment.payment_url,
+      dueDate: new Date(payment.expires_at).toLocaleDateString('id-ID')
+    }
 
-Silakan lakukan pembayaran kas kelas dengan detail berikut:
-
-💰 Jumlah: ${formatCurrency(payment.amount)}
-📝 Keterangan: ${payment.description}
-🆔 Order ID: ${payment.order_id}
-
-🔗 Link Pembayaran:
-${payment.payment_url}
-
-Terima kasih!
-
-_Kas Kelas 1B SD Islam Al Husna_`
+    const message = starsenderService.generatePaymentMessage(paymentData)
 
     await starsenderService.sendMessage(payment.student?.phone, message)
 
@@ -980,21 +987,17 @@ const generateMessageTemplate = (payment) => {
       .replace('{link}', payment.payment_url)
   }
 
-  // Default reminder template
-  return `Halo ${payment.student?.name} (${payment.student?.nickname}),
+  // Default reminder template using StarSender service
+  const paymentData = {
+    studentName: payment.student?.name,
+    amount: payment.amount,
+    description: payment.description,
+    orderId: payment.order_id,
+    paymentUrl: payment.payment_url,
+    dueDate: new Date(payment.expires_at).toLocaleDateString('id-ID')
+  }
 
-Silakan lakukan pembayaran kas kelas dengan detail berikut:
-
-💰 Jumlah: ${formatCurrency(payment.amount)}
-📝 Keterangan: ${payment.description}
-🆔 Order ID: ${payment.order_id}
-
-🔗 Link Pembayaran:
-${payment.payment_url}
-
-Terima kasih!
-
-_Kas Kelas 1B SD Islam Al Husna_`
+  return starsenderService.generatePaymentMessage(paymentData)
 }
 
 const sendBulkMessages = async () => {

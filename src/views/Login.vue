@@ -21,17 +21,17 @@
         <form @submit.prevent="handleLogin" class="space-y-6">
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700">
-              Email / Username
+              Email
             </label>
             <div class="mt-1">
               <input
                 id="email"
                 v-model="form.email"
-                type="text"
+                type="email"
                 autocomplete="email"
                 required
                 class="input-field"
-                placeholder="Masukkan email atau username"
+                placeholder="Masukkan email"
               />
             </div>
           </div>
@@ -99,40 +99,6 @@
           </div>
         </form>
 
-        <!-- Quick Login Options -->
-        <div class="mt-6">
-          <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-gray-300" />
-            </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-white text-gray-500">Login Cepat untuk Demo</span>
-            </div>
-          </div>
-
-          <div class="mt-6 grid grid-cols-1 gap-3">
-            <button
-              v-for="demoUser in demoUsers"
-              :key="demoUser.email"
-              @click="quickLogin(demoUser)"
-              class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-            >
-              <div class="flex items-center">
-                <div :class="[
-                  'w-6 h-6 rounded-full flex items-center justify-center mr-3 text-xs font-medium text-white',
-                  getRoleColor(demoUser.role)
-                ]">
-                  {{ demoUser.name.charAt(0) }}
-                </div>
-                <div class="text-left">
-                  <div class="text-sm font-medium text-gray-900">{{ demoUser.name }}</div>
-                  <div class="text-xs text-gray-500">{{ getRoleLabel(demoUser.role) }}</div>
-                </div>
-              </div>
-            </button>
-          </div>
-        </div>
-
         <!-- Error Message -->
         <div v-if="error" class="mt-4 bg-red-50 border border-red-200 rounded-md p-3">
           <div class="flex">
@@ -158,17 +124,11 @@
             </div>
             <div class="ml-3">
               <h3 class="text-sm font-medium text-blue-800">
-                Demo Mode
+                Login dengan Akun Terdaftar
               </h3>
               <div class="mt-1 text-sm text-blue-700">
-                <p>Gunakan tombol "Login Cepat" di atas untuk mencoba berbagai role:</p>
-                <ul class="mt-2 space-y-1 text-xs">
-                  <li>• <strong>Administrator:</strong> Akses penuh semua fitur</li>
-                  <li>• <strong>Bendahara:</strong> Kelola keuangan dan transaksi</li>
-                  <li>• <strong>Ketua Kelas:</strong> Kelola data siswa</li>
-                  <li>• <strong>Wali Kelas:</strong> Monitoring dan laporan</li>
-                  <li>• <strong>Viewer:</strong> Hanya melihat data</li>
-                </ul>
+                <p>Masukkan email dan password yang sudah terdaftar di sistem.</p>
+                <p class="mt-1">Hubungi administrator untuk membuat akun baru.</p>
               </div>
             </div>
           </div>
@@ -182,7 +142,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
-import { usePermissions } from '@/composables/usePermissions'
+import { auth } from '@/lib/supabase'
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -192,7 +152,6 @@ import {
 
 const router = useRouter()
 const toast = useToast()
-const permissions = usePermissions()
 
 const loading = ref(false)
 const showPassword = ref(false)
@@ -204,120 +163,30 @@ const form = reactive({
   rememberMe: false
 })
 
-// Demo users for quick login
-const demoUsers = [
-  {
-    id: '1',
-    name: 'Yudi Haryanto',
-    email: 'yudi@alhusna.edu',
-    role: 'admin',
-    password: 'admin123'
-  },
-  {
-    id: '2',
-    name: 'Siti Bendahara',
-    email: 'siti@alhusna.edu',
-    role: 'bendahara',
-    password: 'bendahara123'
-  },
-  {
-    id: '3',
-    name: 'Ahmad Ketua',
-    email: 'ahmad@alhusna.edu',
-    role: 'ketua_kelas',
-    password: 'ketua123'
-  },
-  {
-    id: '4',
-    name: 'Bu Aminah',
-    email: 'aminah@alhusna.edu',
-    role: 'wali_kelas',
-    password: 'wali123'
-  },
-  {
-    id: '5',
-    name: 'Rina Viewer',
-    email: 'rina@alhusna.edu',
-    role: 'viewer',
-    password: 'viewer123'
-  }
-]
-
 const handleLogin = async () => {
   loading.value = true
   error.value = ''
 
   try {
-    // Find user by email/username
-    const user = demoUsers.find(u => 
-      u.email === form.email || 
-      u.name.toLowerCase().includes(form.email.toLowerCase())
-    )
-
-    if (!user) {
-      throw new Error('User tidak ditemukan')
+    const { data, error: authError } = await auth.signIn(form.email, form.password)
+    
+    if (authError) {
+      throw new Error(authError.message)
     }
 
-    if (user.password !== form.password) {
-      throw new Error('Password salah')
+    if (!data.user) {
+      throw new Error('Login gagal')
     }
 
-    // Set current user in permissions
-    permissions.setCurrentUser({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      status: 'active'
-    })
-
-    // Store in localStorage for persistence
-    localStorage.setItem('currentUser', JSON.stringify({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      status: 'active',
-      loginTime: new Date().toISOString()
-    }))
-
-    toast.success(`Selamat datang, ${user.name}!`)
+    toast.success('Berhasil masuk!')
     
     // Redirect to dashboard
     router.push('/')
 
   } catch (err) {
-    error.value = err.message
+    error.value = err.message === 'Invalid login credentials' ? 'Email atau password salah' : err.message
   } finally {
     loading.value = false
   }
-}
-
-const quickLogin = async (user) => {
-  form.email = user.email
-  form.password = user.password
-  await handleLogin()
-}
-
-const getRoleLabel = (role) => {
-  const labels = {
-    admin: 'Administrator',
-    bendahara: 'Bendahara',
-    ketua_kelas: 'Ketua Kelas',
-    wali_kelas: 'Wali Kelas',
-    viewer: 'Viewer'
-  }
-  return labels[role] || role
-}
-
-const getRoleColor = (role) => {
-  const colors = {
-    admin: 'bg-purple-500',
-    bendahara: 'bg-green-500',
-    ketua_kelas: 'bg-blue-500',
-    wali_kelas: 'bg-yellow-500',
-    viewer: 'bg-gray-500'
-  }
-  return colors[role] || 'bg-gray-500'
 }
 </script>

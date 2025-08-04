@@ -169,5 +169,31 @@ export const db = {
   deleteExpense: (id) => safeSupabaseOperation(
     () => supabase.from('expenses').delete().eq('id', id),
     () => mockDb.deleteExpense(id)
+  ),
+
+  // Campaigns
+  getCampaigns: async () => {
+    return safeSupabaseOperation(
+      () => supabase.from('campaigns').select('*').order('created_at', { ascending: false }),
+      () => mockDb.getCampaigns ? mockDb.getCampaigns() : Promise.resolve({ data: [], error: null })
+    )
+  },
+  addCampaign: (campaign) => safeSupabaseOperation(
+    () => supabase.from('campaigns').insert(campaign),
+    () => mockDb.addCampaign ? mockDb.addCampaign(campaign) : Promise.resolve({ data: campaign, error: null })
+  ),
+  updateCampaign: (id, updates) => safeSupabaseOperation(
+    () => supabase.from('campaigns').update(updates).eq('id', id),
+    () => mockDb.updateCampaign ? mockDb.updateCampaign(id, updates) : Promise.resolve({ data: updates, error: null })
+  ),
+  deleteCampaign: (id) => safeSupabaseOperation(
+    () => supabase.from('campaigns').delete().eq('id', id),
+    () => mockDb.deleteCampaign ? mockDb.deleteCampaign(id) : Promise.resolve({ data: null, error: null })
+  ),
+
+  // Webhook logs
+  addWebhookLog: (log) => safeSupabaseOperation(
+    () => supabase.from('webhook_logs').insert(log),
+    () => mockDb.addWebhookLog ? mockDb.addWebhookLog(log) : Promise.resolve({ data: log, error: null })
   )
 }

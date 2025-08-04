@@ -63,6 +63,16 @@ const routes = [
     }
   },
   {
+    path: '/campaigns',
+    name: 'Campaigns',
+    component: () => import('@/views/Campaigns.vue'),
+    meta: {
+      title: 'Campaign WhatsApp',
+      requiresAuth: true,
+      permission: 'campaigns'
+    }
+  },
+  {
     path: '/reports',
     name: 'Reports',
     component: () => import('@/views/Reports.vue'),
@@ -88,6 +98,16 @@ const routes = [
     component: () => import('@/views/PaymentWebhook.vue'),
     meta: {
       title: 'Payment Webhook',
+      hideInNav: true,
+      requiresAuth: false
+    }
+  },
+  {
+    path: '/invoice',
+    name: 'Invoice',
+    component: () => import('@/views/Invoice.vue'),
+    meta: {
+      title: 'Invoice Pembayaran',
       hideInNav: true,
       requiresAuth: false
     }

@@ -48,12 +48,14 @@
         <!-- User info -->
         <div class="px-4 py-4 border-t border-gray-200">
           <div class="flex items-center">
-            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <span class="text-gray-600 font-medium text-sm">A</span>
+            <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+              <span class="text-primary-600 font-medium text-sm">
+                {{ permissions.currentUser.name.charAt(0).toUpperCase() }}
+              </span>
             </div>
             <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900">Admin</p>
-              <p class="text-xs text-gray-500">Administrator</p>
+              <p class="text-sm font-medium text-gray-900">{{ permissions.currentUser.name }}</p>
+              <p class="text-xs text-gray-500">{{ permissions.getRoleDisplayInfo(permissions.currentUser.role).name }}</p>
             </div>
           </div>
         </div>

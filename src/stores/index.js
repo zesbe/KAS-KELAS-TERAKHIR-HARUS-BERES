@@ -179,7 +179,7 @@ export const useAppStore = defineStore('app', {
         if (error) throw error
         this.paymentLinks = data || []
       } catch (error) {
-        this.error = error.message
+        this.error = error.message || error.toString() || 'Unknown error occurred'
         console.error('Error fetching payment links:', error)
       }
     },

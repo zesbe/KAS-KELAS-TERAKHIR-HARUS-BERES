@@ -88,7 +88,7 @@ const mockPaymentLinks = [
     description: 'Kas Bulanan Februari',
     status: 'pending',
     created_at: '2024-01-30T08:30:00Z',
-    student: { name: 'Dizya Nayara Khanza Pujiarto', nickname: 'Dizya' }
+    student: { name: 'Dizya Nayara Khanza Pujiarto', nickname: 'Dizya', phone: '+62 812-8147-6276' }
   }
 ]
 

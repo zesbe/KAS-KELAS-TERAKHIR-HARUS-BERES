@@ -239,12 +239,15 @@ class CampaignService {
       campaign.updated_at = new Date().toISOString()
       
       // Update in database
-      const { data, error } = await db.updateCampaign ? 
+      const { data, error } = await db.updateCampaign ?
         await db.updateCampaign(campaign.id, campaign) :
         // Fallback to localStorage
         this.updateCampaignInStorage(campaign)
 
-      if (error) throw error
+      if (error) {
+        const errorMessage = error.message || error.toString() || 'Failed to update campaign'
+        throw new Error(errorMessage)
+      }
       
       return { success: true, data: campaign }
     } catch (error) {

@@ -582,6 +582,16 @@ const singleLink = reactive({
   description: ''
 })
 
+const bulkMessage = reactive({
+  target: 'pending',
+  delayMinutes: 1,
+  template: 'reminder',
+  customMessage: '',
+  selectedPayments: []
+})
+
+const sending = ref(false)
+
 const pendingPayments = computed(() => {
   return store.paymentLinks.filter(p => p.status === 'pending')
 })

@@ -327,8 +327,7 @@ const toast = useToast()
 
 const settings = reactive({
   starsender: {
-    deviceApiKey: '',
-    accountApiKey: ''
+    deviceApiKey: ''
   },
   supabase: {
     url: '',

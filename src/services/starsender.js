@@ -109,11 +109,11 @@ class StarSenderService {
 
     } catch (error) {
       console.error('StarSender send message error:', error)
-      
+
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        throw new Error('Gagal terhubung ke StarSender API. Periksa koneksi internet.')
+        throw new Error('Gagal terhubung ke proxy server. Periksa koneksi internet dan konfigurasi Supabase.')
       }
-      
+
       throw error
     }
   }

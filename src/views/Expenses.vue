@@ -484,7 +484,7 @@ const resetForm = () => {
 const saveExpense = async () => {
   try {
     saving.value = true
-    
+
     const expenseData = {
       category: expenseForm.category,
       amount: expenseForm.amount,
@@ -492,6 +492,12 @@ const saveExpense = async () => {
       notes: expenseForm.notes,
       status: expenseForm.status,
       created_at: new Date().toISOString()
+    }
+
+    // Add approval fields if status is approved
+    if (expenseForm.status === 'approved') {
+      expenseData.approved_by = expenseForm.approved_by || 'Admin'
+      expenseData.approved_at = new Date().toISOString()
     }
 
     if (editingExpense.value) {

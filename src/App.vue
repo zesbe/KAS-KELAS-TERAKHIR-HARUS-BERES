@@ -194,6 +194,8 @@ import {
 
 const store = useAppStore()
 const permissions = usePermissions()
+const router = useRouter()
+const toast = useToast()
 
 const navigation = [
   { name: 'Dashboard', label: 'Dashboard', href: '/', icon: HomeIcon, requiresPermission: 'dashboard' },

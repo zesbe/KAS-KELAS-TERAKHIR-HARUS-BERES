@@ -1031,7 +1031,8 @@ const deleteCampaign = async (campaignId) => {
 const closeModal = () => {
   showCreateModal.value = false
   editingCampaign.value = null
-  
+  selectedTemplate.value = ''
+
   // Reset form
   Object.assign(campaignForm, {
     title: '',
@@ -1041,6 +1042,14 @@ const closeModal = () => {
     sendType: 'scheduled',
     scheduledDateTime: '',
     delayMinutes: 10
+  })
+
+  // Reset payment config
+  Object.assign(paymentConfig, {
+    generateLinks: false,
+    amount: 50000,
+    description: '',
+    dueDate: ''
   })
 }
 

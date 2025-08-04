@@ -73,9 +73,15 @@ const shouldUseMockData = async () => {
 // Database helpers - use mock data when Supabase is not configured or not accessible
 export const db = {
   // Students
-  getStudents: () => isSupabaseConfigured ?
-    supabase.from('students').select('*').order('name') :
-    mockDb.getStudents(),
+  getStudents: async () => {
+    if (!isSupabaseConfigured) return mockDb.getStudents()
+    try {
+      return await supabase.from('students').select('*').order('name')
+    } catch (error) {
+      console.warn('Falling back to mock data due to error:', error.message)
+      return mockDb.getStudents()
+    }
+  },
   addStudent: (student) => isSupabaseConfigured ?
     supabase.from('students').insert(student) :
     mockDb.addStudent(student),

@@ -1,7 +1,8 @@
 // StarSender WhatsApp API Service
-// Updated dengan API terbaru dari https://api.starsender.online
+// Updated dengan API terbaru menggunakan Supabase Edge Function proxy
 
-const BASE_URL = 'https://api.starsender.online'
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const PROXY_URL = `${SUPABASE_URL}/functions/v1/starsender-proxy`
 
 class StarSenderService {
   constructor() {
@@ -306,7 +307,7 @@ SD Islam Al Husna
 
 Halo, Orang Tua/Wali dari *${studentName}*
 
-📋 *Detail Pembayaran:*
+�� *Detail Pembayaran:*
 • Keterangan: ${description}
 • Jumlah: Rp ${amount?.toLocaleString('id-ID')}
 • Jatuh Tempo: ${dueDate}

@@ -111,22 +111,22 @@ export function usePermissions() {
   // Check if user can edit/delete based on ownership and role
   const canModifyItem = (item, requiredPermission = 'update') => {
     // Admin can modify anything
-    if (currentUser.value.role === 'admin') return true
-    
+    if (safeCurrentUser.value.role === 'admin') return true
+
     // Check if user has the required permission
     if (!hasPermission(requiredPermission)) return false
-    
+
     // If item has owner, check ownership
     if (item.created_by) {
-      return item.created_by === currentUser.value.id
+      return item.created_by === safeCurrentUser.value.id
     }
-    
+
     return true
   }
 
   // Get role-based restrictions for UI elements
   const getUIRestrictions = () => {
-    const role = currentUser.value.role
+    const role = safeCurrentUser.value.role
     
     return {
       canCreateStudents: hasPermission('manage_students'),

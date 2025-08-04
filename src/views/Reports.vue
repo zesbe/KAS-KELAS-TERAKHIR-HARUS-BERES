@@ -402,18 +402,18 @@ const filterData = () => {
 }
 
 const exportSummaryCSV = () => {
-  const headers = ['Keterangan', 'Jumlah (IDR)']
+  const headers = ['Keterangan', 'Jumlah (IDR)', 'Detail']
   const data = [
-    ['Total Pemasukan', reportData.totalIncome],
-    ['Total Pengeluaran', reportData.totalExpenses],
-    ['Saldo Akhir', reportData.balance],
-    ['Total Transaksi', reportData.transactionCount],
-    ['Siswa Sudah Bayar', reportData.paidStudents.length],
-    ['Siswa Belum Bayar', reportData.unpaidStudents.length],
-    ['Periode', `${dateFrom.value} s/d ${dateTo.value}`]
+    ['Total Pemasukan', exportService.formatCurrency(reportData.totalIncome), `${reportData.paidStudents.length} siswa`],
+    ['Total Pengeluaran', exportService.formatCurrency(reportData.totalExpenses), getExpensesByCategory()],
+    ['Saldo Akhir', exportService.formatCurrency(reportData.balance), reportData.balance >= 0 ? 'Surplus' : 'Defisit'],
+    ['Total Transaksi', reportData.transactionCount, 'Semua jenis'],
+    ['Siswa Sudah Bayar', reportData.paidStudents.length, `${Math.round((reportData.paidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`],
+    ['Siswa Belum Bayar', reportData.unpaidStudents.length, `${Math.round((reportData.unpaidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`],
+    ['Periode', `${dateFrom.value} s/d ${dateTo.value}`, 'Filter aktif']
   ]
 
-  downloadCSV(headers, data, `ringkasan_keuangan_${getPeriodString()}`)
+  exportService.downloadCSV(headers, data, `ringkasan_keuangan_${getPeriodString()}`)
   toast.success('Ringkasan keuangan berhasil di-export')
 }
 
@@ -431,57 +431,28 @@ const exportDetailedCSV = () => {
   ]
 
   const data = reportData.detailedTransactions.map(item => [
-    formatDate(item.date),
+    exportService.formatDate(item.date),
     item.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
     item.description,
     item.student_name || item.category || '',
-    item.type === 'income' ? item.amount : '',
-    item.type === 'expense' ? item.amount : '',
-    item.balance,
+    item.type === 'income' ? exportService.formatCurrency(item.amount) : '',
+    item.type === 'expense' ? exportService.formatCurrency(item.amount) : '',
+    exportService.formatCurrency(item.balance),
     item.status || '',
     item.payment_method || ''
   ])
 
-  downloadCSV(headers, data, `detail_transaksi_${getPeriodString()}`)
+  exportService.downloadCSV(headers, data, `detail_transaksi_${getPeriodString()}`)
   toast.success('Detail transaksi berhasil di-export')
 }
 
 const exportCompleteReport = () => {
-  // Create comprehensive financial report
-  const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '')
+  const period = {
+    from: dateFrom.value,
+    to: dateTo.value
+  }
 
-  // Summary data
-  const summaryHeaders = ['Keterangan', 'Jumlah (IDR)', 'Keterangan Tambahan']
-  const summaryData = [
-    ['=== RINGKASAN KEUANGAN ===', '', ''],
-    ['Periode Laporan', `${dateFrom.value} s/d ${dateTo.value}`, ''],
-    ['Total Pemasukan', reportData.totalIncome, `${reportData.paidStudents.length} siswa`],
-    ['Total Pengeluaran', reportData.totalExpenses, getExpensesByCategory()],
-    ['Saldo Akhir', reportData.balance, reportData.balance >= 0 ? 'Surplus' : 'Defisit'],
-    ['', '', ''],
-    ['=== STATUS PEMBAYARAN ===', '', ''],
-    ['Siswa Sudah Bayar', reportData.paidStudents.length, `${Math.round((reportData.paidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`],
-    ['Siswa Belum Bayar', reportData.unpaidStudents.length, `${Math.round((reportData.unpaidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`],
-    ['', '', ''],
-    ['=== DETAIL SISWA SUDAH BAYAR ===', '', ''],
-    ...reportData.paidStudents.map(s => [s.name, s.totalPaid, 'Lunas']),
-    ['', '', ''],
-    ['=== DETAIL SISWA BELUM BAYAR ===', '', ''],
-    ...reportData.unpaidStudents.map(s => [s.name, 0, 'Belum Bayar']),
-    ['', '', ''],
-    ['=== DETAIL TRANSAKSI ===', '', ''],
-    ['Tanggal', 'Jenis', 'Keterangan', 'Jumlah', 'Saldo', 'Status'],
-    ...reportData.detailedTransactions.map(item => [
-      formatDate(item.date),
-      item.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
-      item.description,
-      item.amount,
-      item.balance,
-      item.status || ''
-    ])
-  ]
-
-  downloadCSV(summaryHeaders, summaryData, `laporan_lengkap_kas_kelas_${getPeriodString()}`)
+  exportService.exportComprehensiveReport(reportData, period)
   toast.success('Laporan lengkap berhasil di-export')
 }
 

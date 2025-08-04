@@ -25,12 +25,15 @@ class CampaignService {
       }
 
       // Save to database
-      const { data, error } = await db.addCampaign ? 
+      const { data, error } = await db.addCampaign ?
         await db.addCampaign(campaign) :
         // Fallback to localStorage for now
         this.saveCampaignToStorage(campaign)
 
-      if (error) throw error
+      if (error) {
+        const errorMessage = error.message || error.toString() || 'Failed to save campaign'
+        throw new Error(errorMessage)
+      }
 
       return { success: true, data: campaign }
     } catch (error) {

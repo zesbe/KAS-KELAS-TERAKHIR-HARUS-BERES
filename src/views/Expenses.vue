@@ -351,7 +351,8 @@ import {
   ClockIcon,
   CheckCircleIcon,
   BanknotesIcon,
-  DocumentArrowDownIcon
+  DocumentArrowDownIcon,
+  ChevronDownIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()

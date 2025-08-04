@@ -1,5 +1,23 @@
 <template>
   <div class="space-y-6">
+    <!-- Database Setup Notice -->
+    <div v-if="isSupabaseConfigured && needsDatabaseSetup" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <ExclamationTriangleIcon class="h-5 w-5 text-blue-400" />
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-blue-800">Database Setup Required</h3>
+          <div class="mt-2 text-sm text-blue-700">
+            <p>Your Supabase database is connected but tables need to be created.</p>
+            <router-link to="/settings" class="font-medium underline hover:no-underline">
+              Go to Settings → Database Setup → Quick Setup
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Development Notice -->
     <div v-if="!isSupabaseConfigured" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
       <div class="flex">

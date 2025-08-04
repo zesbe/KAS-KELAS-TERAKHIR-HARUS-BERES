@@ -1064,7 +1064,8 @@ const deleteCampaign = async (campaignId) => {
     }
   } catch (error) {
     console.error('Error deleting campaign:', error)
-    toast.error('Gagal menghapus campaign')
+    const errorMessage = error?.message || error?.toString() || 'Terjadi kesalahan saat menghapus campaign'
+    toast.error(`Gagal menghapus campaign: ${errorMessage}`)
   }
 }
 

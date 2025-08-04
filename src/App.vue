@@ -229,6 +229,14 @@ const closeMobileSidebar = () => {
   }
 }
 
+const handleLogout = () => {
+  if (confirm('Apakah Anda yakin ingin logout?')) {
+    permissions.logout()
+    toast.success('Berhasil logout')
+    router.push('/login')
+  }
+}
+
 onMounted(async () => {
   // Load initial data with error handling
   try {

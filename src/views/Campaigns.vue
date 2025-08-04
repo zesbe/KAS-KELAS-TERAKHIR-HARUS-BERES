@@ -922,6 +922,23 @@ const getTotalRecipients = () => {
   return getRecipientIds().length
 }
 
+const getTemplatePreview = () => {
+  if (!selectedTemplate.value) return 'Custom Template'
+
+  const templates = {
+    payment_reminder: '💰 Reminder Pembayaran Kas',
+    payment_urgent: '🚨 Urgent - Pembayaran Terlambat',
+    payment_first_notice: '📋 Pemberitahuan Pembayaran',
+    info_announcement: '📢 Pengumuman Kelas',
+    payment_confirmation: '✅ Konfirmasi Pembayaran',
+    event_payment: '🎉 Pembayaran Kegiatan',
+    thank_you: '🙏 Terima Kasih & Apresiasi',
+    custom: '✏️ Custom Message'
+  }
+
+  return templates[selectedTemplate.value] || 'Unknown Template'
+}
+
 const getTargetPreview = () => {
   const labels = {
     all: 'Semua Siswa',

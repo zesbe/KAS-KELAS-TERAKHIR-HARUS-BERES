@@ -400,13 +400,136 @@ const filterData = () => {
   })
 }
 
-const exportReport = () => {
-  // Implementation for PDF export
-  console.log('Export PDF functionality to be implemented')
+const exportSummaryCSV = () => {
+  const headers = ['Keterangan', 'Jumlah (IDR)']
+  const data = [
+    ['Total Pemasukan', reportData.totalIncome],
+    ['Total Pengeluaran', reportData.totalExpenses],
+    ['Saldo Akhir', reportData.balance],
+    ['Total Transaksi', reportData.transactionCount],
+    ['Siswa Sudah Bayar', reportData.paidStudents.length],
+    ['Siswa Belum Bayar', reportData.unpaidStudents.length],
+    ['Periode', `${dateFrom.value} s/d ${dateTo.value}`]
+  ]
+
+  downloadCSV(headers, data, `ringkasan_keuangan_${getPeriodString()}`)
+  toast.success('Ringkasan keuangan berhasil di-export')
 }
 
-const printReport = () => {
-  window.print()
+const exportDetailedCSV = () => {
+  const headers = [
+    'Tanggal',
+    'Jenis',
+    'Keterangan',
+    'Siswa/Kategori',
+    'Pemasukan (IDR)',
+    'Pengeluaran (IDR)',
+    'Saldo (IDR)',
+    'Status',
+    'Metode Pembayaran'
+  ]
+
+  const data = reportData.detailedTransactions.map(item => [
+    formatDate(item.date),
+    item.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+    item.description,
+    item.student_name || item.category || '',
+    item.type === 'income' ? item.amount : '',
+    item.type === 'expense' ? item.amount : '',
+    item.balance,
+    item.status || '',
+    item.payment_method || ''
+  ])
+
+  downloadCSV(headers, data, `detail_transaksi_${getPeriodString()}`)
+  toast.success('Detail transaksi berhasil di-export')
+}
+
+const exportCompleteReport = () => {
+  // Create comprehensive financial report
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '')
+
+  // Summary data
+  const summaryHeaders = ['Keterangan', 'Jumlah (IDR)', 'Keterangan Tambahan']
+  const summaryData = [
+    ['=== RINGKASAN KEUANGAN ===', '', ''],
+    ['Periode Laporan', `${dateFrom.value} s/d ${dateTo.value}`, ''],
+    ['Total Pemasukan', reportData.totalIncome, `${reportData.paidStudents.length} siswa`],
+    ['Total Pengeluaran', reportData.totalExpenses, getExpensesByCategory()],
+    ['Saldo Akhir', reportData.balance, reportData.balance >= 0 ? 'Surplus' : 'Defisit'],
+    ['', '', ''],
+    ['=== STATUS PEMBAYARAN ===', '', ''],
+    ['Siswa Sudah Bayar', reportData.paidStudents.length, `${Math.round((reportData.paidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`],
+    ['Siswa Belum Bayar', reportData.unpaidStudents.length, `${Math.round((reportData.unpaidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`],
+    ['', '', ''],
+    ['=== DETAIL SISWA SUDAH BAYAR ===', '', ''],
+    ...reportData.paidStudents.map(s => [s.name, s.totalPaid, 'Lunas']),
+    ['', '', ''],
+    ['=== DETAIL SISWA BELUM BAYAR ===', '', ''],
+    ...reportData.unpaidStudents.map(s => [s.name, 0, 'Belum Bayar']),
+    ['', '', ''],
+    ['=== DETAIL TRANSAKSI ===', '', ''],
+    ['Tanggal', 'Jenis', 'Keterangan', 'Jumlah', 'Saldo', 'Status'],
+    ...reportData.detailedTransactions.map(item => [
+      formatDate(item.date),
+      item.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+      item.description,
+      item.amount,
+      item.balance,
+      item.status || ''
+    ])
+  ]
+
+  downloadCSV(summaryHeaders, summaryData, `laporan_lengkap_kas_kelas_${getPeriodString()}`)
+  toast.success('Laporan lengkap berhasil di-export')
+}
+
+const getExpensesByCategory = () => {
+  const categoryTotals = {}
+  store.expenses
+    .filter(e => e.status === 'approved')
+    .forEach(e => {
+      categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount
+    })
+
+  return Object.entries(categoryTotals)
+    .map(([cat, total]) => `${getCategoryLabel(cat)}: ${formatCurrency(total)}`)
+    .join('; ')
+}
+
+const getCategoryLabel = (category) => {
+  const labels = {
+    kegiatan: 'Kegiatan',
+    perlengkapan: 'Perlengkapan',
+    konsumsi: 'Konsumsi',
+    transport: 'Transport',
+    lainnya: 'Lainnya'
+  }
+  return labels[category] || category
+}
+
+const getPeriodString = () => {
+  const from = dateFrom.value.replace(/-/g, '')
+  const to = dateTo.value.replace(/-/g, '')
+  return `${from}_${to}`
+}
+
+const downloadCSV = (headers, data, filename) => {
+  const csvContent = [
+    headers.join(','),
+    ...data.map(row =>
+      row.map(field => {
+        const fieldStr = field?.toString() || ''
+        return `"${fieldStr.replace(/"/g, '""')}"`
+      }).join(',')
+    )
+  ].join('\n')
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = `${filename}.csv`
+  link.click()
 }
 
 onMounted(() => {

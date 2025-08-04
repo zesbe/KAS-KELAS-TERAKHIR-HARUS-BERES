@@ -49,6 +49,18 @@
           <button @click="testStarSender" :disabled="testing.starsender" class="btn-primary">
             {{ testing.starsender ? 'Testing...' : 'Test Configuration' }}
           </button>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs">
+            <p class="text-blue-800 mb-2">
+              <strong>Supabase Edge Function Proxy:</strong>
+            </p>
+            <ul class="text-blue-700 space-y-1 list-disc list-inside">
+              <li>Mengatasi CORS issues dengan proxy server</li>
+              <li>Aman: API Key tidak terekspos di frontend</li>
+              <li>Reliable: Server-side processing</li>
+              <li>Deploy Edge Function: <code>supabase functions deploy starsender-proxy</code></li>
+            </ul>
+          </div>
         </div>
 
         <!-- Supabase Configuration -->

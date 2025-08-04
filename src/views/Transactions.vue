@@ -331,7 +331,9 @@ import {
   PlusIcon,
   BanknotesIcon,
   ClockIcon,
-  UsersIcon
+  UsersIcon,
+  PencilIcon,
+  TrashIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()

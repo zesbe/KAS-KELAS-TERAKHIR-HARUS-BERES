@@ -694,6 +694,11 @@ const loadData = async () => {
 
     // Load campaigns from database/storage
     const campaignResult = await campaignService.getCampaigns()
+
+    if (!campaignResult.success && campaignResult.error) {
+      throw new Error(campaignResult.error)
+    }
+
     campaigns.value = campaignResult.data || []
 
     // If no campaigns exist, create demo data

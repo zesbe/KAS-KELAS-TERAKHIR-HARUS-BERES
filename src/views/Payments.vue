@@ -145,6 +145,13 @@
     <!-- Bulk WhatsApp Messaging -->
     <div class="card p-4 sm:p-6">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Kirim Pesan WhatsApp Massal</h3>
+
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+        <p class="text-sm text-yellow-800">
+          <strong>Catatan:</strong> Pengiriman pesan langsung dari browser mungkin diblokir oleh CORS policy.
+          Untuk production yang stabil, implementasikan API calls melalui backend server.
+        </p>
+      </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Target Pesan</label>

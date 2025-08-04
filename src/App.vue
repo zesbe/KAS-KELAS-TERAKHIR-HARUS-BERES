@@ -47,16 +47,25 @@
 
         <!-- User info -->
         <div class="px-4 py-4 border-t border-gray-200">
-          <div class="flex items-center">
-            <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-              <span class="text-primary-600 font-medium text-sm">
-                {{ (permissions.currentUser?.name || 'U').charAt(0).toUpperCase() }}
-              </span>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                <span class="text-primary-600 font-medium text-sm">
+                  {{ (permissions.currentUser?.name || 'U').charAt(0).toUpperCase() }}
+                </span>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm font-medium text-gray-900">{{ permissions.currentUser?.name || 'User' }}</p>
+                <p class="text-xs text-gray-500">{{ permissions.getRoleDisplayInfo(permissions.currentUser?.role || 'viewer').name }}</p>
+              </div>
             </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900">{{ permissions.currentUser?.name || 'User' }}</p>
-              <p class="text-xs text-gray-500">{{ permissions.getRoleDisplayInfo(permissions.currentUser?.role || 'viewer').name }}</p>
-            </div>
+            <button
+              @click="handleLogout"
+              class="p-1 text-gray-400 hover:text-gray-600"
+              title="Logout"
+            >
+              <ArrowRightOnRectangleIcon class="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>

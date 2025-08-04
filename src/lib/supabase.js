@@ -113,9 +113,15 @@ export const db = {
     mockDb.updateTransaction(id, updates),
 
   // Campaigns
-  getCampaigns: () => isSupabaseConfigured ?
-    supabase.from('campaigns').select('*').order('created_at', { ascending: false }) :
-    mockDb.getCampaigns(),
+  getCampaigns: async () => {
+    if (!isSupabaseConfigured) return mockDb.getCampaigns()
+    try {
+      return await supabase.from('campaigns').select('*').order('created_at', { ascending: false })
+    } catch (error) {
+      console.warn('Falling back to mock data due to error:', error.message)
+      return mockDb.getCampaigns()
+    }
+  },
   addCampaign: (campaign) => isSupabaseConfigured ?
     supabase.from('campaigns').insert(campaign) :
     mockDb.addCampaign(campaign),

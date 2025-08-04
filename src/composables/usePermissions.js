@@ -49,6 +49,7 @@ const pagePermissions = {
   students: ['manage_students', 'view_all', 'admin'],
   transactions: ['manage_transactions', 'view_all', 'admin'],
   payments: ['manage_transactions', 'view_all', 'admin'],
+  campaigns: ['manage_transactions', 'view_all', 'admin'],
   expenses: ['manage_expenses', 'view_all', 'admin'],
   reports: ['view_reports', 'view_all', 'admin'],
   settings: ['manage_settings', 'admin']

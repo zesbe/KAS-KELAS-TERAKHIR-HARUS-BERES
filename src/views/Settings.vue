@@ -135,7 +135,7 @@
 
         <button
           v-if="dbStatus.connected && dbStatus.tablesExist"
-          @click="setupDatabase"
+          @click="setupDatabaseAction"
           :disabled="loading.setup"
           class="btn-primary"
         >

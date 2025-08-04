@@ -217,7 +217,7 @@
               </label>
               <select v-model="selectedTemplate" @change="applyTemplate" class="input-field mb-3">
                 <option value="">-- Pilih Template --</option>
-                <option value="payment_reminder">���� Reminder Pembayaran Kas</option>
+                <option value="payment_reminder">💰 Reminder Pembayaran Kas</option>
                 <option value="payment_urgent">🚨 Urgent - Pembayaran Terlambat</option>
                 <option value="payment_first_notice">📋 Pemberitahuan Pembayaran</option>
                 <option value="info_announcement">📢 Pengumuman Kelas</option>
@@ -571,6 +571,7 @@ import { useToast } from 'vue-toastification'
 import { useAppStore } from '@/stores'
 import starsenderService from '@/services/starsender'
 import campaignService from '@/services/campaignService'
+import enhancedCampaignService from '@/services/enhancedCampaignService'
 import { 
   PlusIcon, 
   CalendarDaysIcon,

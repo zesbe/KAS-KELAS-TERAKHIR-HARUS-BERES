@@ -798,7 +798,8 @@ const saveCampaign = async () => {
 
   } catch (error) {
     console.error('Error saving campaign:', error)
-    toast.error(`Gagal menyimpan campaign: ${error.message}`)
+    const errorMessage = error?.message || error?.toString() || 'Terjadi kesalahan saat menyimpan campaign'
+    toast.error(`Gagal menyimpan campaign: ${errorMessage}`)
   } finally {
     saving.value = false
   }

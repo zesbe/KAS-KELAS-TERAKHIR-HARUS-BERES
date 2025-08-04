@@ -605,6 +605,20 @@ const campaignForm = reactive({
   delayMinutes: 10
 })
 
+// Template and payment config
+const selectedTemplate = ref('')
+const paymentConfig = reactive({
+  generateLinks: false,
+  amount: 50000,
+  description: '',
+  dueDate: ''
+})
+
+// Computed
+const needsPaymentLink = computed(() => {
+  return ['payment_reminder', 'payment_urgent', 'payment_first_notice', 'event_payment'].includes(selectedTemplate.value)
+})
+
 // Computed
 const getUnpaidStudents = () => {
   // Filter students yang belum bayar berdasarkan payment status

@@ -9,34 +9,34 @@ const mockStudents = [
 ]
 
 const mockTransactions = [
-  { 
-    id: '1', 
-    student_id: '1', 
-    type: 'income', 
-    amount: 25000, 
-    description: 'Kas Bulanan Januari', 
+  {
+    id: '1',
+    student_id: '1',
+    type: 'income',
+    amount: 50000,
+    description: 'Kas Bulanan Januari',
     status: 'completed',
     payment_method: 'qris',
     created_at: '2024-01-20T10:00:00Z',
     student: { name: 'Aqilnafi Segara', nickname: 'Nafi' }
   },
-  { 
-    id: '2', 
-    student_id: '2', 
-    type: 'income', 
-    amount: 25000, 
-    description: 'Kas Bulanan Januari', 
+  {
+    id: '2',
+    student_id: '2',
+    type: 'income',
+    amount: 50000,
+    description: 'Kas Bulanan Januari',
     status: 'completed',
     payment_method: 'cash',
     created_at: '2024-01-22T09:00:00Z',
     student: { name: 'Arkaan Jawara Bayanaka', nickname: 'Arkaan' }
   },
-  { 
-    id: '3', 
-    student_id: '3', 
-    type: 'income', 
-    amount: 25000, 
-    description: 'Kas Bulanan Januari', 
+  {
+    id: '3',
+    student_id: '3',
+    type: 'income',
+    amount: 50000,
+    description: 'Kas Bulanan Januari',
     status: 'completed',
     payment_method: 'qris',
     created_at: '2024-01-25T11:00:00Z',

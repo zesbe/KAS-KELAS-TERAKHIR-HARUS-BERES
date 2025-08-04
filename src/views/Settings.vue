@@ -425,14 +425,14 @@ const defaultStudents = [
 const testStarSender = async () => {
   try {
     testing.starsender = true
-    
-    // Test getting devices (requires account API key)
-    const devices = await starsenderService.getDevices()
-    
-    toast.success('Koneksi StarSender berhasil!')
-    console.log('StarSender devices:', devices)
+
+    // Use safer test method that doesn't make external API calls
+    const result = await starsenderService.testConnectionSafe()
+
+    toast.success('StarSender configuration is valid!')
+    console.log('StarSender test result:', result)
   } catch (error) {
-    toast.error('Gagal menghubungi StarSender: ' + error.message)
+    toast.error('StarSender configuration error: ' + error.message)
     console.error('StarSender test error:', error)
   } finally {
     testing.starsender = false

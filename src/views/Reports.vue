@@ -486,24 +486,6 @@ const getPeriodString = () => {
   return `${from}_${to}`
 }
 
-const downloadCSV = (headers, data, filename) => {
-  const csvContent = [
-    headers.join(','),
-    ...data.map(row =>
-      row.map(field => {
-        const fieldStr = field?.toString() || ''
-        return `"${fieldStr.replace(/"/g, '""')}"`
-      }).join(',')
-    )
-  ].join('\n')
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(blob)
-  link.download = `${filename}.csv`
-  link.click()
-}
-
 onMounted(() => {
   updatePeriod()
 })

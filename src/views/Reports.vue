@@ -555,6 +555,167 @@ const getPeriodString = () => {
   return `${from}_${to}`
 }
 
+const generatePDFReport = () => {
+  try {
+    // Create HTML content for PDF
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Laporan Keuangan Kas Kelas</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .header { text-align: center; margin-bottom: 30px; }
+          .summary { margin-bottom: 30px; }
+          .table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          .table th { background-color: #f8f9fa; }
+          .positive { color: #22c55e; }
+          .negative { color: #ef4444; }
+          .section { margin-bottom: 30px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Laporan Keuangan Kas Kelas</h1>
+          <h2>Kelas 1 Ibnu Sina</h2>
+          <p>Periode: ${formatDate(dateFrom.value)} - ${formatDate(dateTo.value)}</p>
+          <p>Tanggal Cetak: ${formatDate(new Date().toISOString().split('T')[0])}</p>
+        </div>
+
+        <div class="section summary">
+          <h3>Ringkasan Keuangan</h3>
+          <table class="table">
+            <tr>
+              <td><strong>Total Pemasukan</strong></td>
+              <td class="positive"><strong>${formatCurrency(reportData.totalIncome)}</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Total Pengeluaran</strong></td>
+              <td class="negative"><strong>${formatCurrency(reportData.totalExpenses)}</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Saldo Akhir</strong></td>
+              <td class="${reportData.balance >= 0 ? 'positive' : 'negative'}">
+                <strong>${formatCurrency(reportData.balance)}</strong>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Total Transaksi</strong></td>
+              <td><strong>${reportData.transactionCount}</strong></td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="section">
+          <h3>Status Pembayaran Siswa</h3>
+          <table class="table">
+            <tr>
+              <td><strong>Siswa Sudah Bayar</strong></td>
+              <td class="positive">${reportData.paidStudents.length} siswa (${paymentRate.value}%)</td>
+            </tr>
+            <tr>
+              <td><strong>Siswa Belum Bayar</strong></td>
+              <td class="negative">${reportData.unpaidStudents.length} siswa (${100 - paymentRate.value}%)</td>
+            </tr>
+            <tr>
+              <td><strong>Rata-rata Pembayaran</strong></td>
+              <td>${formatCurrency(averagePayment.value)}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="section">
+          <h3>Detail Transaksi</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Jenis</th>
+                <th>Keterangan</th>
+                <th>Pemasukan</th>
+                <th>Pengeluaran</th>
+                <th>Saldo</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.detailedTransactions.map(item => `
+                <tr>
+                  <td>${formatDate(item.date)}</td>
+                  <td>${item.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</td>
+                  <td>${item.description}</td>
+                  <td class="${item.type === 'income' ? 'positive' : ''}">${item.type === 'income' ? formatCurrency(item.amount) : '-'}</td>
+                  <td class="${item.type === 'expense' ? 'negative' : ''}">${item.type === 'expense' ? formatCurrency(item.amount) : '-'}</td>
+                  <td class="${item.balance >= 0 ? 'positive' : 'negative'}">${formatCurrency(item.balance)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <h3>Siswa Sudah Bayar</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nama Siswa</th>
+                <th>Total Pembayaran</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.paidStudents.map(student => `
+                <tr>
+                  <td>${student.name}</td>
+                  <td class="positive">${formatCurrency(student.totalPaid)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <h3>Siswa Belum Bayar</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nama Siswa</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportData.unpaidStudents.map(student => `
+                <tr>
+                  <td>${student.name}</td>
+                  <td class="negative">Belum Bayar</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </body>
+      </html>
+    `
+
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank')
+    printWindow.document.write(htmlContent)
+    printWindow.document.close()
+
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.print()
+      // Optionally close the window after printing
+      // printWindow.close()
+    }
+
+    toast.success('PDF report berhasil di-generate. Silakan print atau save as PDF.')
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    toast.error('Gagal generate PDF report')
+  }
+}
+
 onMounted(() => {
   updatePeriod()
 })

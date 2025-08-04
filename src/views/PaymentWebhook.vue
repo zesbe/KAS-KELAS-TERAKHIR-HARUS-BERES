@@ -93,6 +93,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores'
 import { useToast } from 'vue-toastification'
 import pakasirService from '@/services/pakasir'
+import paymentNotificationService from '@/services/paymentNotificationService'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import {

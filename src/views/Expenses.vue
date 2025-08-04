@@ -440,8 +440,15 @@ const editExpense = (expense) => {
 
 const approveExpense = async (expense) => {
   try {
-    await store.updateExpense(expense.id, { status: 'approved' })
-    toast.success('Pengeluaran berhasil disetujui')
+    const approvedBy = prompt('Masukkan nama yang menyetujui:', 'Admin')
+    if (approvedBy) {
+      await store.updateExpense(expense.id, {
+        status: 'approved',
+        approved_by: approvedBy,
+        approved_at: new Date().toISOString()
+      })
+      toast.success('Pengeluaran berhasil disetujui')
+    }
   } catch (error) {
     toast.error('Gagal menyetujui pengeluaran')
     console.error('Error approving expense:', error)

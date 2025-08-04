@@ -279,6 +279,7 @@ import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } f
 import { id } from 'date-fns/locale'
 import exportService from '@/services/export'
 import FinancialCharts from '@/components/FinancialCharts.vue'
+import AnalyticsInsights from '@/components/AnalyticsInsights.vue'
 import {
   BanknotesIcon,
   ReceiptPercentIcon,

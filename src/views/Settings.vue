@@ -278,6 +278,11 @@ const dbStatus = reactive({
   message: 'Click "Check Database Status" to test connection'
 })
 
+const edgeFunctionStatus = reactive({
+  available: false,
+  message: 'Checking Edge Function status...'
+})
+
 // Default students data
 const defaultStudents = [
   { name: 'Aqilnafi Segara', nickname: 'Nafi', phone: '+62 856-2468-7313' },

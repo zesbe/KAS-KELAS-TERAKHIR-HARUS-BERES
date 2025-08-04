@@ -148,6 +148,30 @@ export const useAppStore = defineStore('app', {
       }
     },
 
+    async updateExpense(id, updates) {
+      try {
+        const { data, error } = await db.updateExpense(id, updates)
+        if (error) throw error
+        await this.fetchExpenses()
+        return data
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
+    },
+
+    async deleteExpense(id) {
+      try {
+        const { data, error } = await db.deleteExpense(id)
+        if (error) throw error
+        await this.fetchExpenses()
+        return data
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
+    },
+
     // Payment links management
     async fetchPaymentLinks() {
       try {

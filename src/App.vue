@@ -174,8 +174,10 @@
 
 <script setup>
 import { onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores'
 import { usePermissions } from '@/composables/usePermissions'
+import { useToast } from 'vue-toastification'
 import {
   Bars3Icon,
   XMarkIcon,
@@ -186,7 +188,8 @@ import {
   CreditCardIcon,
   DocumentChartBarIcon,
   CogIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()

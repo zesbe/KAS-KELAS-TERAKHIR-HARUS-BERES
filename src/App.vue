@@ -216,10 +216,17 @@ onMounted(async () => {
       store.fetchPaymentLinks(),
       store.fetchCampaigns()
     ])
+
+    // If we're using mock data successfully, clear any errors
+    if (store.isUsingMockData && !store.error) {
+      console.log('Successfully loaded demo data')
+    }
   } catch (error) {
     console.error('Error loading initial data:', error)
-    // Clear the error in store to prevent showing failed fetch toast
-    store.clearError()
+    // If we're successfully using mock data, clear the error
+    if (store.isUsingMockData) {
+      store.clearError()
+    }
   }
 })
 </script>

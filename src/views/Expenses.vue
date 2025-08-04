@@ -479,6 +479,7 @@ const resetForm = () => {
   expenseForm.description = ''
   expenseForm.notes = ''
   expenseForm.status = 'pending'
+  expenseForm.approved_by = ''
 }
 
 const saveExpense = async () => {

@@ -266,9 +266,11 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAppStore } from '@/stores'
+import { useToast } from 'vue-toastification'
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from 'date-fns'
 import { id } from 'date-fns/locale'
 import exportService from '@/services/export'
+import FinancialCharts from '@/components/FinancialCharts.vue'
 import {
   BanknotesIcon,
   ReceiptPercentIcon,

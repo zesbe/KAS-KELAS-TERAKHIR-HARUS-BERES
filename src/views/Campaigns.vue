@@ -533,7 +533,7 @@
             <!-- Results (if completed) -->
             <div v-if="selectedCampaign.results" class="border rounded-lg p-4">
               <h4 class="font-medium text-gray-900 mb-3">📊 Hasil Pengiriman</h4>
-              <div class="grid grid-cols-3 gap-4 mb-4">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                 <div class="text-center">
                   <div class="text-2xl font-bold text-green-600">{{ selectedCampaign.results.successCount || 0 }}</div>
                   <div class="text-sm text-gray-500">Berhasil</div>

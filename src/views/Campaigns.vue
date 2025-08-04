@@ -758,14 +758,20 @@ const saveCampaign = async () => {
       toast.success('Campaign berhasil dibuat')
     }
 
-    // Execute campaign if immediate
-    if (campaignForm.sendType === 'immediate') {
-      toast.info('Memulai pengiriman campaign...')
-      await executeCampaign(campaignData)
-    } else if (campaignData.scheduled_at) {
-      // Execute scheduled campaign
-      toast.info('Menjadwalkan campaign...')
-      await executeCampaign(campaignData)
+    // Execute campaign if immediate or scheduled
+    if (campaignForm.sendType === 'immediate' || campaignData.scheduled_at) {
+      toast.info('Memproses campaign dengan payment links...')
+
+      // Prepare payment config if needed
+      const finalPaymentConfig = (needsPaymentLink.value && paymentConfig.generateLinks) ? {
+        generateLinks: true,
+        amount: parseInt(paymentConfig.amount),
+        description: paymentConfig.description || `Kas Kelas ${new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}`,
+        dueDate: paymentConfig.dueDate,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
+      } : null
+
+      await executeEnhancedCampaign(campaignData, finalPaymentConfig)
     }
 
     closeModal()

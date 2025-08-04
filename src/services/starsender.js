@@ -1,6 +1,8 @@
 import axios from 'axios'
+import { supabase } from '@/lib/supabase'
 
 const BASE_URL = 'https://api.starsender.online'
+const USE_SUPABASE_PROXY = true // Toggle untuk menggunakan Supabase proxy
 
 class StarSenderService {
   constructor() {

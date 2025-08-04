@@ -1,17 +1,18 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
       <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Link Pembayaran</h1>
+        <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Link Pembayaran</h1>
         <p class="text-sm text-gray-500 mt-1">Kelola link pembayaran untuk kas kelas</p>
       </div>
-      <button 
+      <button
         @click="showCreateModal = true"
-        class="btn-primary"
+        class="btn-primary w-full sm:w-auto"
       >
         <PlusIcon class="w-4 h-4 mr-2" />
-        Buat Link Bayar
+        <span class="hidden sm:inline">Buat Link Bayar</span>
+        <span class="sm:hidden">Buat Link</span>
       </button>
     </div>
 
@@ -75,9 +76,9 @@
     </div>
 
     <!-- Quick Generate -->
-    <div class="card p-6">
+    <div class="card p-4 sm:p-6">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Generate Link Cepat</h3>
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
           <input 
@@ -123,7 +124,7 @@
       <!-- Student Selection for Manual Target -->
       <div v-if="quickGenerate.target === 'selected'" class="mt-4">
         <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Siswa</label>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-48 overflow-y-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 max-h-48 overflow-y-auto">
           <label 
             v-for="student in store.students" 
             :key="student.id"
@@ -142,11 +143,11 @@
     </div>
 
     <!-- Payments Table -->
-    <div class="card p-6">
-      <div class="flex items-center justify-between mb-4">
+    <div class="card p-4 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
         <h3 class="text-lg font-semibold text-gray-900">Daftar Link Pembayaran</h3>
         <div class="flex space-x-2">
-          <select v-model="statusFilter" class="input-field w-auto">
+          <select v-model="statusFilter" class="input-field w-full sm:w-auto">
             <option value="">Semua Status</option>
             <option value="pending">Pending</option>
             <option value="completed">Selesai</option>
@@ -155,7 +156,82 @@
         </div>
       </div>
       
-      <div class="overflow-x-auto">
+      <!-- Mobile Card View -->
+      <div class="block sm:hidden space-y-4">
+        <div v-for="payment in filteredPayments" :key="payment.id" class="bg-gray-50 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+                <span class="text-primary-600 font-semibold text-xs">
+                  {{ payment.student?.nickname?.charAt(0)?.toUpperCase() }}
+                </span>
+              </div>
+              <div>
+                <div class="font-medium text-sm">{{ payment.student?.name }}</div>
+                <div class="text-gray-500 text-xs">{{ payment.student?.nickname }}</div>
+              </div>
+            </div>
+            <span :class="getStatusClass(payment.status)">
+              {{ getStatusLabel(payment.status) }}
+            </span>
+          </div>
+          <div class="space-y-1 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Jumlah:</span>
+              <span class="font-medium">{{ formatCurrency(payment.amount) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Keterangan:</span>
+              <span class="text-right">{{ payment.description }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Order ID:</span>
+              <span class="font-mono text-xs">{{ payment.order_id }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Dibuat:</span>
+              <span class="text-xs">{{ formatDate(payment.created_at) }}</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-center space-x-3 mt-3 pt-3 border-t border-gray-200">
+            <button
+              @click="copyPaymentLink(payment)"
+              class="flex items-center text-primary-600 hover:text-primary-900"
+              title="Copy Link"
+            >
+              <LinkIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Copy</span>
+            </button>
+            <button
+              @click="sendPaymentLink(payment)"
+              class="flex items-center text-success-600 hover:text-success-900"
+              title="Kirim via WhatsApp"
+            >
+              <ChatBubbleLeftIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Kirim</span>
+            </button>
+            <button
+              @click="checkPaymentStatus(payment)"
+              class="flex items-center text-warning-600 hover:text-warning-900"
+              title="Cek Status"
+            >
+              <ArrowPathIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Cek</span>
+            </button>
+            <button
+              @click="deletePaymentLink(payment)"
+              class="flex items-center text-red-600 hover:text-red-900"
+              title="Hapus"
+            >
+              <TrashIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Hapus</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table View -->
+      <div class="hidden sm:block overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -249,19 +325,19 @@
             </tr>
           </tbody>
         </table>
+      </div>
         
-        <div v-if="filteredPayments.length === 0" class="text-center py-8">
-          <p class="text-sm text-gray-500">Tidak ada link pembayaran yang ditemukan</p>
-        </div>
+      <div v-if="filteredPayments.length === 0" class="text-center py-8">
+        <p class="text-sm text-gray-500">Tidak ada link pembayaran yang ditemukan</p>
       </div>
     </div>
 
     <!-- Create Payment Link Modal -->
-    <div 
+    <div
       v-if="showCreateModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white rounded-lg max-w-md w-full p-6">
+      <div class="bg-white rounded-lg max-w-md w-full mx-4 p-4 sm:p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Buat Link Pembayaran</h3>
         
         <form @submit.prevent="createSingleLink" class="space-y-4">
@@ -320,11 +396,11 @@
     </div>
 
     <!-- Payment Link Preview Modal -->
-    <div 
+    <div
       v-if="showPreviewModal && previewPayment"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white rounded-lg max-w-md w-full p-6">
+      <div class="bg-white rounded-lg max-w-md w-full mx-4 p-4 sm:p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Link Pembayaran</h3>
         
         <div class="space-y-4">

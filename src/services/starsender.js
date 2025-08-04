@@ -274,45 +274,45 @@ class StarSenderService {
     }
   }
 
-  // Check if Edge Function is deployed
+  // Check if Vercel API route is available
   async checkEdgeFunctionStatus() {
-    if (!supabase) {
-      return {
-        available: false,
-        message: 'Supabase not configured'
-      }
-    }
-
     try {
-      // Try to call the Edge Function with a test request
-      const { data, error } = await supabase.functions.invoke('starsender-proxy', {
-        body: {
+      // Try to call the Vercel API with a test request
+      const response = await fetch(this.vercelApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           action: 'check-number',
           number: '628123456789' // Test number
-        }
+        })
       })
 
-      if (error) {
-        if (error.message?.includes('Failed to send a request to the Edge Function')) {
-          return {
-            available: false,
-            message: 'Edge Function not deployed'
-          }
+      const data = await response.json()
+
+      if (!response.ok) {
+        return {
+          available: false,
+          message: `Vercel API error: ${data.message || response.statusText}`
         }
+      }
+
+      if (data.error && data.error.includes('API key not configured')) {
         return {
           available: true,
-          message: 'Edge Function deployed but API key might be missing'
+          message: 'Vercel API deployed but StarSender API key not configured'
         }
       }
 
       return {
         available: true,
-        message: 'Edge Function deployed and working'
+        message: 'Vercel API route deployed and working'
       }
     } catch (error) {
       return {
         available: false,
-        message: `Edge Function error: ${error.message}`
+        message: `Vercel API route error: ${error.message}`
       }
     }
   }

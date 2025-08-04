@@ -490,6 +490,7 @@ onMounted(async () => {
 
   if (isConfigured) {
     await checkDatabase()
+    await checkEdgeFunctionStatus()
   }
 })
 </script>

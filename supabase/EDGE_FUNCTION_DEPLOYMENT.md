@@ -40,7 +40,7 @@ supabase secrets set STARSENDER_DEVICE_API_KEY=your-device-api-key-here
 supabase functions deploy starsender-proxy
 ```
 
-### 4. Test the deployment
+### 5. Test the deployment
 ```bash
 curl -i --location --request POST 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/starsender-proxy' \
   --header 'Authorization: Bearer YOUR_ANON_KEY' \
@@ -48,8 +48,7 @@ curl -i --location --request POST 'https://YOUR_PROJECT_REF.supabase.co/function
   --data-raw '{
     "action": "send",
     "number": "628123456789",
-    "message": "Test message",
-    "apiKey": "YOUR_DEVICE_API_KEY"
+    "message": "Test message"
   }'
 ```
 

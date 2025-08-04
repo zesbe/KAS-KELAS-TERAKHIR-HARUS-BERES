@@ -90,20 +90,21 @@ class StarSenderService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`)
+        throw new Error(`Proxy Error ${response.status}: ${errorData.message || errorData.error || response.statusText}`)
       }
 
       const data = await response.json()
-      
+
       if (!data.success) {
-        throw new Error(data.message || 'Gagal mengirim pesan')
+        throw new Error(data.message || data.error || 'Gagal mengirim pesan')
       }
 
-      console.log('Message sent successfully:', data)
+      console.log('Message sent successfully via proxy:', data)
       return {
         success: true,
         data: data.data,
-        message: data.message
+        message: data.message,
+        phone: data.phone
       }
 
     } catch (error) {

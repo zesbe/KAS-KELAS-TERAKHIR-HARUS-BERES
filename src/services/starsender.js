@@ -31,10 +31,13 @@ class StarSenderService {
     return cleaned
   }
 
-  // Validasi konfigurasi API key
+  // Validasi konfigurasi proxy
   validateConfiguration() {
-    if (!this.deviceApiKey || this.deviceApiKey === 'your-device-api-key') {
-      throw new Error('StarSender Device API key belum dikonfigurasi. Silakan set environment variable VITE_STARSENDER_DEVICE_API_KEY')
+    if (!SUPABASE_URL) {
+      throw new Error('Supabase URL belum dikonfigurasi. Silakan set environment variable VITE_SUPABASE_URL')
+    }
+    if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      throw new Error('Supabase Anon Key belum dikonfigurasi. Silakan set environment variable VITE_SUPABASE_ANON_KEY')
     }
     return true
   }

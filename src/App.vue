@@ -203,6 +203,7 @@ const navigation = [
   { name: 'Transactions', label: 'Transaksi Kas', href: '/transactions', icon: BanknotesIcon, requiresPermission: 'transactions' },
   { name: 'Expenses', label: 'Pengeluaran', href: '/expenses', icon: ReceiptPercentIcon, requiresPermission: 'expenses' },
   { name: 'Payments', label: 'Link Pembayaran', href: '/payments', icon: CreditCardIcon, requiresPermission: 'payments' },
+  { name: 'Campaigns', label: 'Campaign WhatsApp', href: '/campaigns', icon: MegaphoneIcon, requiresPermission: 'campaigns' },
   { name: 'Reports', label: 'Laporan', href: '/reports', icon: DocumentChartBarIcon, requiresPermission: 'reports' },
   { name: 'Settings', label: 'Pengaturan', href: '/settings', icon: CogIcon, requiresPermission: 'settings' }
 ]

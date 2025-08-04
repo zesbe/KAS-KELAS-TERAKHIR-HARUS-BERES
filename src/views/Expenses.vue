@@ -435,6 +435,7 @@ const editExpense = (expense) => {
   expenseForm.description = expense.description
   expenseForm.notes = expense.notes || ''
   expenseForm.status = expense.status
+  expenseForm.approved_by = expense.approved_by || ''
 }
 
 const approveExpense = async (expense) => {

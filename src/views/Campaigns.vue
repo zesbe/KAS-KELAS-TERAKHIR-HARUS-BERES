@@ -551,29 +551,47 @@ const getPaidStudents = () => {
 const loadData = async () => {
   try {
     loading.value = true
-    
+
     // Load students
-    const studentsResult = await store.loadStudents()
+    await store.loadStudents()
     students.value = store.students
-    
-    // Load campaigns from database
-    // campaigns.value = await loadCampaigns()
-    
-    // Demo data for now
-    campaigns.value = [
-      {
-        id: '1',
+
+    // Load campaigns from database/storage
+    const campaignResult = await campaignService.getCampaigns()
+    campaigns.value = campaignResult.data || []
+
+    // If no campaigns exist, create demo data
+    if (campaigns.value.length === 0) {
+      const demoCampaign = {
+        id: campaignService.generateCampaignId(),
         title: 'Reminder Pembayaran Kas Januari',
-        message: 'Halo [[NAME]], silakan bayar kas kelas bulan Januari. Terima kasih.',
+        message: `🏫 *Reminder Kas Kelas 1B*
+SD Islam Al Husna
+
+Halo [[NAME]] ([[NICKNAME]]),
+
+Silakan melakukan pembayaran kas kelas untuk bulan Januari 2024.
+
+💰 Jumlah: Rp 50.000
+📅 Jatuh Tempo: 31 Januari 2024
+📱 WhatsApp: [[PHONE]]
+
+Terima kasih atas perhatiannya! 🙏
+
+_Pesan otomatis dari Sistem Kas Kelas_`,
         target: 'unpaid',
+        recipients: [],
         delay_minutes: 10,
-        status: 'scheduled',
-        scheduled_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        status: 'draft',
+        scheduled_at: null,
         created_at: new Date().toISOString(),
         results: null
       }
-    ]
-    
+
+      await campaignService.createCampaign(demoCampaign)
+      campaigns.value = [demoCampaign]
+    }
+
   } catch (error) {
     console.error('Error loading data:', error)
     toast.error('Gagal memuat data')

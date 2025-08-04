@@ -337,7 +337,6 @@ const settings = reactive({
 
 const showKeys = reactive({
   device: false,
-  account: false,
   supabase: false
 })
 

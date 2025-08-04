@@ -135,6 +135,24 @@ const formatDate = (dateString) => {
   return format(new Date(dateString), 'dd MMMM yyyy, HH:mm', { locale: id })
 }
 
+const formatPaymentMethod = (method) => {
+  if (!method) return 'Transfer Bank'
+
+  const methodMap = {
+    'qris': 'QRIS',
+    'bca': 'Transfer BCA',
+    'mandiri': 'Transfer Mandiri',
+    'bni': 'Transfer BNI',
+    'bri': 'Transfer BRI',
+    'gopay': 'GoPay',
+    'ovo': 'OVO',
+    'dana': 'DANA',
+    'linkaja': 'LinkAja'
+  }
+
+  return methodMap[method.toLowerCase()] || method.toUpperCase()
+}
+
 const processWebhook = async () => {
   try {
     status.value = 'processing'

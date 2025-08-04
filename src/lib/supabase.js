@@ -112,22 +112,7 @@ export const db = {
     supabase.from('transactions').update(updates).eq('id', id) :
     mockDb.updateTransaction(id, updates),
 
-  // Campaigns
-  getCampaigns: async () => {
-    if (!isSupabaseConfigured) return mockDb.getCampaigns()
-    try {
-      return await supabase.from('campaigns').select('*').order('created_at', { ascending: false })
-    } catch (error) {
-      console.warn('Falling back to mock data due to error:', error.message)
-      return mockDb.getCampaigns()
-    }
-  },
-  addCampaign: (campaign) => isSupabaseConfigured ?
-    supabase.from('campaigns').insert(campaign) :
-    mockDb.addCampaign(campaign),
-  updateCampaign: (id, updates) => isSupabaseConfigured ?
-    supabase.from('campaigns').update(updates).eq('id', id) :
-    mockDb.updateCampaign(id, updates),
+
 
   // Payment links
   getPaymentLinks: async () => {

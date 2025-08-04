@@ -13,9 +13,7 @@ export const useAppStore = defineStore('app', {
     expenses: [],
     totalBalance: 0,
 
-    // Campaigns
-    campaigns: [],
-    activeCampaign: null,
+
 
     // Payment links
     paymentLinks: [],

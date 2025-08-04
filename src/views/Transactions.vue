@@ -96,8 +96,70 @@
     </div>
 
     <!-- Transactions Table -->
-    <div class="card p-6">
-      <div class="overflow-x-auto">
+    <div class="card p-4 sm:p-6">
+      <!-- Mobile Card View -->
+      <div class="block sm:hidden space-y-4">
+        <div v-for="transaction in filteredTransactions" :key="transaction.id" class="bg-gray-50 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+                <span class="text-primary-600 font-semibold text-xs">
+                  {{ transaction.student?.nickname?.charAt(0)?.toUpperCase() || 'K' }}
+                </span>
+              </div>
+              <div>
+                <div class="font-medium text-sm">{{ transaction.student?.name || 'Kas Umum' }}</div>
+                <div class="text-gray-500 text-xs">{{ transaction.student?.nickname || '' }}</div>
+              </div>
+            </div>
+            <span :class="[
+              'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
+              transaction.status === 'completed' ? 'bg-success-100 text-success-800' : 'bg-warning-100 text-warning-800'
+            ]">
+              {{ transaction.status === 'completed' ? 'Selesai' : 'Pending' }}
+            </span>
+          </div>
+          <div class="space-y-1 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Keterangan:</span>
+              <span class="text-right">{{ transaction.description }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Jumlah:</span>
+              <span class="text-success-600 font-medium">
+                +{{ formatCurrency(transaction.amount) }}
+              </span>
+            </div>
+            <div class="flex justify-between" v-if="transaction.payment_method">
+              <span class="text-gray-600">Metode:</span>
+              <span class="text-xs">{{ transaction.payment_method || 'Manual' }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Tanggal:</span>
+              <span class="text-xs">{{ formatDate(transaction.created_at) }}</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-center space-x-3 mt-3 pt-3 border-t border-gray-200">
+            <button
+              @click="editTransaction(transaction)"
+              class="flex items-center text-primary-600 hover:text-primary-900"
+            >
+              <PencilIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Edit</span>
+            </button>
+            <button
+              @click="deleteTransaction(transaction)"
+              class="flex items-center text-red-600 hover:text-red-900"
+            >
+              <TrashIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Hapus</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table View -->
+      <div class="hidden sm:block overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -151,13 +213,13 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center space-x-2">
-                  <button 
+                  <button
                     @click="editTransaction(transaction)"
                     class="text-primary-600 hover:text-primary-900"
                   >
                     Edit
                   </button>
-                  <button 
+                  <button
                     @click="deleteTransaction(transaction)"
                     class="text-red-600 hover:text-red-900"
                   >
@@ -168,10 +230,10 @@
             </tr>
           </tbody>
         </table>
-        
-        <div v-if="filteredTransactions.length === 0" class="text-center py-8">
-          <p class="text-sm text-gray-500">Tidak ada transaksi yang ditemukan</p>
-        </div>
+      </div>
+
+      <div v-if="filteredTransactions.length === 0" class="text-center py-8">
+        <p class="text-sm text-gray-500">Tidak ada transaksi yang ditemukan</p>
       </div>
     </div>
 

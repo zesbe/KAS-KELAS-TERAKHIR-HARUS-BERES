@@ -738,13 +738,9 @@ Terima kasih!
 
 _Kas Kelas 1B SD Islam Al Husna_`
 
-    const result = await starsenderService.sendMessage(payment.student?.phone, message)
+    await starsenderService.sendMessage(payment.student?.phone, message)
 
-    const messageText = result.simulation
-      ? 'Pesan disimulasikan (Demo Mode)'
-      : 'Pesan berhasil dikirim'
-
-    toast.success(messageText)
+    toast.success('Pesan berhasil dikirim')
     showPreviewModal.value = false
   } catch (error) {
     toast.error('Gagal mengirim pesan')

@@ -11,6 +11,12 @@
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Konfigurasi API</h3>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <!-- Payment Notification Testing -->
+        <div class="space-y-4">
+          <h4 class="font-medium text-gray-900">Payment Notification Testing</h4>
+          <PaymentNotificationTester :students="students" />
+        </div>
+
         <!-- StarSender Configuration -->
         <div class="space-y-4">
           <h4 class="font-medium text-gray-900">StarSender WhatsApp API</h4>

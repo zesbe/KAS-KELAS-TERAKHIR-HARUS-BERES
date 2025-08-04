@@ -56,9 +56,11 @@
             </p>
             <ul class="text-blue-700 space-y-1 list-disc list-inside">
               <li>Mengatasi CORS issues dengan proxy server</li>
-              <li>Aman: API Key tidak terekspos di frontend</li>
-              <li>Reliable: Server-side processing</li>
-              <li>Deploy Edge Function: <code>supabase functions deploy starsender-proxy</code></li>
+              <li>Aman: API Key disimpan sebagai environment variable di Edge Function</li>
+              <li>Tidak perlu kirim API Key dari frontend</li>
+              <li>Server-side processing yang reliable</li>
+              <li>Setup: <code>supabase secrets set STARSENDER_DEVICE_API_KEY=your-key</code></li>
+              <li>Deploy: <code>supabase functions deploy starsender-proxy</code></li>
             </ul>
           </div>
         </div>

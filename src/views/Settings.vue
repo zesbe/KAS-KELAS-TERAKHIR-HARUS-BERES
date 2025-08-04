@@ -169,20 +169,25 @@
     <div class="card p-6">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Backup & Export</h3>
       
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <button @click="exportStudents" class="btn-secondary">
           <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
           Export Data Siswa
         </button>
-        
+
         <button @click="exportTransactions" class="btn-secondary">
           <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
           Export Transaksi
         </button>
-        
-        <button @click="exportAll" class="btn-secondary">
+
+        <button @click="exportExpenses" class="btn-secondary">
           <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-          Export Semua Data
+          Export Pengeluaran
+        </button>
+
+        <button @click="exportAll" class="btn-primary">
+          <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+          Backup Lengkap
         </button>
       </div>
     </div>

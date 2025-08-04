@@ -186,7 +186,6 @@ const navigation = [
   { name: 'Transactions', label: 'Transaksi Kas', href: '/transactions', icon: BanknotesIcon },
   { name: 'Expenses', label: 'Pengeluaran', href: '/expenses', icon: ReceiptPercentIcon },
   { name: 'Payments', label: 'Link Pembayaran', href: '/payments', icon: CreditCardIcon },
-  { name: 'Campaigns', label: 'Campaign Pesan', href: '/campaigns', icon: SpeakerWaveIcon },
   { name: 'Reports', label: 'Laporan', href: '/reports', icon: DocumentChartBarIcon },
   { name: 'Settings', label: 'Pengaturan', href: '/settings', icon: CogIcon }
 ]

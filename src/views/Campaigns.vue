@@ -833,7 +833,8 @@ const executeCampaign = async (campaign) => {
 
   } catch (error) {
     console.error('Error executing campaign:', error)
-    toast.error(`Gagal menjalankan campaign: ${error.message}`)
+    const errorMessage = error?.message || error?.toString() || 'Terjadi kesalahan saat menjalankan campaign'
+    toast.error(`Gagal menjalankan campaign: ${errorMessage}`)
 
     // Update campaign status to failed
     campaign.status = 'failed'

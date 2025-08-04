@@ -512,5 +512,13 @@ onMounted(async () => {
     await checkDatabase()
     await checkEdgeFunctionStatus()
   }
+
+  // Load students for payment notification testing
+  try {
+    await store.loadStudents()
+    students.value = store.students
+  } catch (error) {
+    console.error('Error loading students:', error)
+  }
 })
 </script>

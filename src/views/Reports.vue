@@ -389,40 +389,25 @@ const updatePeriod = () => {
 const filterData = () => {
   if (!dateFrom.value || !dateTo.value) return
 
-  const fromDate = new Date(dateFrom.value)
-  const toDate = new Date(dateTo.value + 'T23:59:59')
-
-  // Filter transactions
-  const filteredTransactions = store.transactions.filter(t => {
-    const transactionDate = new Date(t.created_at)
-    return transactionDate >= fromDate && transactionDate <= toDate
-  })
-
-  // Filter expenses
-  const filteredExpenses = store.expenses.filter(e => {
-    const expenseDate = new Date(e.created_at)
-    return expenseDate >= fromDate && expenseDate <= toDate
-  })
-
-  // Calculate totals
-  reportData.totalIncome = filteredTransactions
+  // Calculate totals using computed filtered data
+  reportData.totalIncome = filteredTransactions.value
     .filter(t => t.type === 'income' && t.status === 'completed')
     .reduce((sum, t) => sum + t.amount, 0)
 
-  reportData.totalExpenses = filteredExpenses
+  reportData.totalExpenses = filteredExpenses.value
     .filter(e => e.status === 'approved')
     .reduce((sum, e) => sum + e.amount, 0)
 
   reportData.balance = reportData.totalIncome - reportData.totalExpenses
-  reportData.transactionCount = filteredTransactions.length + filteredExpenses.length
+  reportData.transactionCount = filteredTransactions.value.length + filteredExpenses.value.length
 
   // Calculate student payment status
-  const paidStudentIds = filteredTransactions
+  const paidStudentIds = filteredTransactions.value
     .filter(t => t.type === 'income' && t.status === 'completed')
     .map(t => t.student_id)
 
   const studentPayments = {}
-  filteredTransactions
+  filteredTransactions.value
     .filter(t => t.type === 'income' && t.status === 'completed')
     .forEach(t => {
       if (!studentPayments[t.student_id]) {
@@ -443,13 +428,13 @@ const filterData = () => {
 
   // Create detailed transaction list
   const allTransactions = [
-    ...filteredTransactions.map(t => ({
+    ...filteredTransactions.value.map(t => ({
       date: t.created_at,
       type: t.type,
       description: t.description + (t.student?.name ? ` - ${t.student.name}` : ''),
       amount: t.amount
     })),
-    ...filteredExpenses.map(e => ({
+    ...filteredExpenses.value.map(e => ({
       date: e.created_at,
       type: 'expense',
       description: e.description,

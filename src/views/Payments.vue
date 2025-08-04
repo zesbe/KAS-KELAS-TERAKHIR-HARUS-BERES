@@ -535,6 +535,80 @@
         </div>
       </div>
     </div>
+
+    <!-- CORS Error Modal -->
+    <div
+      v-if="showCorsErrorModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    >
+      <div class="bg-white rounded-lg max-w-md w-full mx-4 p-4 sm:p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Tidak Dapat Mengirim Pesan</h3>
+
+        <div class="space-y-4">
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <p class="text-sm text-yellow-800">
+              <strong>CORS Error:</strong> Browser memblokir API call langsung ke StarSender.
+              Untuk production, implementasikan API calls melalui backend server.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Pesan untuk {{ corsErrorData.studentName }}:</label>
+            <textarea
+              :value="corsErrorData.message"
+              readonly
+              rows="6"
+              class="input-field text-xs"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nomor WhatsApp:</label>
+            <div class="flex items-center space-x-2">
+              <input
+                :value="corsErrorData.phone"
+                readonly
+                class="input-field text-sm"
+              />
+              <button
+                @click="copyToClipboard(corsErrorData.phone)"
+                class="btn-secondary p-2"
+                title="Copy nomor"
+              >
+                <DocumentDuplicateIcon class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p class="text-sm text-blue-800">
+              <strong>Alternatif:</strong> Copy pesan dan nomor di atas, lalu kirim manual melalui WhatsApp Web atau aplikasi WhatsApp.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex justify-between space-x-3 pt-4">
+          <button
+            @click="copyMessageAndNumber"
+            class="btn-primary flex-1"
+          >
+            Copy Pesan & Nomor
+          </button>
+          <button
+            @click="openWhatsAppWeb"
+            class="btn-success flex-1"
+          >
+            Buka WhatsApp Web
+          </button>
+          <button
+            @click="showCorsErrorModal = false"
+            class="btn-secondary"
+          >
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 

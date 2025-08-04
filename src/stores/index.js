@@ -7,23 +7,25 @@ export const useAppStore = defineStore('app', {
   state: () => ({
     // Students data
     students: [],
-    
+
     // Financial data
     transactions: [],
     expenses: [],
     totalBalance: 0,
-    
-    // Campaigns
-    campaigns: [],
-    activeCampaign: null,
-    
+
+
+
     // Payment links
     paymentLinks: [],
-    
+
     // UI state
     loading: false,
     error: null,
-    
+
+    // Database status
+    isUsingMockData: false,
+    databaseStatus: 'unknown', // 'connected', 'mock', 'error'
+
     // Sidebar state
     sidebarOpen: false
   }),
@@ -75,11 +77,18 @@ export const useAppStore = defineStore('app', {
       this.loading = true
       try {
         const { data, error } = await db.getStudents()
-        if (error) throw error
+        if (error) {
+          this.databaseStatus = 'error'
+          throw error
+        }
         this.students = data || []
+        // Check if we're getting mock data
+        this.isUsingMockData = data && data.length > 0 && data[0].id === '1'
+        this.databaseStatus = this.isUsingMockData ? 'mock' : 'connected'
       } catch (error) {
-        this.error = error.message
-        console.error('Error fetching students:', error)
+        this.error = this.formatError(error)
+        this.databaseStatus = 'error'
+        console.error('Error fetching students:', this.formatError(error))
       } finally {
         this.loading = false
       }
@@ -105,8 +114,8 @@ export const useAppStore = defineStore('app', {
         if (error) throw error
         this.transactions = data || []
       } catch (error) {
-        this.error = error.message || error.toString() || 'Unknown error occurred'
-        console.error('Error fetching transactions:', error)
+        this.error = this.formatError(error)
+        console.error('Error fetching transactions:', this.formatError(error))
       } finally {
         this.loading = false
       }
@@ -131,8 +140,8 @@ export const useAppStore = defineStore('app', {
         if (error) throw error
         this.expenses = data || []
       } catch (error) {
-        this.error = error.message || error.toString() || 'Unknown error occurred'
-        console.error('Error fetching expenses:', error)
+        this.error = this.formatError(error)
+        console.error('Error fetching expenses:', this.formatError(error))
       }
     },
 
@@ -179,8 +188,8 @@ export const useAppStore = defineStore('app', {
         if (error) throw error
         this.paymentLinks = data || []
       } catch (error) {
-        this.error = error.message || error.toString() || 'Unknown error occurred'
-        console.error('Error fetching payment links:', error)
+        this.error = this.formatError(error)
+        console.error('Error fetching payment links:', this.formatError(error))
       }
     },
 
@@ -206,62 +215,7 @@ export const useAppStore = defineStore('app', {
       }
     },
 
-    // Campaign management
-    async fetchCampaigns() {
-      try {
-        const { data, error } = await db.getCampaigns()
-        if (error) throw error
-        this.campaigns = data || []
-      } catch (error) {
-        this.error = error.message || error.toString() || 'Unknown error occurred'
-        console.error('Error fetching campaigns:', error)
-      }
-    },
 
-    async sendCampaign(campaignData) {
-      try {
-        this.loading = true
-        
-        // Save campaign to database
-        const { data: campaign, error } = await db.addCampaign({
-          ...campaignData,
-          status: 'sending',
-          created_at: new Date().toISOString()
-        })
-        
-        if (error) throw error
-
-        // Send messages via StarSender
-        const recipients = campaignData.recipients.map(studentId => {
-          const student = this.students.find(s => s.id === studentId)
-          return {
-            name: student.name,
-            phone: student.phone
-          }
-        })
-
-        const results = await starsenderService.sendCampaign(
-          recipients,
-          campaignData.message,
-          campaignData.delay_minutes
-        )
-
-        // Update campaign status
-        await db.updateCampaign(campaign[0].id, {
-          status: 'completed',
-          results: results,
-          completed_at: new Date().toISOString()
-        })
-
-        await this.fetchCampaigns()
-        return results
-      } catch (error) {
-        this.error = error.message
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
 
     // Webhook handling
     async handlePaymentWebhook(webhookData) {
@@ -310,6 +264,31 @@ export const useAppStore = defineStore('app', {
 
     clearError() {
       this.error = null
+    },
+
+    // Helper method to format errors properly
+    formatError(error) {
+      if (!error) return 'Unknown error occurred'
+
+      // Handle network errors
+      if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+        return 'Network connection failed. Please check your internet connection and try again.'
+      }
+
+      // Handle Supabase specific errors
+      if (error.message) {
+        return error.message
+      }
+
+      // Handle error objects
+      if (typeof error === 'object') {
+        if (error.error_description) return error.error_description
+        if (error.error) return error.error
+        return JSON.stringify(error, null, 2)
+      }
+
+      // Fallback
+      return error.toString()
     }
   }
 })

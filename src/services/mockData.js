@@ -77,7 +77,7 @@ const mockPaymentLinks = [
     description: 'Kas Bulanan Februari',
     status: 'pending',
     created_at: '2024-01-30T08:00:00Z',
-    student: { name: 'Azma Raudhatul Jannah', nickname: 'Azma' }
+    student: { name: 'Azma Raudhatul Jannah', nickname: 'Azma', phone: '+62 856-8500-062' }
   },
   {
     id: '2',
@@ -88,27 +88,11 @@ const mockPaymentLinks = [
     description: 'Kas Bulanan Februari',
     status: 'pending',
     created_at: '2024-01-30T08:30:00Z',
-    student: { name: 'Dizya Nayara Khanza Pujiarto', nickname: 'Dizya' }
+    student: { name: 'Dizya Nayara Khanza Pujiarto', nickname: 'Dizya', phone: '+62 812-8147-6276' }
   }
 ]
 
-const mockCampaigns = [
-  {
-    id: '1',
-    title: 'Pengingat Kas Februari',
-    message: 'Halo orang tua siswa, ini pengingat untuk pembayaran kas bulan Februari. Terima kasih.',
-    target: 'unpaid',
-    recipients: ['4', '5'],
-    delay_minutes: 2,
-    status: 'completed',
-    results: [
-      { recipient: 'Azma', phone: '+62 856-8500-062', success: true },
-      { recipient: 'Dizya', phone: '+62 812-8147-6276', success: true }
-    ],
-    created_at: '2024-01-30T09:00:00Z',
-    completed_at: '2024-01-30T09:05:00Z'
-  }
-]
+
 
 // Mock API responses
 export const mockDb = {
@@ -203,7 +187,7 @@ export const mockDb = {
     if (link.student_id) {
       const student = mockStudents.find(s => s.id === link.student_id)
       if (student) {
-        newLink.student = { name: student.name, nickname: student.nickname }
+        newLink.student = { name: student.name, nickname: student.nickname, phone: student.phone }
       }
     }
     mockPaymentLinks.push(newLink)
@@ -217,23 +201,14 @@ export const mockDb = {
     }
     return Promise.resolve({ data: null, error: { message: 'Payment link not found' } })
   },
-
-  getCampaigns: () => Promise.resolve({ data: mockCampaigns, error: null }),
-  addCampaign: (campaign) => {
-    const newCampaign = { 
-      ...campaign, 
-      id: String(mockCampaigns.length + 1), 
-      created_at: new Date().toISOString() 
-    }
-    mockCampaigns.push(newCampaign)
-    return Promise.resolve({ data: [newCampaign], error: null })
-  },
-  updateCampaign: (id, updates) => {
-    const index = mockCampaigns.findIndex(c => c.id === id)
+  deletePaymentLink: (id) => {
+    const index = mockPaymentLinks.findIndex(p => p.id === id)
     if (index !== -1) {
-      mockCampaigns[index] = { ...mockCampaigns[index], ...updates }
-      return Promise.resolve({ data: [mockCampaigns[index]], error: null })
+      const deleted = mockPaymentLinks.splice(index, 1)
+      return Promise.resolve({ data: deleted, error: null })
     }
-    return Promise.resolve({ data: null, error: { message: 'Campaign not found' } })
-  }
+    return Promise.resolve({ data: null, error: { message: 'Payment link not found' } })
+  },
+
+
 }

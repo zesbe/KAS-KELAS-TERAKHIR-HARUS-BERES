@@ -78,6 +78,12 @@
           </div>
 
           <div class="flex items-center space-x-2 sm:space-x-4">
+            <!-- Database status indicator -->
+            <div v-if="store.isUsingMockData" class="flex items-center space-x-1 px-2 py-1 bg-yellow-50 rounded-lg">
+              <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <span class="text-xs text-yellow-700 font-medium">Demo Mode</span>
+            </div>
+
             <!-- Balance indicator -->
             <div class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 bg-success-50 rounded-lg">
               <span class="text-xs sm:text-sm text-success-600 font-medium">Saldo:</span>
@@ -96,7 +102,7 @@
     </div>
 
     <!-- Error toast -->
-    <div v-if="store.error" class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50">
+    <div v-if="store.error && !store.isUsingMockData" class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50">
       <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
         <div class="flex items-start">
           <div class="flex-shrink-0">
@@ -123,6 +129,35 @@
         </div>
       </div>
     </div>
+
+    <!-- Demo mode notification -->
+    <div v-if="store.isUsingMockData" class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50">
+      <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <ExclamationTriangleIcon class="h-5 w-5 text-yellow-400" />
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-yellow-800">Demo Mode Active</h3>
+            <div class="mt-1 text-sm text-yellow-700">
+              <p>Using sample data. Database not configured yet.</p>
+              <router-link to="/settings" class="mt-2 inline-block font-medium underline hover:no-underline">
+                Setup Database
+              </router-link>
+            </div>
+          </div>
+          <div class="ml-auto pl-3">
+            <button
+              @click="store.isUsingMockData = false"
+              class="text-yellow-400 hover:text-yellow-600"
+            >
+              <span class="sr-only">Dismiss</span>
+              <XMarkIcon class="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -137,7 +172,6 @@ import {
   BanknotesIcon,
   ReceiptPercentIcon,
   CreditCardIcon,
-  SpeakerWaveIcon,
   DocumentChartBarIcon,
   CogIcon,
   ExclamationTriangleIcon
@@ -151,7 +185,6 @@ const navigation = [
   { name: 'Transactions', label: 'Transaksi Kas', href: '/transactions', icon: BanknotesIcon },
   { name: 'Expenses', label: 'Pengeluaran', href: '/expenses', icon: ReceiptPercentIcon },
   { name: 'Payments', label: 'Link Pembayaran', href: '/payments', icon: CreditCardIcon },
-  { name: 'Campaigns', label: 'Campaign Pesan', href: '/campaigns', icon: SpeakerWaveIcon },
   { name: 'Reports', label: 'Laporan', href: '/reports', icon: DocumentChartBarIcon },
   { name: 'Settings', label: 'Pengaturan', href: '/settings', icon: CogIcon }
 ]
@@ -178,13 +211,19 @@ onMounted(async () => {
       store.fetchStudents(),
       store.fetchTransactions(),
       store.fetchExpenses(),
-      store.fetchPaymentLinks(),
-      store.fetchCampaigns()
+      store.fetchPaymentLinks()
     ])
+
+    // If we're using mock data successfully, clear any errors
+    if (store.isUsingMockData && !store.error) {
+      console.log('Successfully loaded demo data')
+    }
   } catch (error) {
     console.error('Error loading initial data:', error)
-    // Clear the error in store to prevent showing failed fetch toast
-    store.clearError()
+    // If we're successfully using mock data, clear the error
+    if (store.isUsingMockData) {
+      store.clearError()
+    }
   }
 })
 </script>

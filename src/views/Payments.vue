@@ -142,6 +142,95 @@
       </div>
     </div>
 
+    <!-- Bulk WhatsApp Messaging -->
+    <div class="card p-4 sm:p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Kirim Pesan WhatsApp Massal</h3>
+
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+        <p class="text-sm text-yellow-800">
+          <strong>Catatan:</strong> Pengiriman pesan langsung dari browser mungkin diblokir oleh CORS policy.
+          Untuk production yang stabil, implementasikan API calls melalui backend server.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Target Pesan</label>
+          <select v-model="bulkMessage.target" class="input-field">
+            <option value="pending">Link Pembayaran Pending</option>
+            <option value="all">Semua Link Pembayaran</option>
+            <option value="selected">Pilih Manual</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Jeda Antar Pesan (menit)</label>
+          <input
+            v-model.number="bulkMessage.delayMinutes"
+            type="number"
+            min="1"
+            max="60"
+            class="input-field"
+            placeholder="1"
+          />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Template Pesan</label>
+          <select v-model="bulkMessage.template" class="input-field">
+            <option value="reminder">Pengingat Pembayaran</option>
+            <option value="custom">Pesan Kustom</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Custom Message Template -->
+      <div v-if="bulkMessage.template === 'custom'" class="mt-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan Kustom</label>
+        <textarea
+          v-model="bulkMessage.customMessage"
+          rows="4"
+          class="input-field"
+          placeholder="Tulis pesan kustom di sini..."
+        ></textarea>
+        <p class="text-sm text-gray-500 mt-1">
+          Gunakan {nama}, {jumlah}, {keterangan}, {link} untuk data dinamis
+        </p>
+      </div>
+
+      <!-- Payment Selection for Manual Target -->
+      <div v-if="bulkMessage.target === 'selected'" class="mt-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Link Pembayaran</label>
+        <div class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+          <label
+            v-for="payment in store.paymentLinks"
+            :key="payment.id"
+            class="flex items-center space-x-2 p-2 border rounded-lg hover:bg-gray-50"
+          >
+            <input
+              type="checkbox"
+              :value="payment.id"
+              v-model="bulkMessage.selectedPayments"
+              class="rounded"
+            />
+            <span class="text-sm">{{ payment.student?.name }} - {{ formatCurrency(payment.amount) }} - {{ payment.description }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+        <div class="text-sm text-gray-600">
+          <span class="font-medium">{{ getTargetPayments().length }}</span> pesan akan dikirim
+        </div>
+        <button
+          @click="sendBulkMessages"
+          :disabled="sending || getTargetPayments().length === 0"
+          class="btn-primary"
+        >
+          {{ sending ? 'Mengirim...' : 'Kirim Pesan WhatsApp' }}
+        </button>
+      </div>
+    </div>
+
     <!-- Payments Table -->
     <div class="card p-4 sm:p-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
@@ -453,6 +542,80 @@
         </div>
       </div>
     </div>
+
+    <!-- CORS Error Modal -->
+    <div
+      v-if="showCorsErrorModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    >
+      <div class="bg-white rounded-lg max-w-md w-full mx-4 p-4 sm:p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Tidak Dapat Mengirim Pesan</h3>
+
+        <div class="space-y-4">
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <p class="text-sm text-yellow-800">
+              <strong>CORS Error:</strong> Browser memblokir API call langsung ke StarSender.
+              Untuk production, implementasikan API calls melalui backend server.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Pesan untuk {{ corsErrorData.studentName }}:</label>
+            <textarea
+              :value="corsErrorData.message"
+              readonly
+              rows="6"
+              class="input-field text-xs"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nomor WhatsApp:</label>
+            <div class="flex items-center space-x-2">
+              <input
+                :value="corsErrorData.phone"
+                readonly
+                class="input-field text-sm"
+              />
+              <button
+                @click="copyToClipboard(corsErrorData.phone)"
+                class="btn-secondary p-2"
+                title="Copy nomor"
+              >
+                <DocumentDuplicateIcon class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p class="text-sm text-blue-800">
+              <strong>Alternatif:</strong> Copy pesan dan nomor di atas, lalu kirim manual melalui WhatsApp Web atau aplikasi WhatsApp.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex justify-between space-x-3 pt-4">
+          <button
+            @click="copyMessageAndNumber"
+            class="btn-primary flex-1"
+          >
+            Copy Pesan & Nomor
+          </button>
+          <button
+            @click="openWhatsAppWeb"
+            class="btn-success flex-1"
+          >
+            Buka WhatsApp Web
+          </button>
+          <button
+            @click="showCorsErrorModal = false"
+            class="btn-secondary"
+          >
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -500,6 +663,22 @@ const singleLink = reactive({
   description: ''
 })
 
+const bulkMessage = reactive({
+  target: 'pending',
+  delayMinutes: 1,
+  template: 'reminder',
+  customMessage: '',
+  selectedPayments: []
+})
+
+const sending = ref(false)
+const showCorsErrorModal = ref(false)
+const corsErrorData = ref({
+  phone: '',
+  message: '',
+  studentName: ''
+})
+
 const pendingPayments = computed(() => {
   return store.paymentLinks.filter(p => p.status === 'pending')
 })
@@ -514,13 +693,15 @@ const totalCollected = computed(() => {
 
 const filteredPayments = computed(() => {
   let payments = [...store.paymentLinks]
-  
+
   if (statusFilter.value) {
     payments = payments.filter(p => p.status === statusFilter.value)
   }
-  
+
   return payments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 })
+
+
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {
@@ -645,11 +826,22 @@ Terima kasih!
 _Kas Kelas 1B SD Islam Al Husna_`
 
     await starsenderService.sendMessage(payment.student?.phone, message)
-    
+
     toast.success('Pesan berhasil dikirim')
     showPreviewModal.value = false
   } catch (error) {
-    toast.error('Gagal mengirim pesan')
+    if (error.message.includes('CORS Error')) {
+      toast.error('CORS Error: Tidak dapat mengirim pesan langsung dari browser. Gunakan backend server untuk production.')
+      // Show alternative action
+      showCorsErrorModal.value = true
+      corsErrorData.value = {
+        phone: payment.student?.phone,
+        message: message,
+        studentName: payment.student?.name
+      }
+    } else {
+      toast.error('Gagal mengirim pesan: ' + error.message)
+    }
     console.error('Error sending WhatsApp message:', error)
   }
 }
@@ -707,6 +899,124 @@ const copyToClipboard = async (text) => {
     toast.success('Berhasil disalin')
   } catch (error) {
     toast.error('Gagal menyalin')
+  }
+}
+
+const copyMessageAndNumber = async () => {
+  const text = `Nomor: ${corsErrorData.value.phone}\n\nPesan:\n${corsErrorData.value.message}`
+  try {
+    await navigator.clipboard.writeText(text)
+    toast.success('Pesan dan nomor berhasil disalin!')
+  } catch (error) {
+    toast.error('Gagal menyalin')
+  }
+}
+
+const openWhatsAppWeb = () => {
+  const phone = corsErrorData.value.phone.replace(/[^\d]/g, '') // Remove non-digits
+  const message = encodeURIComponent(corsErrorData.value.message)
+  const whatsappUrl = `https://web.whatsapp.com/send?phone=${phone}&text=${message}`
+  window.open(whatsappUrl, '_blank')
+  toast.info('WhatsApp Web dibuka di tab baru')
+}
+
+const getTargetPayments = () => {
+  if (bulkMessage.target === 'pending') {
+    return store.paymentLinks.filter(p => p.status === 'pending')
+  } else if (bulkMessage.target === 'all') {
+    return store.paymentLinks
+  } else if (bulkMessage.target === 'selected') {
+    return store.paymentLinks.filter(p => bulkMessage.selectedPayments.includes(p.id))
+  }
+  return []
+}
+
+const generateMessageTemplate = (payment) => {
+  if (bulkMessage.template === 'custom') {
+    return bulkMessage.customMessage
+      .replace('{nama}', payment.student?.name || '')
+      .replace('{jumlah}', formatCurrency(payment.amount))
+      .replace('{keterangan}', payment.description)
+      .replace('{link}', payment.payment_url)
+  }
+
+  // Default reminder template
+  return `Halo ${payment.student?.name} (${payment.student?.nickname}),
+
+Silakan lakukan pembayaran kas kelas dengan detail berikut:
+
+💰 Jumlah: ${formatCurrency(payment.amount)}
+📝 Keterangan: ${payment.description}
+🆔 Order ID: ${payment.order_id}
+
+🔗 Link Pembayaran:
+${payment.payment_url}
+
+Terima kasih!
+
+_Kas Kelas 1B SD Islam Al Husna_`
+}
+
+const sendBulkMessages = async () => {
+  try {
+    sending.value = true
+    const targetPayments = getTargetPayments()
+
+    if (targetPayments.length === 0) {
+      toast.error('Tidak ada pembayaran yang dipilih')
+      return
+    }
+
+    const results = []
+    const delay = bulkMessage.delayMinutes * 60 * 1000 // Convert to milliseconds
+
+    for (let i = 0; i < targetPayments.length; i++) {
+      const payment = targetPayments[i]
+
+      try {
+        if (i > 0) {
+          // Add delay between messages
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
+
+        const message = generateMessageTemplate(payment)
+        await starsenderService.sendMessage(payment.student?.phone, message)
+
+        results.push({
+          recipient: payment.student?.name,
+          phone: payment.student?.phone,
+          success: true
+        })
+
+        toast.success(`Pesan berhasil dikirim ke ${payment.student?.name}`)
+      } catch (error) {
+        results.push({
+          recipient: payment.student?.name,
+          phone: payment.student?.phone,
+          success: false,
+          error: error.message
+        })
+
+        if (error.message.includes('CORS Error')) {
+          toast.error(`CORS Error: Tidak dapat mengirim ke ${payment.student?.name}. Gunakan backend server untuk production.`)
+        } else {
+          toast.error(`Gagal mengirim pesan ke ${payment.student?.name}: ${error.message}`)
+        }
+      }
+    }
+
+    const successCount = results.filter(r => r.success).length
+    const failCount = results.filter(r => !r.success).length
+
+    toast.success(`Selesai! ${successCount} pesan berhasil dikirim${failCount > 0 ? `, ${failCount} gagal` : ''}`)
+
+    // Reset form
+    bulkMessage.selectedPayments = []
+  } catch (error) {
+    toast.error('Gagal mengirim pesan massal')
+    console.error('Error sending bulk messages:', error)
+  } finally {
+    sending.value = false
   }
 }
 </script>

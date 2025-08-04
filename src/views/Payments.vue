@@ -614,9 +614,7 @@ const filteredPayments = computed(() => {
   return payments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 })
 
-const isDevelopmentMode = computed(() => {
-  return import.meta.env.DEV
-})
+
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {

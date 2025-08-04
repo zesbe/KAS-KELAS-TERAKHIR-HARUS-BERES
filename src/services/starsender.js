@@ -8,6 +8,29 @@ class StarSenderService {
     this.accountApiKey = import.meta.env.VITE_STARSENDER_ACCOUNT_API_KEY
   }
 
+  // Format phone number for StarSender API (62xxx format)
+  formatPhoneNumber(phone) {
+    if (!phone) return null
+
+    // Remove all non-digit characters except +
+    let cleaned = phone.replace(/[^\d+]/g, '')
+
+    // Remove leading + or 0
+    if (cleaned.startsWith('+')) {
+      cleaned = cleaned.substring(1)
+    }
+    if (cleaned.startsWith('0')) {
+      cleaned = '62' + cleaned.substring(1)
+    }
+
+    // Ensure it starts with 62 for Indonesia
+    if (!cleaned.startsWith('62')) {
+      cleaned = '62' + cleaned
+    }
+
+    return cleaned
+  }
+
   // Test API key validity without making actual requests
   testConnection() {
     const hasDeviceKey = this.deviceApiKey && this.deviceApiKey !== 'your-device-api-key'

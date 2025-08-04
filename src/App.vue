@@ -16,13 +16,13 @@
     >
       <div class="flex flex-col h-full">
         <!-- Logo -->
-        <div class="flex items-center px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center px-4 sm:px-6 py-4 border-b border-gray-200">
           <div class="flex items-center">
             <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
               <span class="text-white font-bold text-sm">K</span>
             </div>
             <div class="ml-3">
-              <h1 class="text-lg font-semibold text-gray-900">Kas Kelas 1B</h1>
+              <h1 class="text-base sm:text-lg font-semibold text-gray-900">Kas Kelas 1B</h1>
               <p class="text-xs text-gray-500">SD Islam Al Husna</p>
             </div>
           </div>
@@ -65,23 +65,23 @@
       <!-- Top bar -->
       <header class="bg-white shadow-sm border-b border-gray-200">
         <div class="flex items-center justify-between px-4 py-3">
-          <div class="flex items-center">
+          <div class="flex items-center min-w-0 flex-1">
             <button
               @click="store.toggleSidebar()"
-              class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+              class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 mr-2"
             >
               <Bars3Icon class="w-6 h-6" />
             </button>
-            <h2 class="ml-2 lg:ml-0 text-xl font-semibold text-gray-900">
+            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 truncate">
               {{ $route.meta.title || 'Dashboard' }}
             </h2>
           </div>
-          
-          <div class="flex items-center space-x-4">
+
+          <div class="flex items-center space-x-2 sm:space-x-4">
             <!-- Balance indicator -->
-            <div class="hidden sm:flex items-center space-x-2 px-3 py-1 bg-success-50 rounded-lg">
-              <span class="text-sm text-success-600 font-medium">Saldo:</span>
-              <span class="text-sm font-semibold text-success-700">
+            <div class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 bg-success-50 rounded-lg">
+              <span class="text-xs sm:text-sm text-success-600 font-medium">Saldo:</span>
+              <span class="text-xs sm:text-sm font-semibold text-success-700">
                 {{ formatCurrency(store.currentBalance) }}
               </span>
             </div>
@@ -90,14 +90,14 @@
       </header>
 
       <!-- Page content -->
-      <main class="p-4 lg:p-6">
+      <main class="p-4 sm:p-6">
         <router-view />
       </main>
     </div>
 
     <!-- Error toast -->
-    <div v-if="store.error" class="fixed bottom-4 right-4 z-50">
-      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-md">
+    <div v-if="store.error" class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50">
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
         <div class="flex items-start">
           <div class="flex-shrink-0">
             <ExclamationTriangleIcon class="h-5 w-5 text-red-400" />

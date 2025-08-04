@@ -77,7 +77,7 @@ const mockPaymentLinks = [
     description: 'Kas Bulanan Februari',
     status: 'pending',
     created_at: '2024-01-30T08:00:00Z',
-    student: { name: 'Azma Raudhatul Jannah', nickname: 'Azma' }
+    student: { name: 'Azma Raudhatul Jannah', nickname: 'Azma', phone: '+62 856-8500-062' }
   },
   {
     id: '2',

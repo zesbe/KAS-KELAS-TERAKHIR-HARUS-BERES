@@ -429,13 +429,8 @@ const form = reactive({
   startMonth: new Date().getMonth() + 1,
   year: new Date().getFullYear(),
   months: 6,
-  monthlyAmount: 25000,
-  discountType: 'none',
-  discountValue: 0
+  monthlyAmount: 25000
 })
-
-const calculatedDiscount = ref(0)
-const calculatedTotal = ref(0)
 
 // Sample data for demo
 const multiMonthPayments = ref([

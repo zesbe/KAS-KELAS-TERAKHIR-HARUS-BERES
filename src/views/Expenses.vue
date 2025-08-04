@@ -309,7 +309,8 @@ import {
   ReceiptPercentIcon,
   ClockIcon,
   CheckCircleIcon,
-  BanknotesIcon
+  BanknotesIcon,
+  DocumentArrowDownIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()

@@ -347,26 +347,7 @@ const reportData = reactive({
   detailedTransactions: []
 })
 
-const paymentMethods = computed(() => {
-  const methods = {}
-  const total = store.transactions.length
 
-  store.transactions.forEach(t => {
-    const method = t.payment_method || 'Manual'
-    if (!methods[method]) {
-      methods[method] = { count: 0, name: method }
-    }
-    methods[method].count++
-  })
-
-  const colors = ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-purple-500']
-  
-  return Object.values(methods).map((method, index) => ({
-    ...method,
-    percentage: total > 0 ? Math.round((method.count / total) * 100) : 0,
-    color: colors[index % colors.length]
-  }))
-})
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {

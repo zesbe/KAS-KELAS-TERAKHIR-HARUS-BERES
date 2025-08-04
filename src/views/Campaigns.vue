@@ -838,11 +838,18 @@ const editCampaign = (campaign) => {
 
 const deleteCampaign = async (campaignId) => {
   if (!confirm('Yakin ingin menghapus campaign ini?')) return
-  
-  const index = campaigns.value.findIndex(c => c.id === campaignId)
-  if (index !== -1) {
-    campaigns.value.splice(index, 1)
-    toast.success('Campaign berhasil dihapus')
+
+  try {
+    await campaignService.deleteCampaign(campaignId)
+
+    const index = campaigns.value.findIndex(c => c.id === campaignId)
+    if (index !== -1) {
+      campaigns.value.splice(index, 1)
+      toast.success('Campaign berhasil dihapus')
+    }
+  } catch (error) {
+    console.error('Error deleting campaign:', error)
+    toast.error('Gagal menghapus campaign')
   }
 }
 

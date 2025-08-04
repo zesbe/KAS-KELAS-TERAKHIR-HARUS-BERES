@@ -144,13 +144,7 @@
 
     <!-- Bulk WhatsApp Messaging -->
     <div class="card p-4 sm:p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-gray-900">Kirim Pesan WhatsApp Massal</h3>
-        <div v-if="isDevelopmentMode" class="flex items-center space-x-2 px-3 py-1 bg-blue-50 rounded-lg">
-          <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
-          <span class="text-xs text-blue-700 font-medium">Demo Mode</span>
-        </div>
-      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Kirim Pesan WhatsApp Massal</h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Target Pesan</label>

@@ -70,9 +70,10 @@ class StarSenderService {
   // Send single message
   async sendMessage(number, message) {
     try {
+      console.log('SendMessage called with number:', number, 'type:', typeof number)
       const formattedNumber = this.formatPhoneNumber(number)
       if (!formattedNumber) {
-        throw new Error('Invalid phone number format')
+        throw new Error(`Invalid phone number format. Original: "${number}", Type: ${typeof number}`)
       }
 
       const response = await axios.post(

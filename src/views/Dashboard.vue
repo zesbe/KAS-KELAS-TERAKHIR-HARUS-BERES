@@ -269,6 +269,14 @@ const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL &&
   !import.meta.env.VITE_SUPABASE_URL.includes('your-project') &&
   !import.meta.env.VITE_SUPABASE_ANON_KEY.includes('your-anon-key')
 
+// Check if database setup is needed (no data loaded despite being configured)
+const needsDatabaseSetup = computed(() => {
+  return isSupabaseConfigured &&
+    store.students.length === 0 &&
+    store.transactions.length === 0 &&
+    store.expenses.length === 0
+})
+
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',

@@ -259,54 +259,7 @@
             />
           </div>
 
-          <!-- Discount Options -->
-          <div class="bg-blue-50 p-4 rounded-lg">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Diskon Multi-Bulan</label>
-            <div class="space-y-2">
-              <label class="flex items-center">
-                <input 
-                  type="radio" 
-                  v-model="form.discountType" 
-                  value="none" 
-                  @change="calculateTotal"
-                  class="mr-2"
-                />
-                <span class="text-sm">Tidak ada diskon</span>
-              </label>
-              <label class="flex items-center">
-                <input 
-                  type="radio" 
-                  v-model="form.discountType" 
-                  value="percentage" 
-                  @change="calculateTotal"
-                  class="mr-2"
-                />
-                <span class="text-sm">Diskon persentase</span>
-              </label>
-              <label class="flex items-center">
-                <input 
-                  type="radio" 
-                  v-model="form.discountType" 
-                  value="fixed" 
-                  @change="calculateTotal"
-                  class="mr-2"
-                />
-                <span class="text-sm">Diskon nominal</span>
-              </label>
-            </div>
-            
-            <div v-if="form.discountType !== 'none'" class="mt-2">
-              <input 
-                v-model.number="form.discountValue"
-                type="number" 
-                :min="1"
-                :max="form.discountType === 'percentage' ? 50 : 100000"
-                class="input-field"
-                @input="calculateTotal"
-                :placeholder="form.discountType === 'percentage' ? 'Contoh: 10 (untuk 10%)' : 'Contoh: 25000'"
-              />
-            </div>
-          </div>
+
 
           <!-- Summary -->
           <div class="bg-gray-50 p-4 rounded-lg">

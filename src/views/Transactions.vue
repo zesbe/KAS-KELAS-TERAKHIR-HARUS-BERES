@@ -18,7 +18,7 @@
 
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-      <div class="card p-6">
+      <div class="card p-4 sm:p-6">
         <div class="flex items-center">
           <div class="p-2 bg-success-100 rounded-lg">
             <BanknotesIcon class="w-6 h-6 text-success-600" />
@@ -32,7 +32,7 @@
         </div>
       </div>
 
-      <div class="card p-6">
+      <div class="card p-4 sm:p-6">
         <div class="flex items-center">
           <div class="p-2 bg-warning-100 rounded-lg">
             <ClockIcon class="w-6 h-6 text-warning-600" />
@@ -46,7 +46,7 @@
         </div>
       </div>
 
-      <div class="card p-6">
+      <div class="card p-4 sm:p-6">
         <div class="flex items-center">
           <div class="p-2 bg-primary-100 rounded-lg">
             <UsersIcon class="w-6 h-6 text-primary-600" />

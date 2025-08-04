@@ -292,6 +292,17 @@ const defaultStudents = [
   { name: 'Dizya Nayara Khanza Pujiarto', nickname: 'Dizya', phone: '+62 812-8147-6276' }
 ]
 
+const checkEdgeFunctionStatus = async () => {
+  try {
+    const status = await starsenderService.checkEdgeFunctionStatus()
+    edgeFunctionStatus.available = status.available
+    edgeFunctionStatus.message = status.message
+  } catch (error) {
+    edgeFunctionStatus.available = false
+    edgeFunctionStatus.message = `Error: ${error.message}`
+  }
+}
+
 const testStarSender = async () => {
   try {
     testing.starsender = true
@@ -302,9 +313,14 @@ const testStarSender = async () => {
       toast.success('StarSender proxy connection successful!')
     } catch (proxyError) {
       console.warn('Proxy test failed, trying direct connection:', proxyError)
-      // Fallback to direct test
-      await starsenderService.testConnectionSafe()
-      toast.success('StarSender configuration is valid! (Direct connection)')
+
+      if (proxyError.message.includes('not deployed')) {
+        toast.error('Edge Function not deployed. Please deploy starsender-proxy first.')
+      } else {
+        // Fallback to direct test
+        await starsenderService.testConnectionSafe()
+        toast.success('StarSender configuration is valid! (Direct connection)')
+      }
     }
   } catch (error) {
     toast.error(`StarSender test failed: ${error.message}`)

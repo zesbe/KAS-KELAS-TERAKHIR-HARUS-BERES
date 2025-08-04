@@ -622,6 +622,6 @@ const sendPaymentReminder = (payment) => {
 }
 
 onMounted(() => {
-  calculateTotal()
+  // Component initialization
 })
 </script>

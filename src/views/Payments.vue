@@ -990,7 +990,11 @@ const sendBulkMessages = async () => {
           error: error.message
         })
 
-        toast.error(`Gagal mengirim pesan ke ${payment.student?.name}: ${error.message}`)
+        if (error.message.includes('CORS Error')) {
+          toast.error(`CORS Error: Tidak dapat mengirim ke ${payment.student?.name}. Gunakan backend server untuk production.`)
+        } else {
+          toast.error(`Gagal mengirim pesan ke ${payment.student?.name}: ${error.message}`)
+        }
       }
     }
 

@@ -85,7 +85,7 @@ class StarSenderService {
       console.error('Error sending message:', error)
 
       if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
-        throw new Error('Network error: Unable to send message via StarSender API')
+        throw new Error('CORS Error: Direct API calls blocked by browser security. For production, implement StarSender calls through your backend server.')
       } else if (error.response?.status === 401) {
         throw new Error('StarSender API: Invalid device API key')
       } else if (error.response?.status === 429) {

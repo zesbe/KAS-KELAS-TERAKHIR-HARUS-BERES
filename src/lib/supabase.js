@@ -124,12 +124,18 @@ export const db = {
     mockDb.updateCampaign(id, updates),
 
   // Payment links
-  getPaymentLinks: () => isSupabaseConfigured ?
-    supabase.from('payment_links').select(`
-      *,
-      student:students(name, nickname)
-    `).order('created_at', { ascending: false }) :
-    mockDb.getPaymentLinks(),
+  getPaymentLinks: async () => {
+    if (!isSupabaseConfigured) return mockDb.getPaymentLinks()
+    try {
+      return await supabase.from('payment_links').select(`
+        *,
+        student:students(name, nickname)
+      `).order('created_at', { ascending: false })
+    } catch (error) {
+      console.warn('Falling back to mock data due to error:', error.message)
+      return mockDb.getPaymentLinks()
+    }
+  },
   addPaymentLink: (link) => isSupabaseConfigured ?
     supabase.from('payment_links').insert(link) :
     mockDb.addPaymentLink(link),

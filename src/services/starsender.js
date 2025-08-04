@@ -150,21 +150,14 @@ class StarSenderService {
       // First validate the configuration
       const configTest = this.testConnection()
 
-      const isDev = import.meta.env.DEV
-
       // Return a simulated successful response
       return {
         success: true,
-        message: isDev
-          ? 'StarSender configuration is valid. Running in development mode with simulated API calls.'
-          : 'StarSender configuration is valid. API keys are properly formatted.',
-        note: isDev
-          ? 'Development mode: Messages will be simulated to avoid CORS issues.'
-          : 'Actual API connectivity will be tested when sending messages.',
+        message: 'StarSender configuration is valid. API keys are properly formatted.',
+        note: 'Actual API connectivity will be tested when sending messages.',
         config: configTest,
-        developmentMode: isDev,
-        developmentNote: isDev ? 'All API calls are simulated in development mode.' : 'CORS policy prevents direct API testing from browser.',
-        productionRecommendation: 'For production: Implement StarSender calls through your backend server for better security and to avoid CORS issues.'
+        developmentNote: 'CORS policy prevents direct API testing from browser. In production, use backend proxy.',
+        productionRecommendation: 'Implement StarSender calls through your backend server for better security and to avoid CORS issues.'
       }
     } catch (error) {
       throw error

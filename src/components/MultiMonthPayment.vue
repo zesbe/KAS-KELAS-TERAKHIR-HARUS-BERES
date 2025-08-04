@@ -255,7 +255,7 @@
               required
               class="input-field"
               @input="calculateTotal"
-              placeholder="25000"
+              placeholder="50000"
             />
           </div>
 

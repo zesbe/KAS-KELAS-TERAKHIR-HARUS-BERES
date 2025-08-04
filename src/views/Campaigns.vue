@@ -681,7 +681,7 @@ const loadData = async () => {
     loading.value = true
 
     // Load students
-    await store.loadStudents()
+    await store.fetchStudents()
     students.value = store.students
 
     // Load campaigns from database/storage

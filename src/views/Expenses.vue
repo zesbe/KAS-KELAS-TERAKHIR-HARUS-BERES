@@ -610,4 +610,19 @@ const exportFiltered = () => {
   showExportMenu.value = false
   toast.success('Data pengeluaran terfilter berhasil di-export')
 }
+
+// Close export menu when clicking outside
+const handleClickOutside = (event) => {
+  if (showExportMenu.value && !event.target.closest('.relative')) {
+    showExportMenu.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>

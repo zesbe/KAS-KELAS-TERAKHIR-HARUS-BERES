@@ -239,7 +239,8 @@ import {
   CreditCardIcon,
   UsersIcon,
   SpeakerWaveIcon,
-  DocumentChartBarIcon
+  DocumentChartBarIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()

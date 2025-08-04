@@ -123,11 +123,15 @@ class StarSenderService {
       })
 
       if (error) {
+        // Check if Edge Function doesn't exist
+        if (error.message?.includes('Failed to send a request to the Edge Function')) {
+          throw new Error('Edge Function "starsender-proxy" not deployed. Please deploy it first: supabase functions deploy starsender-proxy')
+        }
         throw new Error(`Supabase proxy error: ${error.message}`)
       }
 
-      if (!data.success) {
-        throw new Error(`StarSender API error: ${data.status} - ${data.data?.message || 'Unknown error'}`)
+      if (!data?.success) {
+        throw new Error(`StarSender API error: ${data?.status || 'Unknown'} - ${data?.data?.message || 'Unknown error'}`)
       }
 
       return data.data

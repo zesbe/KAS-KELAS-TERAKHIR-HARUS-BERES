@@ -187,6 +187,7 @@ import {
   ReceiptPercentIcon,
   CreditCardIcon,
   DocumentChartBarIcon,
+  MegaphoneIcon,
   CogIcon,
   ExclamationTriangleIcon,
   ArrowRightOnRectangleIcon

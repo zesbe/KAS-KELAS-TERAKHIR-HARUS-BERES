@@ -7,13 +7,31 @@
         <p class="text-sm text-gray-500 mt-1">Kelola semua pengeluaran kas kelas</p>
       </div>
       <div class="flex space-x-3">
-        <button
-          @click="exportExpenses"
-          class="btn-secondary"
-        >
-          <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-          Export CSV
-        </button>
+        <div class="relative">
+          <button
+            @click="showExportMenu = !showExportMenu"
+            class="btn-secondary"
+          >
+            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+            Export Data
+            <ChevronDownIcon class="w-4 h-4 ml-1" />
+          </button>
+
+          <!-- Export dropdown menu -->
+          <div v-if="showExportMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+            <div class="py-1">
+              <button @click="exportExpenses" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                Export Pengeluaran
+              </button>
+              <button @click="exportByCategory" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                Export per Kategori
+              </button>
+              <button @click="exportFiltered" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                Export Data Terfilter
+              </button>
+            </div>
+          </div>
+        </div>
         <button
           @click="showAddModal = true"
           class="btn-primary"

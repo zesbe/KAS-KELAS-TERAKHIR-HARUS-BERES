@@ -63,10 +63,11 @@ curl -i --location --request POST 'https://YOUR_PROJECT_REF.supabase.co/function
 {
   "action": "send|check-number",
   "number": "628123456789",
-  "message": "Your message here", // Required for 'send' action
-  "apiKey": "your-device-api-key"
+  "message": "Your message here" // Required for 'send' action
 }
 ```
+
+**Note:** API key is stored as environment variable `STARSENDER_DEVICE_API_KEY` in the Edge Function, not sent in request body for security.
 
 ### Response Format
 ```json

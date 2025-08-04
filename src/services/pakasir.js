@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const PROJECT_SLUG = 'uangkasalhusna'
+const PROJECT_SLUG = 'uang-kas-kelas-1-ibnu-sina'
 const API_KEY = 'u8e0CphRmRVuNwDyqnfNoeOwHa6UBpLg'
 const BASE_URL = 'https://pakasir.zone.id'
 const REDIRECT_URL = 'https://berbagiakun.com'

@@ -94,35 +94,37 @@ export const db = {
       () => mockDb.getStudents()
     )
   },
-  addStudent: (student) => isSupabaseConfigured ?
-    supabase.from('students').insert(student) :
-    mockDb.addStudent(student),
-  updateStudent: (id, updates) => isSupabaseConfigured ?
-    supabase.from('students').update(updates).eq('id', id) :
-    mockDb.updateStudent(id, updates),
-  deleteStudent: (id) => isSupabaseConfigured ?
-    supabase.from('students').delete().eq('id', id) :
-    mockDb.deleteStudent(id),
+  addStudent: (student) => safeSupabaseOperation(
+    () => supabase.from('students').insert(student),
+    () => mockDb.addStudent(student)
+  ),
+  updateStudent: (id, updates) => safeSupabaseOperation(
+    () => supabase.from('students').update(updates).eq('id', id),
+    () => mockDb.updateStudent(id, updates)
+  ),
+  deleteStudent: (id) => safeSupabaseOperation(
+    () => supabase.from('students').delete().eq('id', id),
+    () => mockDb.deleteStudent(id)
+  ),
 
   // Transactions (kas masuk/keluar)
   getTransactions: async () => {
-    if (!isSupabaseConfigured) return mockDb.getTransactions()
-    try {
-      return await supabase.from('transactions').select(`
+    return safeSupabaseOperation(
+      () => supabase.from('transactions').select(`
         *,
         student:students(name, nickname)
-      `).order('created_at', { ascending: false })
-    } catch (error) {
-      console.warn('Falling back to mock data due to error:', error.message)
-      return mockDb.getTransactions()
-    }
+      `).order('created_at', { ascending: false }),
+      () => mockDb.getTransactions()
+    )
   },
-  addTransaction: (transaction) => isSupabaseConfigured ?
-    supabase.from('transactions').insert(transaction) :
-    mockDb.addTransaction(transaction),
-  updateTransaction: (id, updates) => isSupabaseConfigured ?
-    supabase.from('transactions').update(updates).eq('id', id) :
-    mockDb.updateTransaction(id, updates),
+  addTransaction: (transaction) => safeSupabaseOperation(
+    () => supabase.from('transactions').insert(transaction),
+    () => mockDb.addTransaction(transaction)
+  ),
+  updateTransaction: (id, updates) => safeSupabaseOperation(
+    () => supabase.from('transactions').update(updates).eq('id', id),
+    () => mockDb.updateTransaction(id, updates)
+  ),
 
 
 

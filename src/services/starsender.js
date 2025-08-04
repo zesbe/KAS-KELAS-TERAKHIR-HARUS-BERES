@@ -69,11 +69,6 @@ class StarSenderService {
         throw new Error(`Invalid phone number format: "${number}"`)
       }
 
-      // In development mode, simulate the API call to avoid CORS issues
-      if (import.meta.env.DEV) {
-        return this.simulateMessageSend(formattedNumber, message)
-      }
-
       const response = await axios.post(
         `${BASE_URL}/api/send`,
         { number: formattedNumber, message },
@@ -90,7 +85,7 @@ class StarSenderService {
       console.error('Error sending message:', error)
 
       if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
-        throw new Error('CORS Error: Cannot send messages directly from browser. In production, use a backend server to proxy StarSender API calls.')
+        throw new Error('Network error: Unable to send message via StarSender API')
       } else if (error.response?.status === 401) {
         throw new Error('StarSender API: Invalid device API key')
       } else if (error.response?.status === 429) {
@@ -100,22 +95,6 @@ class StarSenderService {
       }
       throw error
     }
-  }
-
-  // Simulate message sending for development
-  simulateMessageSend(number, message) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log(`[DEV MODE] Simulated WhatsApp message sent to ${number}:`, message)
-        resolve({
-          success: true,
-          message: 'Message sent successfully (simulated)',
-          number: number,
-          timestamp: new Date().toISOString(),
-          simulation: true
-        })
-      }, 1000) // Simulate 1 second delay
-    })
   }
 
   // Send message to group

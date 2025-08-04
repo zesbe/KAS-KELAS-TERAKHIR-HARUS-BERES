@@ -886,7 +886,8 @@ const executeEnhancedCampaign = async (campaign, paymentConfig = null) => {
 
   } catch (error) {
     console.error('Error executing enhanced campaign:', error)
-    toast.error(`Gagal menjalankan campaign: ${error.message}`)
+    const errorMessage = error?.message || error?.toString() || 'Terjadi kesalahan saat menjalankan enhanced campaign'
+    toast.error(`Gagal menjalankan campaign: ${errorMessage}`)
 
     // Update campaign status to failed
     campaign.status = 'failed'

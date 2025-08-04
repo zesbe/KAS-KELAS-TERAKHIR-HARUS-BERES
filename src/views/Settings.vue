@@ -2,15 +2,15 @@
   <div class="space-y-6">
     <!-- Header -->
     <div>
-      <h1 class="text-2xl font-semibold text-gray-900">Pengaturan</h1>
+      <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Pengaturan</h1>
       <p class="text-sm text-gray-500 mt-1">Kelola pengaturan sistem dan konfigurasi</p>
     </div>
 
     <!-- API Configuration -->
-    <div class="card p-6">
+    <div class="card p-4 sm:p-6">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Konfigurasi API</h3>
-      
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <!-- StarSender Configuration -->
         <div class="space-y-4">
           <h4 class="font-medium text-gray-900">StarSender WhatsApp API</h4>
@@ -31,9 +31,9 @@
                 class="input-field flex-1"
                 placeholder="Masukkan Device API Key"
               />
-              <button 
+              <button
                 @click="showKeys.device = !showKeys.device"
-                class="btn-secondary p-2"
+                class="btn-secondary p-2 flex-shrink-0"
               >
                 <EyeIcon v-if="!showKeys.device" class="w-4 h-4" />
                 <EyeSlashIcon v-else class="w-4 h-4" />

@@ -173,6 +173,15 @@
                   {{ getStatusLabel(expense.status) }}
                 </span>
               </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <div v-if="expense.status === 'approved'">
+                  <div class="font-medium">{{ expense.approved_by || 'Admin' }}</div>
+                  <div class="text-xs text-gray-400">
+                    {{ expense.approved_at ? formatDate(expense.approved_at) : '' }}
+                  </div>
+                </div>
+                <span v-else class="text-gray-400">-</span>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center space-x-2">
                   <button 

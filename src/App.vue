@@ -31,7 +31,7 @@
         <!-- Navigation -->
         <nav class="flex-1 px-4 py-4 space-y-1">
           <router-link
-            v-for="item in navigation"
+            v-for="item in filteredNavigation"
             :key="item.name"
             :to="item.href"
             @click="closeMobileSidebar"

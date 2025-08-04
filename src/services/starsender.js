@@ -5,7 +5,6 @@ const BASE_URL = 'https://api.starsender.online'
 class StarSenderService {
   constructor() {
     this.deviceApiKey = import.meta.env.VITE_STARSENDER_DEVICE_API_KEY
-    this.accountApiKey = import.meta.env.VITE_STARSENDER_ACCOUNT_API_KEY
   }
 
   // Format phone number for StarSender API (62xxx format)

@@ -167,7 +167,12 @@ class StarSenderService {
 
       // Gunakan Supabase proxy jika tersedia
       if (USE_SUPABASE_PROXY && supabase) {
-        return await this.checkNumberViaProxy(formattedNumber)
+        try {
+          return await this.checkNumberViaProxy(formattedNumber)
+        } catch (proxyError) {
+          console.warn('Edge Function failed, falling back to direct API:', proxyError.message)
+          // Fall through to direct API call
+        }
       }
 
       // Fallback ke direct API call

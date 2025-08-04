@@ -631,9 +631,37 @@ const getUnpaidStudents = () => {
 const getPaidStudents = () => {
   // Filter students yang sudah bayar
   return students.value.filter(student => {
-    // Logic untuk determine paid students  
+    // Logic untuk determine paid students
     return false // Placeholder
   })
+}
+
+// Template methods
+const applyTemplate = () => {
+  if (!selectedTemplate.value || selectedTemplate.value === 'custom') {
+    return
+  }
+
+  const templates = enhancedCampaignService.getMessageTemplates()
+  const template = templates[selectedTemplate.value]
+
+  if (template) {
+    campaignForm.message = template.template
+    campaignForm.title = template.title
+
+    // Set default payment config for payment templates
+    if (needsPaymentLink.value) {
+      paymentConfig.generateLinks = true
+
+      // Set default values based on template
+      if (selectedTemplate.value === 'payment_reminder') {
+        paymentConfig.description = 'Kas Kelas ' + new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+        paymentConfig.dueDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0] // Last day of current month
+      }
+    } else {
+      paymentConfig.generateLinks = false
+    }
+  }
 }
 
 // Methods

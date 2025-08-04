@@ -62,8 +62,8 @@
     </div>
 
     <!-- Filters -->
-    <div class="card p-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="card p-4 sm:p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Filter Status</label>
           <select v-model="filters.status" class="input-field">

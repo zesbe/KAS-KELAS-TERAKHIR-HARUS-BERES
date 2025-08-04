@@ -215,62 +215,7 @@ export const useAppStore = defineStore('app', {
       }
     },
 
-    // Campaign management
-    async fetchCampaigns() {
-      try {
-        const { data, error } = await db.getCampaigns()
-        if (error) throw error
-        this.campaigns = data || []
-      } catch (error) {
-        this.error = this.formatError(error)
-        console.error('Error fetching campaigns:', this.formatError(error))
-      }
-    },
 
-    async sendCampaign(campaignData) {
-      try {
-        this.loading = true
-        
-        // Save campaign to database
-        const { data: campaign, error } = await db.addCampaign({
-          ...campaignData,
-          status: 'sending',
-          created_at: new Date().toISOString()
-        })
-        
-        if (error) throw error
-
-        // Send messages via StarSender
-        const recipients = campaignData.recipients.map(studentId => {
-          const student = this.students.find(s => s.id === studentId)
-          return {
-            name: student.name,
-            phone: student.phone
-          }
-        })
-
-        const results = await starsenderService.sendCampaign(
-          recipients,
-          campaignData.message,
-          campaignData.delay_minutes
-        )
-
-        // Update campaign status
-        await db.updateCampaign(campaign[0].id, {
-          status: 'completed',
-          results: results,
-          completed_at: new Date().toISOString()
-        })
-
-        await this.fetchCampaigns()
-        return results
-      } catch (error) {
-        this.error = error.message
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
 
     // Webhook handling
     async handlePaymentWebhook(webhookData) {

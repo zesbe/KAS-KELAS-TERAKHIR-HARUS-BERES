@@ -162,8 +162,9 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useAppStore } from '@/stores'
+import { usePermissions } from '@/composables/usePermissions'
 import {
   Bars3Icon,
   XMarkIcon,
@@ -178,16 +179,24 @@ import {
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
+const permissions = usePermissions()
 
 const navigation = [
-  { name: 'Dashboard', label: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'Students', label: 'Data Siswa', href: '/students', icon: UsersIcon },
-  { name: 'Transactions', label: 'Transaksi Kas', href: '/transactions', icon: BanknotesIcon },
-  { name: 'Expenses', label: 'Pengeluaran', href: '/expenses', icon: ReceiptPercentIcon },
-  { name: 'Payments', label: 'Link Pembayaran', href: '/payments', icon: CreditCardIcon },
-  { name: 'Reports', label: 'Laporan', href: '/reports', icon: DocumentChartBarIcon },
-  { name: 'Settings', label: 'Pengaturan', href: '/settings', icon: CogIcon }
+  { name: 'Dashboard', label: 'Dashboard', href: '/', icon: HomeIcon, requiresPermission: 'dashboard' },
+  { name: 'Students', label: 'Data Siswa', href: '/students', icon: UsersIcon, requiresPermission: 'students' },
+  { name: 'Transactions', label: 'Transaksi Kas', href: '/transactions', icon: BanknotesIcon, requiresPermission: 'transactions' },
+  { name: 'Expenses', label: 'Pengeluaran', href: '/expenses', icon: ReceiptPercentIcon, requiresPermission: 'expenses' },
+  { name: 'Payments', label: 'Link Pembayaran', href: '/payments', icon: CreditCardIcon, requiresPermission: 'payments' },
+  { name: 'Reports', label: 'Laporan', href: '/reports', icon: DocumentChartBarIcon, requiresPermission: 'reports' },
+  { name: 'Settings', label: 'Pengaturan', href: '/settings', icon: CogIcon, requiresPermission: 'settings' }
 ]
+
+const filteredNavigation = computed(() => {
+  return navigation.filter(item => {
+    if (!item.requiresPermission) return true
+    return permissions.canAccessPage(item.requiresPermission)
+  })
+})
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', {

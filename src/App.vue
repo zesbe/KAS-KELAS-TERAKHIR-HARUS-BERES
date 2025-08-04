@@ -97,16 +97,30 @@
 
     <!-- Error toast -->
     <div v-if="store.error" class="fixed bottom-4 right-4 z-50">
-      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-sm">
-        <strong class="font-bold">Error!</strong>
-        <span class="block sm:inline"> {{ store.error }}</span>
-        <button 
-          @click="store.clearError()"
-          class="absolute top-0 bottom-0 right-0 px-4 py-3"
-        >
-          <span class="sr-only">Dismiss</span>
-          <XMarkIcon class="w-4 h-4" />
-        </button>
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-md">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <ExclamationTriangleIcon class="h-5 w-5 text-red-400" />
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">Database Error</h3>
+            <div class="mt-1 text-sm text-red-700">
+              <p>{{ store.error }}</p>
+              <router-link to="/settings" class="mt-2 inline-block font-medium underline hover:no-underline">
+                Fix in Settings
+              </router-link>
+            </div>
+          </div>
+          <div class="ml-auto pl-3">
+            <button
+              @click="store.clearError()"
+              class="text-red-400 hover:text-red-600"
+            >
+              <span class="sr-only">Dismiss</span>
+              <XMarkIcon class="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

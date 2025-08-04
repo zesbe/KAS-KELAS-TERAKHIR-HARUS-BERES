@@ -9,16 +9,12 @@ class StarSenderService {
 
   // Format phone number for StarSender API (62xxx format)
   formatPhoneNumber(phone) {
-    console.log('Formatting phone number:', phone)
-
     if (!phone || typeof phone !== 'string') {
-      console.error('Invalid phone input:', phone)
       return null
     }
 
     // Remove all non-digit characters except +
     let cleaned = phone.replace(/[^\d+]/g, '')
-    console.log('After removing non-digits:', cleaned)
 
     // Remove leading +
     if (cleaned.startsWith('+')) {
@@ -35,13 +31,11 @@ class StarSenderService {
       cleaned = '62' + cleaned
     }
 
-    // Validate final format
+    // Validate final format (Indonesian mobile numbers should be 10-13 digits after 62)
     if (cleaned.length < 10 || cleaned.length > 15) {
-      console.error('Invalid phone number length after formatting:', cleaned)
       return null
     }
 
-    console.log('Final formatted number:', cleaned)
     return cleaned
   }
 

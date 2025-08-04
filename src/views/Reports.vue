@@ -1,32 +1,35 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
       <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Laporan Keuangan</h1>
+        <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Laporan Keuangan</h1>
         <p class="text-sm text-gray-500 mt-1">Analisis dan laporan keuangan kas kelas</p>
       </div>
-      <div class="flex space-x-3">
-        <div class="flex space-x-2">
-          <button @click="exportSummaryCSV" class="btn-secondary">
+      <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+          <button @click="exportSummaryCSV" class="btn-secondary w-full sm:w-auto">
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            Export Summary CSV
+            <span class="hidden sm:inline">Export Summary CSV</span>
+            <span class="sm:hidden">Summary</span>
           </button>
-          <button @click="exportDetailedCSV" class="btn-secondary">
+          <button @click="exportDetailedCSV" class="btn-secondary w-full sm:w-auto">
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            Export Detail CSV
+            <span class="hidden sm:inline">Export Detail CSV</span>
+            <span class="sm:hidden">Detail</span>
           </button>
-          <button @click="exportCompleteReport" class="btn-primary">
+          <button @click="exportCompleteReport" class="btn-primary w-full sm:w-auto">
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            Export Lengkap
+            <span class="hidden sm:inline">Export Lengkap</span>
+            <span class="sm:hidden">Lengkap</span>
           </button>
         </div>
       </div>
     </div>
 
     <!-- Period Selector -->
-    <div class="card p-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="card p-4 sm:p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Periode Laporan</label>
           <select v-model="selectedPeriod" @change="updatePeriod" class="input-field">

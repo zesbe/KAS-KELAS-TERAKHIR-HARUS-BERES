@@ -145,6 +145,9 @@ Terima kasih ${student.name} (${student.nickname})! ���
 • Status: LUNAS ✅
 • Keterangan: ${paymentData.description || 'Kas Kelas'}
 
+🧾 *Invoice Digital:*
+${invoiceUrl}
+
 🎉 Pembayaran Anda telah dikonfirmasi dan tercatat dalam sistem kas kelas.
 
 Terima kasih atas kepercayaan dan kerjasamanya! 💙

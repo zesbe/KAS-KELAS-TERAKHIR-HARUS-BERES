@@ -564,46 +564,50 @@ const deleteExpense = async (expense) => {
 }
 
 const exportExpenses = () => {
+  exportService.exportExpenses(filteredExpenses.value)
+  showExportMenu.value = false
+  toast.success('Data pengeluaran berhasil di-export')
+}
+
+const exportByCategory = () => {
+  exportService.exportExpensesByCategory(store.expenses)
+  showExportMenu.value = false
+  toast.success('Data pengeluaran per kategori berhasil di-export')
+}
+
+const exportFiltered = () => {
   const headers = [
     'Tanggal',
     'Kategori',
     'Keterangan',
     'Catatan',
-    'Jumlah',
+    'Jumlah (IDR)',
     'Status',
     'Disetujui Oleh',
     'Tanggal Disetujui'
   ]
 
   const csvData = filteredExpenses.value.map(expense => [
-    formatDate(expense.created_at),
+    exportService.formatDate(expense.created_at),
     getCategoryLabel(expense.category),
     expense.description,
     expense.notes || '',
-    expense.amount,
+    exportService.formatCurrency(expense.amount),
     getStatusLabel(expense.status),
     expense.approved_by || '',
-    expense.approved_at ? formatDate(expense.approved_at) : ''
+    expense.approved_at ? exportService.formatDate(expense.approved_at) : ''
   ])
 
-  const csvContent = [
-    headers.join(','),
-    ...csvData.map(row =>
-      row.map(field => `"${field.toString().replace(/"/g, '""')}"`).join(',')
-    )
-  ].join('\n')
+  const filterInfo = []
+  if (filters.status) filterInfo.push(`status-${filters.status}`)
+  if (filters.category) filterInfo.push(`kategori-${filters.category}`)
+  if (filters.dateFrom) filterInfo.push(`dari-${filters.dateFrom}`)
+  if (filters.dateTo) filterInfo.push(`sampai-${filters.dateTo}`)
 
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(blob)
+  const filename = `pengeluaran_terfilter${filterInfo.length ? '_' + filterInfo.join('_') : ''}_${new Date().toISOString().slice(0, 10)}`
 
-  const dateStr = new Date().toISOString().slice(0, 10)
-  const filterStr = filters.status || filters.category ?
-    `_${filters.status || 'all'}_${filters.category || 'all'}` : ''
-
-  link.download = `pengeluaran_kas_kelas${filterStr}_${dateStr}.csv`
-  link.click()
-
-  toast.success('Data pengeluaran berhasil di-export')
+  exportService.downloadCSV(headers, csvData, filename)
+  showExportMenu.value = false
+  toast.success('Data pengeluaran terfilter berhasil di-export')
 }
 </script>

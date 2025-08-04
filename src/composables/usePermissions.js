@@ -85,13 +85,13 @@ export function usePermissions() {
   // Get user role info
   const getUserRole = () => {
     return {
-      id: currentUser.value.role,
+      id: safeCurrentUser.value.role,
       permissions: userPermissions.value,
-      isAdmin: currentUser.value.role === 'admin',
-      isBendahara: currentUser.value.role === 'bendahara',
-      isKetuaKelas: currentUser.value.role === 'ketua_kelas',
-      isWaliKelas: currentUser.value.role === 'wali_kelas',
-      isViewer: currentUser.value.role === 'viewer'
+      isAdmin: safeCurrentUser.value.role === 'admin',
+      isBendahara: safeCurrentUser.value.role === 'bendahara',
+      isKetuaKelas: safeCurrentUser.value.role === 'ketua_kelas',
+      isWaliKelas: safeCurrentUser.value.role === 'wali_kelas',
+      isViewer: safeCurrentUser.value.role === 'viewer'
     }
   }
 

@@ -181,7 +181,7 @@ export function usePermissions() {
   }
 
   return {
-    currentUser,
+    currentUser: safeCurrentUser,
     userPermissions,
     hasPermission,
     hasAnyPermission,

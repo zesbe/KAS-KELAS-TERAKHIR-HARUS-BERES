@@ -17,7 +17,7 @@ export const supabase = isSupabaseConfigured ?
     global: {
       fetch: (url, options = {}) => {
         // Add timeout and retry logic
-        const timeoutMs = 10000 // 10 seconds
+        const timeoutMs = 5000 // Reduced to 5 seconds
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
@@ -27,9 +27,8 @@ export const supabase = isSupabaseConfigured ?
         }).finally(() => {
           clearTimeout(timeoutId)
         }).catch(error => {
-          if (error.name === 'AbortError') {
-            throw new Error('Request timeout - please check your connection')
-          }
+          console.warn('Supabase fetch failed, falling back to mock data:', error.message)
+          // Instead of throwing, we'll let the db helpers handle fallback
           throw error
         })
       }

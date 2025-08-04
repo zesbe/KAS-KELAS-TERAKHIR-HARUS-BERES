@@ -78,6 +78,12 @@
           </div>
 
           <div class="flex items-center space-x-2 sm:space-x-4">
+            <!-- Database status indicator -->
+            <div v-if="store.isUsingMockData" class="flex items-center space-x-1 px-2 py-1 bg-yellow-50 rounded-lg">
+              <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <span class="text-xs text-yellow-700 font-medium">Demo Mode</span>
+            </div>
+
             <!-- Balance indicator -->
             <div class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 bg-success-50 rounded-lg">
               <span class="text-xs sm:text-sm text-success-600 font-medium">Saldo:</span>

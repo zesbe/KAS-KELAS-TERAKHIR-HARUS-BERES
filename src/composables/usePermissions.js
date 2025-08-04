@@ -100,6 +100,27 @@ export function usePermissions() {
     currentUser.value = user
   }
 
+  // Initialize from localStorage if available
+  const initializeAuth = () => {
+    const stored = localStorage.getItem('currentUser')
+    if (stored) {
+      try {
+        const user = JSON.parse(stored)
+        currentUser.value = user
+        return true
+      } catch (error) {
+        console.error('Error parsing stored user:', error)
+        localStorage.removeItem('currentUser')
+      }
+    }
+    return false
+  }
+
+  // Check if user is authenticated
+  const isAuthenticated = computed(() => {
+    return !!(currentUser.value && currentUser.value.id)
+  })
+
   // Get filtered navigation items based on permissions
   const getFilteredNavigation = (navigationItems) => {
     return navigationItems.filter(item => {

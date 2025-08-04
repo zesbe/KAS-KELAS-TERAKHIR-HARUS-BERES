@@ -99,9 +99,40 @@ const router = createRouter({
   routes
 })
 
-// Update page title
-router.beforeEach((to) => {
+// Navigation Guards
+router.beforeEach(async (to, from, next) => {
+  const permissions = usePermissions()
+
+  // Initialize auth if not done
+  permissions.initializeAuth()
+
+  const isAuthenticated = permissions.isAuthenticated.value
+  const requiresAuth = to.meta.requiresAuth !== false
+  const guestOnly = to.meta.guestOnly === true
+
+  // Update page title
   document.title = to.meta.title ? `${to.meta.title} - Kas Kelas 1B` : 'Kas Kelas 1B'
+
+  // If route is guest only (like login) and user is authenticated
+  if (guestOnly && isAuthenticated) {
+    return next('/')
+  }
+
+  // If route requires auth and user is not authenticated
+  if (requiresAuth && !isAuthenticated) {
+    return next('/login')
+  }
+
+  // Check permissions for protected routes
+  if (to.meta.permission && isAuthenticated) {
+    const hasAccess = permissions.canAccessPage(to.meta.permission)
+    if (!hasAccess) {
+      // Redirect to dashboard if no permission
+      return next('/')
+    }
+  }
+
+  next()
 })
 
 export default router

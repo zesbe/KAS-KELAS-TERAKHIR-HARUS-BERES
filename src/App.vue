@@ -211,8 +211,7 @@ onMounted(async () => {
       store.fetchStudents(),
       store.fetchTransactions(),
       store.fetchExpenses(),
-      store.fetchPaymentLinks(),
-      store.fetchCampaigns()
+      store.fetchPaymentLinks()
     ])
 
     // If we're using mock data successfully, clear any errors

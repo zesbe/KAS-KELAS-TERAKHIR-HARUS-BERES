@@ -166,18 +166,50 @@
     </div>
 
     <!-- Recent Transactions -->
-    <div class="card p-6">
+    <div class="card p-4 sm:p-6">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-semibold text-gray-900">Transaksi Terbaru</h3>
-        <router-link 
-          to="/transactions" 
+        <router-link
+          to="/transactions"
           class="text-sm text-primary-600 hover:text-primary-500"
         >
           Lihat Semua
         </router-link>
       </div>
-      
-      <div class="overflow-x-auto">
+
+      <!-- Mobile Card View -->
+      <div class="block sm:hidden space-y-3">
+        <div v-for="transaction in store.recentTransactions" :key="transaction.id" class="bg-gray-50 rounded-lg p-3">
+          <div class="flex items-center justify-between mb-2">
+            <div class="font-medium text-sm">{{ transaction.student?.name || '-' }}</div>
+            <span :class="[
+              'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
+              transaction.status === 'completed' ? 'bg-success-100 text-success-800' : 'bg-warning-100 text-warning-800'
+            ]">
+              {{ transaction.status === 'completed' ? 'Selesai' : 'Pending' }}
+            </span>
+          </div>
+          <div class="space-y-1 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Keterangan:</span>
+              <span class="text-right">{{ transaction.description }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Jumlah:</span>
+              <span :class="transaction.type === 'income' ? 'text-success-600' : 'text-red-600'" class="font-medium">
+                {{ transaction.type === 'income' ? '+' : '-' }}{{ formatCurrency(transaction.amount) }}
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Tanggal:</span>
+              <span class="text-xs">{{ formatDate(transaction.created_at) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table View -->
+      <div class="hidden sm:block overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -225,47 +257,47 @@
             </tr>
           </tbody>
         </table>
+      </div>
         
-        <div v-if="store.recentTransactions.length === 0" class="text-center py-8">
-          <p class="text-sm text-gray-500">Belum ada transaksi</p>
-        </div>
+      <div v-if="store.recentTransactions.length === 0" class="text-center py-8">
+        <p class="text-sm text-gray-500">Belum ada transaksi</p>
       </div>
     </div>
 
     <!-- Quick Actions -->
-    <div class="card p-6">
+    <div class="card p-4 sm:p-6">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <router-link 
-          to="/payments" 
-          class="flex flex-col items-center p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <router-link
+          to="/payments"
+          class="flex flex-col items-center p-3 sm:p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
         >
-          <CreditCardIcon class="w-8 h-8 text-primary-600 mb-2" />
-          <span class="text-sm font-medium text-primary-900">Buat Link Bayar</span>
+          <CreditCardIcon class="w-6 h-6 sm:w-8 sm:h-8 text-primary-600 mb-2" />
+          <span class="text-xs sm:text-sm font-medium text-primary-900 text-center">Buat Link Bayar</span>
         </router-link>
         
-        <router-link 
-          to="/campaigns" 
-          class="flex flex-col items-center p-4 bg-success-50 rounded-lg hover:bg-success-100 transition-colors"
+        <router-link
+          to="/campaigns"
+          class="flex flex-col items-center p-3 sm:p-4 bg-success-50 rounded-lg hover:bg-success-100 transition-colors"
         >
-          <SpeakerWaveIcon class="w-8 h-8 text-success-600 mb-2" />
-          <span class="text-sm font-medium text-success-900">Kirim Pesan</span>
+          <SpeakerWaveIcon class="w-6 h-6 sm:w-8 sm:h-8 text-success-600 mb-2" />
+          <span class="text-xs sm:text-sm font-medium text-success-900 text-center">Kirim Pesan</span>
         </router-link>
         
-        <router-link 
-          to="/expenses" 
-          class="flex flex-col items-center p-4 bg-warning-50 rounded-lg hover:bg-warning-100 transition-colors"
+        <router-link
+          to="/expenses"
+          class="flex flex-col items-center p-3 sm:p-4 bg-warning-50 rounded-lg hover:bg-warning-100 transition-colors"
         >
-          <ReceiptPercentIcon class="w-8 h-8 text-warning-600 mb-2" />
-          <span class="text-sm font-medium text-warning-900">Catat Pengeluaran</span>
+          <ReceiptPercentIcon class="w-6 h-6 sm:w-8 sm:h-8 text-warning-600 mb-2" />
+          <span class="text-xs sm:text-sm font-medium text-warning-900 text-center">Catat Pengeluaran</span>
         </router-link>
         
-        <router-link 
-          to="/reports" 
-          class="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+        <router-link
+          to="/reports"
+          class="flex flex-col items-center p-3 sm:p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
         >
-          <DocumentChartBarIcon class="w-8 h-8 text-purple-600 mb-2" />
-          <span class="text-sm font-medium text-purple-900">Lihat Laporan</span>
+          <DocumentChartBarIcon class="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 mb-2" />
+          <span class="text-xs sm:text-sm font-medium text-purple-900 text-center">Lihat Laporan</span>
         </router-link>
       </div>
     </div>

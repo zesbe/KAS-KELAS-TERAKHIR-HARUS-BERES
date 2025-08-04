@@ -113,24 +113,26 @@ class StarSenderService {
     }
   }
 
-  // Send message via Supabase Edge Function proxy
-  async sendMessageViaProxy(number, message) {
+  // Send message via Vercel API route proxy
+  async sendMessageViaVercel(number, message) {
     try {
-      const { data, error } = await supabase.functions.invoke('starsender-proxy', {
-        body: {
+      const response = await fetch(this.vercelApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           action: 'send',
           number: number,
           message: message
-          // API key diambil dari environment variable di Edge Function
-        }
+          // API key diambil dari environment variable di Vercel
+        })
       })
 
-      if (error) {
-        // Check if Edge Function doesn't exist
-        if (error.message?.includes('Failed to send a request to the Edge Function')) {
-          throw new Error('Edge Function "starsender-proxy" not deployed. Please deploy it first: supabase functions deploy starsender-proxy')
-        }
-        throw new Error(`Supabase proxy error: ${error.message}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(`Vercel API error: ${data.message || response.statusText}`)
       }
 
       if (!data?.success) {
@@ -139,7 +141,7 @@ class StarSenderService {
 
       return data.data
     } catch (error) {
-      console.error('Error sending message via proxy:', error)
+      console.error('Error sending message via Vercel proxy:', error)
       throw error
     }
   }

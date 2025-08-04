@@ -743,7 +743,18 @@ _Kas Kelas 1B SD Islam Al Husna_`
     toast.success('Pesan berhasil dikirim')
     showPreviewModal.value = false
   } catch (error) {
-    toast.error('Gagal mengirim pesan')
+    if (error.message.includes('CORS Error')) {
+      toast.error('CORS Error: Tidak dapat mengirim pesan langsung dari browser. Gunakan backend server untuk production.')
+      // Show alternative action
+      showCorsErrorModal.value = true
+      corsErrorData.value = {
+        phone: payment.student?.phone,
+        message: message,
+        studentName: payment.student?.name
+      }
+    } else {
+      toast.error('Gagal mengirim pesan: ' + error.message)
+    }
     console.error('Error sending WhatsApp message:', error)
   }
 }

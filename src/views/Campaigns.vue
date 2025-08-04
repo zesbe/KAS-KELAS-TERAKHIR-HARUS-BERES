@@ -730,7 +730,8 @@ _Pesan otomatis dari Sistem Kas Kelas_`,
 
   } catch (error) {
     console.error('Error loading data:', error)
-    toast.error('Gagal memuat data')
+    const errorMessage = error?.message || 'Terjadi kesalahan saat memuat data'
+    toast.error(`Gagal memuat data: ${errorMessage}`)
   } finally {
     loading.value = false
   }

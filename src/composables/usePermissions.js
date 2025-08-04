@@ -201,6 +201,12 @@ export function usePermissions() {
     return roleInfo[roleId] || roleInfo.viewer
   }
 
+  // Logout function
+  const logout = () => {
+    currentUser.value = null
+    localStorage.removeItem('currentUser')
+  }
+
   return {
     currentUser: safeCurrentUser,
     userPermissions,
@@ -214,6 +220,9 @@ export function usePermissions() {
     getFilteredNavigation,
     getUIRestrictions,
     getRoleDisplayInfo,
-    rolePermissions
+    rolePermissions,
+    initializeAuth,
+    isAuthenticated,
+    logout
   }
 }

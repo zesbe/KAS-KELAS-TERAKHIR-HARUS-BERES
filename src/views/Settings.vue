@@ -41,24 +41,7 @@
             </div>
           </div>
           
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Account API Key</label>
-            <div class="flex items-center space-x-2">
-              <input 
-                v-model="settings.starsender.accountApiKey"
-                :type="showKeys.account ? 'text' : 'password'"
-                class="input-field flex-1"
-                placeholder="Masukkan Account API Key"
-              />
-              <button 
-                @click="showKeys.account = !showKeys.account"
-                class="btn-secondary p-2"
-              >
-                <EyeIcon v-if="!showKeys.account" class="w-4 h-4" />
-                <EyeSlashIcon v-else class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+
           
           <button @click="testStarSender" :disabled="testing.starsender" class="btn-primary">
             {{ testing.starsender ? 'Testing...' : 'Test Configuration' }}

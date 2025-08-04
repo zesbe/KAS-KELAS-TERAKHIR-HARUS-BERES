@@ -976,21 +976,17 @@ const generateMessageTemplate = (payment) => {
       .replace('{link}', payment.payment_url)
   }
 
-  // Default reminder template
-  return `Halo ${payment.student?.name} (${payment.student?.nickname}),
+  // Default reminder template using StarSender service
+  const paymentData = {
+    studentName: payment.student?.name,
+    amount: payment.amount,
+    description: payment.description,
+    orderId: payment.order_id,
+    paymentUrl: payment.payment_url,
+    dueDate: new Date(payment.expires_at).toLocaleDateString('id-ID')
+  }
 
-Silakan lakukan pembayaran kas kelas dengan detail berikut:
-
-💰 Jumlah: ${formatCurrency(payment.amount)}
-📝 Keterangan: ${payment.description}
-🆔 Order ID: ${payment.order_id}
-
-🔗 Link Pembayaran:
-${payment.payment_url}
-
-Terima kasih!
-
-_Kas Kelas 1B SD Islam Al Husna_`
+  return starsenderService.generatePaymentMessage(paymentData)
 }
 
 const sendBulkMessages = async () => {

@@ -172,7 +172,6 @@ import {
   BanknotesIcon,
   ReceiptPercentIcon,
   CreditCardIcon,
-  SpeakerWaveIcon,
   DocumentChartBarIcon,
   CogIcon,
   ExclamationTriangleIcon

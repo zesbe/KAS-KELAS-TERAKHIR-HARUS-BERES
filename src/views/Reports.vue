@@ -7,14 +7,20 @@
         <p class="text-sm text-gray-500 mt-1">Analisis dan laporan keuangan kas kelas</p>
       </div>
       <div class="flex space-x-3">
-        <button @click="exportReport" class="btn-secondary">
-          <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-          Export PDF
-        </button>
-        <button @click="printReport" class="btn-primary">
-          <PrinterIcon class="w-4 h-4 mr-2" />
-          Print
-        </button>
+        <div class="flex space-x-2">
+          <button @click="exportSummaryCSV" class="btn-secondary">
+            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+            Export Summary CSV
+          </button>
+          <button @click="exportDetailedCSV" class="btn-secondary">
+            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+            Export Detail CSV
+          </button>
+          <button @click="exportCompleteReport" class="btn-primary">
+            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+            Export Lengkap
+          </button>
+        </div>
       </div>
     </div>
 

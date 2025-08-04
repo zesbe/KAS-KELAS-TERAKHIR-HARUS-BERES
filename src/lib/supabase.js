@@ -10,7 +10,31 @@ const isSupabaseConfigured = supabaseUrl && supabaseAnonKey &&
   !supabaseAnonKey.includes('your-anon-key')
 
 export const supabase = isSupabaseConfigured ?
-  createClient(supabaseUrl, supabaseAnonKey) :
+  createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false
+    },
+    global: {
+      fetch: (url, options = {}) => {
+        // Add timeout and retry logic
+        const timeoutMs = 10000 // 10 seconds
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+        return fetch(url, {
+          ...options,
+          signal: controller.signal
+        }).finally(() => {
+          clearTimeout(timeoutId)
+        }).catch(error => {
+          if (error.name === 'AbortError') {
+            throw new Error('Request timeout - please check your connection')
+          }
+          throw error
+        })
+      }
+    }
+  }) :
   null
 
 // Auth helpers

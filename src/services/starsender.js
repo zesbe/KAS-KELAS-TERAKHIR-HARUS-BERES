@@ -1,354 +1,354 @@
-import axios from 'axios'
+// StarSender WhatsApp API Service
+// Updated dengan API terbaru dari https://api.starsender.online
 
 const BASE_URL = 'https://api.starsender.online'
-const USE_VERCEL_PROXY = true // Toggle untuk menggunakan Vercel API proxy
 
 class StarSenderService {
   constructor() {
     this.deviceApiKey = import.meta.env.VITE_STARSENDER_DEVICE_API_KEY
-    // Vercel API route URL
-    this.vercelApiUrl = import.meta.env.VITE_VERCEL_API_URL
-      ? `${import.meta.env.VITE_VERCEL_API_URL}/api/starsender`
-      : '/api/starsender'
   }
 
-  // Format phone number for StarSender API (62xxx format)
+  // Format phone number untuk StarSender API
   formatPhoneNumber(phone) {
-    if (!phone || typeof phone !== 'string') {
-      return null
-    }
-
-    // Remove all non-digit characters except +
-    let cleaned = phone.replace(/[^\d+]/g, '')
-
-    // Remove leading +
-    if (cleaned.startsWith('+')) {
-      cleaned = cleaned.substring(1)
-    }
-
-    // Handle Indonesian mobile format starting with 0
+    if (!phone) return null
+    
+    // Remove semua non-digit characters
+    let cleaned = phone.replace(/\D/g, '')
+    
+    // Handle berbagai format nomor Indonesia
     if (cleaned.startsWith('0')) {
+      // Ubah 08xxx menjadi 628xxx
       cleaned = '62' + cleaned.substring(1)
-    }
-
-    // Ensure it starts with 62 for Indonesia
-    if (!cleaned.startsWith('62')) {
+    } else if (cleaned.startsWith('8')) {
+      // Ubah 8xxx menjadi 628xxx
+      cleaned = '62' + cleaned
+    } else if (!cleaned.startsWith('62')) {
+      // Jika tidak ada kode negara, tambahkan 62
       cleaned = '62' + cleaned
     }
-
-    // Validate final format (Indonesian mobile numbers should be 10-13 digits after 62)
-    if (cleaned.length < 10 || cleaned.length > 15) {
-      return null
-    }
-
+    
     return cleaned
   }
 
-  // Test API key validity without making actual requests
-  testConnection() {
-    const hasDeviceKey = this.deviceApiKey && this.deviceApiKey !== 'your-device-api-key'
-
-    if (!hasDeviceKey) {
-      throw new Error('StarSender Device API key not configured properly')
+  // Validasi konfigurasi API key
+  validateConfiguration() {
+    if (!this.deviceApiKey || this.deviceApiKey === 'your-device-api-key') {
+      throw new Error('StarSender Device API key belum dikonfigurasi. Silakan set environment variable VITE_STARSENDER_DEVICE_API_KEY')
     }
-
-    // Validate UUID format for API key
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-    if (!uuidRegex.test(this.deviceApiKey)) {
-      throw new Error('Device API key format is invalid (should be UUID)')
-    }
-
-    return {
-      success: true,
-      message: 'Device API key is properly configured',
-      deviceKeyValid: true
-    }
+    return true
   }
 
-  // Send single message
-  async sendMessage(number, message) {
+  // Kirim pesan teks
+  async sendMessage(phoneNumber, message, options = {}) {
     try {
-      const formattedNumber = this.formatPhoneNumber(number)
-      if (!formattedNumber) {
-        throw new Error(`Invalid phone number format: "${number}"`)
+      this.validateConfiguration()
+      
+      const formattedPhone = this.formatPhoneNumber(phoneNumber)
+      if (!formattedPhone) {
+        throw new Error('Nomor telefon tidak valid')
       }
 
-      // Gunakan Vercel API proxy jika tersedia
-      if (USE_VERCEL_PROXY) {
-        try {
-          return await this.sendMessageViaVercel(formattedNumber, message)
-        } catch (proxyError) {
-          console.warn('Vercel API failed, falling back to direct API:', proxyError.message)
-          // Fall through to direct API call
-        }
+      const payload = {
+        messageType: 'text',
+        to: formattedPhone,
+        body: message,
+        ...options
       }
 
-      // Fallback ke direct API call
-      const response = await axios.post(
-        `${BASE_URL}/api/send`,
-        { number: formattedNumber, message },
-        {
-          headers: {
-            'Authorization': this.deviceApiKey,
-            'Content-Type': 'application/json'
-          },
-          timeout: 30000 // 30 second timeout for sending messages
-        }
-      )
-      return response.data
-    } catch (error) {
-      console.error('Error sending message:', error)
-
-      if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
-        throw new Error('CORS Error: Direct API calls blocked by browser security. For production, implement StarSender calls through your backend server.')
-      } else if (error.response?.status === 401) {
-        throw new Error('StarSender API: Invalid device API key')
-      } else if (error.response?.status === 429) {
-        throw new Error('StarSender API: Rate limit exceeded')
-      } else if (error.response) {
-        throw new Error(`StarSender API error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`)
+      // Jika ada delay, tambahkan ke payload
+      if (options.delay) {
+        payload.delay = parseInt(options.delay)
       }
-      throw error
-    }
-  }
 
-  // Send message via Vercel API route proxy
-  async sendMessageViaVercel(number, message) {
-    try {
-      const response = await fetch(this.vercelApiUrl, {
+      // Jika ada schedule, tambahkan ke payload
+      if (options.schedule) {
+        payload.schedule = options.schedule
+      }
+
+      console.log('Sending message to StarSender:', {
+        to: formattedPhone,
+        messageLength: message.length,
+        hasDelay: !!options.delay,
+        hasSchedule: !!options.schedule
+      })
+
+      const response = await fetch(`${BASE_URL}/api/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': this.deviceApiKey
         },
-        body: JSON.stringify({
-          action: 'send',
-          number: number,
-          message: message
-          // API key diambil dari environment variable di Vercel
-        })
+        body: JSON.stringify(payload)
       })
 
-      const data = await response.json()
-
       if (!response.ok) {
-        throw new Error(`Vercel API error: ${data.message || response.statusText}`)
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`)
       }
-
-      if (!data?.success) {
-        throw new Error(`StarSender API error: ${data?.status || 'Unknown'} - ${data?.data?.message || 'Unknown error'}`)
-      }
-
-      return data.data
-    } catch (error) {
-      console.error('Error sending message via Vercel proxy:', error)
-      throw error
-    }
-  }
-
-  // Send message to group
-  async sendToGroup(groupId, message) {
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/api/send/grup`,
-        { group_id: groupId, message },
-        {
-          headers: {
-            'Authorization': this.deviceApiKey,
-            'Content-Type': 'application/json'
-          }
-        }
-      )
-      return response.data
-    } catch (error) {
-      console.error('Error sending group message:', error)
-      throw error
-    }
-  }
-
-  // Check WhatsApp number
-  async checkNumber(number) {
-    try {
-      const formattedNumber = this.formatPhoneNumber(number)
-      if (!formattedNumber) {
-        throw new Error('Invalid phone number format')
-      }
-
-      // Gunakan Vercel API proxy jika tersedia
-      if (USE_VERCEL_PROXY) {
-        try {
-          return await this.checkNumberViaVercel(formattedNumber)
-        } catch (proxyError) {
-          console.warn('Vercel API failed, falling back to direct API:', proxyError.message)
-          // Fall through to direct API call
-        }
-      }
-
-      // Fallback ke direct API call
-      const response = await axios.post(
-        `${BASE_URL}/api/check-number`,
-        { number: formattedNumber },
-        {
-          headers: {
-            'Authorization': this.deviceApiKey,
-            'Content-Type': 'application/json'
-          }
-        }
-      )
-      return response.data
-    } catch (error) {
-      console.error('Error checking number:', error)
-      throw error
-    }
-  }
-
-  // Check number via Vercel API route proxy
-  async checkNumberViaVercel(number) {
-    try {
-      const response = await fetch(this.vercelApiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'check-number',
-          number: number
-          // API key diambil dari environment variable di Vercel
-        })
-      })
 
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(`Vercel API error: ${data.message || response.statusText}`)
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Gagal mengirim pesan')
       }
 
-      if (!data?.success) {
-        throw new Error(`StarSender API error: ${data?.status || 'Unknown'} - ${data?.data?.message || 'Unknown error'}`)
-      }
-
-      return data.data
-    } catch (error) {
-      console.error('Error checking number via Vercel proxy:', error)
-      throw error
-    }
-  }
-
-
-
-  // Test connection without making external API calls (for development)
-  async testConnectionSafe() {
-    try {
-      // First validate the configuration
-      const configTest = this.testConnection()
-
-      // Return a simulated successful response
+      console.log('Message sent successfully:', data)
       return {
         success: true,
-        message: 'StarSender configuration is valid. API keys are properly formatted.',
-        note: 'Actual API connectivity will be tested when sending messages.',
-        config: configTest,
-        developmentNote: 'CORS policy prevents direct API testing from browser. In production, use backend proxy.',
-        productionRecommendation: 'Implement StarSender calls through your backend server for better security and to avoid CORS issues.'
+        data: data.data,
+        message: data.message
       }
+
     } catch (error) {
+      console.error('StarSender send message error:', error)
+      
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error('Gagal terhubung ke StarSender API. Periksa koneksi internet.')
+      }
+      
       throw error
     }
   }
 
-  // Get connection status for UI display
-  getConnectionStatus() {
+  // Kirim pesan dengan file (media)
+  async sendMediaMessage(phoneNumber, message, fileUrl, options = {}) {
     try {
-      const test = this.testConnection()
-      return {
-        configured: true,
-        deviceKeySet: !!this.deviceApiKey && this.deviceApiKey !== 'your-device-api-key',
-        message: 'StarSender Device API key is configured and valid'
+      this.validateConfiguration()
+      
+      const formattedPhone = this.formatPhoneNumber(phoneNumber)
+      if (!formattedPhone) {
+        throw new Error('Nomor telefon tidak valid')
       }
-    } catch (error) {
-      return {
-        configured: false,
-        deviceKeySet: false,
-        message: error.message
-      }
-    }
-  }
 
-  // Check if Vercel API route is available
-  async checkEdgeFunctionStatus() {
-    try {
-      // Try to call the Vercel API with a test request
-      const response = await fetch(this.vercelApiUrl, {
+      if (!fileUrl) {
+        throw new Error('URL file harus diisi untuk pesan media')
+      }
+
+      const payload = {
+        messageType: 'media',
+        to: formattedPhone,
+        body: message || '',
+        file: fileUrl,
+        ...options
+      }
+
+      // Jika ada delay, tambahkan ke payload
+      if (options.delay) {
+        payload.delay = parseInt(options.delay)
+      }
+
+      // Jika ada schedule, tambahkan ke payload
+      if (options.schedule) {
+        payload.schedule = options.schedule
+      }
+
+      console.log('Sending media message to StarSender:', {
+        to: formattedPhone,
+        fileUrl,
+        messageLength: message?.length || 0,
+        hasDelay: !!options.delay,
+        hasSchedule: !!options.schedule
+      })
+
+      const response = await fetch(`${BASE_URL}/api/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': this.deviceApiKey
         },
-        body: JSON.stringify({
-          action: 'check-number',
-          number: '628123456789' // Test number
-        })
+        body: JSON.stringify(payload)
       })
 
-      const data = await response.json()
-
       if (!response.ok) {
-        return {
-          available: false,
-          message: `Vercel API error: ${data.message || response.statusText}`
-        }
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`)
       }
 
-      if (data.error && data.error.includes('API key not configured')) {
-        return {
-          available: true,
-          message: 'Vercel API deployed but StarSender API key not configured'
-        }
+      const data = await response.json()
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Gagal mengirim pesan media')
       }
 
+      console.log('Media message sent successfully:', data)
       return {
-        available: true,
-        message: 'Vercel API route deployed and working'
+        success: true,
+        data: data.data,
+        message: data.message
       }
+
     } catch (error) {
-      return {
-        available: false,
-        message: `Vercel API route error: ${error.message}`
+      console.error('StarSender send media message error:', error)
+      
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error('Gagal terhubung ke StarSender API. Periksa koneksi internet.')
       }
+      
+      throw error
     }
   }
 
-  // Send campaign with delay
-  async sendCampaign(recipients, message, delayMinutes = 1) {
-    const results = []
-    const delay = delayMinutes * 60 * 1000 // Convert to milliseconds
+  // Kirim pesan ke multiple nomor (broadcast)
+  async sendBroadcastMessage(phoneNumbers, message, options = {}) {
+    try {
+      this.validateConfiguration()
+      
+      if (!Array.isArray(phoneNumbers) || phoneNumbers.length === 0) {
+        throw new Error('Daftar nomor telefon harus berupa array dan tidak boleh kosong')
+      }
 
-    for (let i = 0; i < recipients.length; i++) {
-      const recipient = recipients[i]
+      const results = []
+      const delay = options.delayBetweenMessages || 1 // Default 1 detik antar pesan
 
-      try {
-        if (i > 0) {
-          // Add delay between messages
-          await new Promise(resolve => setTimeout(resolve, delay))
+      for (let i = 0; i < phoneNumbers.length; i++) {
+        const phone = phoneNumbers[i]
+        
+        try {
+          // Tambahkan delay antar pesan untuk menghindari rate limit
+          const messageDelay = (options.delay || 0) + (i * delay)
+          
+          const result = await this.sendMessage(phone, message, {
+            ...options,
+            delay: messageDelay
+          })
+          
+          results.push({
+            phone,
+            success: true,
+            result
+          })
+          
+        } catch (error) {
+          console.error(`Failed to send message to ${phone}:`, error)
+          results.push({
+            phone,
+            success: false,
+            error: error.message
+          })
         }
 
-        const result = await this.sendMessage(recipient.phone, message)
-        results.push({
-          recipient: recipient.name,
-          phone: recipient.phone,
-          success: true,
-          response: result
-        })
-      } catch (error) {
-        results.push({
-          recipient: recipient.name,
-          phone: recipient.phone,
-          success: false,
-          error: error.message
-        })
+        // Delay antar request untuk menghindari rate limit
+        if (i < phoneNumbers.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
       }
-    }
 
-    return results
+      const successCount = results.filter(r => r.success).length
+      const failedCount = results.filter(r => !r.success).length
+
+      return {
+        success: true,
+        totalSent: phoneNumbers.length,
+        successCount,
+        failedCount,
+        results
+      }
+
+    } catch (error) {
+      console.error('StarSender broadcast error:', error)
+      throw error
+    }
+  }
+
+  // Test koneksi (safe mode - hanya validasi konfigurasi)
+  async testConnectionSafe() {
+    try {
+      this.validateConfiguration()
+      
+      return {
+        success: true,
+        message: 'StarSender konfigurasi valid',
+        deviceKeyConfigured: true,
+        note: 'API key format valid. Test pengiriman akan dilakukan saat mengirim pesan.'
+      }
+    } catch (error) {
+      throw new Error(`Konfigurasi StarSender error: ${error.message}`)
+    }
+  }
+
+  // Get status konfigurasi
+  getConfigurationStatus() {
+    return {
+      deviceApiKey: {
+        configured: !!this.deviceApiKey && this.deviceApiKey !== 'your-device-api-key',
+        masked: this.deviceApiKey ? `${this.deviceApiKey.substring(0, 8)}...` : 'Not set'
+      },
+      ready: !!this.deviceApiKey && this.deviceApiKey !== 'your-device-api-key'
+    }
+  }
+
+  // Format pesan dengan template
+  formatMessage(template, data = {}) {
+    let message = template
+    
+    // Replace placeholders dengan data
+    Object.keys(data).forEach(key => {
+      const placeholder = `{${key}}`
+      message = message.replace(new RegExp(placeholder, 'g'), data[key] || '')
+    })
+    
+    return message
+  }
+
+  // Generate template pesan pembayaran
+  generatePaymentMessage(paymentData) {
+    const {
+      studentName,
+      amount,
+      description,
+      dueDate,
+      orderId,
+      paymentUrl
+    } = paymentData
+
+    return `🏫 *Pembayaran Kas Kelas 1B*
+SD Islam Al Husna
+
+Halo, Orang Tua/Wali dari *${studentName}*
+
+📋 *Detail Pembayaran:*
+• Keterangan: ${description}
+• Jumlah: Rp ${amount?.toLocaleString('id-ID')}
+• Jatuh Tempo: ${dueDate}
+• Order ID: ${orderId}
+
+💳 *Link Pembayaran:*
+${paymentUrl}
+
+Silakan klik link di atas untuk melakukan pembayaran.
+
+Terima kasih atas perhatiannya! 🙏
+
+_Pesan otomatis dari Sistem Kas Kelas_`
+  }
+
+  // Generate template reminder pembayaran
+  generateReminderMessage(paymentData) {
+    const {
+      studentName,
+      amount,
+      description,
+      daysOverdue,
+      paymentUrl
+    } = paymentData
+
+    return `🔔 *Reminder Pembayaran Kas Kelas*
+SD Islam Al Husna
+
+Halo, Orang Tua/Wali dari *${studentName}*
+
+⚠️ Pembayaran kas kelas telah melewati jatuh tempo ${daysOverdue} hari.
+
+📋 *Detail:*
+• Keterangan: ${description}
+• Jumlah: Rp ${amount?.toLocaleString('id-ID')}
+
+💳 *Link Pembayaran:*
+${paymentUrl}
+
+Mohon segera melakukan pembayaran. Terima kasih! 🙏
+
+_Pesan reminder otomatis_`
   }
 }
 

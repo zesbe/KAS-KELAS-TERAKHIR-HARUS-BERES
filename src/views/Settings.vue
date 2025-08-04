@@ -651,7 +651,6 @@ onMounted(async () => {
   settings.supabase.url = import.meta.env.VITE_SUPABASE_URL || ''
   settings.supabase.anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
   settings.starsender.deviceApiKey = import.meta.env.VITE_STARSENDER_DEVICE_API_KEY || ''
-  settings.starsender.accountApiKey = import.meta.env.VITE_STARSENDER_ACCOUNT_API_KEY || ''
 
   // Auto-check database status if configured
   const isConfigured = settings.supabase.url && settings.supabase.anonKey &&

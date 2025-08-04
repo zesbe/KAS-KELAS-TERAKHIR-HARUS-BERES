@@ -825,6 +825,58 @@ const executeCampaign = async (campaign) => {
   }
 }
 
+const executeEnhancedCampaign = async (campaign, paymentConfig = null) => {
+  try {
+    // Use enhanced campaign service with payment links
+    const result = await enhancedCampaignService.executeEnhancedCampaign(campaign, paymentConfig)
+
+    if (result.success) {
+      // Update local campaign data
+      const index = campaigns.value.findIndex(c => c.id === campaign.id)
+      if (index !== -1) {
+        campaigns.value[index] = result.campaign
+      }
+
+      const { successCount, totalSent, paymentLinksGenerated } = result.campaign.results
+
+      if (paymentConfig && paymentLinksGenerated > 0) {
+        toast.success(`🎉 Campaign + Payment Links berhasil! ${successCount}/${totalSent} pesan, ${paymentLinksGenerated} link dibuat`)
+      } else {
+        toast.success(`Campaign berhasil dijadwalkan! ${successCount}/${totalSent} pesan terjadwal`)
+      }
+
+      // Show details of scheduled messages
+      if (result.results && result.results.length > 0) {
+        const firstSchedule = new Date(result.results[0].scheduledTime).toLocaleString('id-ID')
+        const lastSchedule = new Date(result.results[result.results.length - 1].scheduledTime).toLocaleString('id-ID')
+
+        toast.info(`⏰ Jadwal: ${firstSchedule} - ${lastSchedule}`, {
+          timeout: 8000
+        })
+
+        if (paymentLinksGenerated > 0) {
+          toast.info(`💳 ${paymentLinksGenerated} Payment Links PakaSir berhasil dibuat dan diintegrasikan!`, {
+            timeout: 6000
+          })
+        }
+      }
+    }
+
+  } catch (error) {
+    console.error('Error executing enhanced campaign:', error)
+    toast.error(`Gagal menjalankan campaign: ${error.message}`)
+
+    // Update campaign status to failed
+    campaign.status = 'failed'
+    await enhancedCampaignService.updateCampaign(campaign)
+
+    const index = campaigns.value.findIndex(c => c.id === campaign.id)
+    if (index !== -1) {
+      campaigns.value[index] = campaign
+    }
+  }
+}
+
 const getRecipientsFromCampaign = (campaign) => {
   switch (campaign.target) {
     case 'all':

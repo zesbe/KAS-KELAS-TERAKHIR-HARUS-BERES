@@ -120,7 +120,7 @@
             min="1000"
             step="1000"
             class="input-field"
-            placeholder="Contoh: 25000"
+            placeholder="Contoh: 50000"
           />
         </div>
         

@@ -687,7 +687,8 @@ import {
   ChatBubbleLeftIcon,
   ArrowPathIcon,
   TrashIcon,
-  DocumentDuplicateIcon
+  DocumentDuplicateIcon,
+  DocumentTextIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()

@@ -883,8 +883,7 @@ const checkPaymentStatus = async (payment) => {
 const deletePaymentLink = async (payment) => {
   if (confirm('Apakah Anda yakin ingin menghapus link pembayaran ini?')) {
     try {
-      await store.db.deletePaymentLink(payment.id)
-      await store.fetchPaymentLinks()
+      await store.deletePaymentLink(payment.id)
       toast.success('Link pembayaran berhasil dihapus')
     } catch (error) {
       toast.error('Gagal menghapus link pembayaran')

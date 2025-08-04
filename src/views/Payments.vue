@@ -142,6 +142,88 @@
       </div>
     </div>
 
+    <!-- Bulk WhatsApp Messaging -->
+    <div class="card p-4 sm:p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Kirim Pesan WhatsApp Massal</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Target Pesan</label>
+          <select v-model="bulkMessage.target" class="input-field">
+            <option value="pending">Link Pembayaran Pending</option>
+            <option value="all">Semua Link Pembayaran</option>
+            <option value="selected">Pilih Manual</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Jeda Antar Pesan (menit)</label>
+          <input
+            v-model.number="bulkMessage.delayMinutes"
+            type="number"
+            min="1"
+            max="60"
+            class="input-field"
+            placeholder="1"
+          />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Template Pesan</label>
+          <select v-model="bulkMessage.template" class="input-field">
+            <option value="reminder">Pengingat Pembayaran</option>
+            <option value="custom">Pesan Kustom</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Custom Message Template -->
+      <div v-if="bulkMessage.template === 'custom'" class="mt-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan Kustom</label>
+        <textarea
+          v-model="bulkMessage.customMessage"
+          rows="4"
+          class="input-field"
+          placeholder="Tulis pesan kustom di sini..."
+        ></textarea>
+        <p class="text-sm text-gray-500 mt-1">
+          Gunakan {nama}, {jumlah}, {keterangan}, {link} untuk data dinamis
+        </p>
+      </div>
+
+      <!-- Payment Selection for Manual Target -->
+      <div v-if="bulkMessage.target === 'selected'" class="mt-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Link Pembayaran</label>
+        <div class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+          <label
+            v-for="payment in store.paymentLinks"
+            :key="payment.id"
+            class="flex items-center space-x-2 p-2 border rounded-lg hover:bg-gray-50"
+          >
+            <input
+              type="checkbox"
+              :value="payment.id"
+              v-model="bulkMessage.selectedPayments"
+              class="rounded"
+            />
+            <span class="text-sm">{{ payment.student?.name }} - {{ formatCurrency(payment.amount) }} - {{ payment.description }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+        <div class="text-sm text-gray-600">
+          <span class="font-medium">{{ getTargetPayments().length }}</span> pesan akan dikirim
+        </div>
+        <button
+          @click="sendBulkMessages"
+          :disabled="sending || getTargetPayments().length === 0"
+          class="btn-primary"
+        >
+          {{ sending ? 'Mengirim...' : 'Kirim Pesan WhatsApp' }}
+        </button>
+      </div>
+    </div>
+
     <!-- Payments Table -->
     <div class="card p-4 sm:p-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">

@@ -112,8 +112,8 @@ class StarSenderService {
         body: {
           action: 'send',
           number: number,
-          message: message,
-          apiKey: this.deviceApiKey
+          message: message
+          // API key diambil dari environment variable di Edge Function
         }
       })
 

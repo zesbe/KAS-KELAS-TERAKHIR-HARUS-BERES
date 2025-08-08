@@ -253,6 +253,7 @@ import { useToast } from 'vue-toastification'
 import { usePermissions } from '@/composables/usePermissions'
 import RoleManagement from '@/components/RoleManagement.vue'
 import PaymentNotificationTester from '@/components/PaymentNotificationTester.vue'
+import starsenderService from '@/services/starsender'
 import { supabase } from '@/lib/supabase'
 import {
   EyeIcon,
@@ -319,7 +320,7 @@ const defaultStudents = [
 
 const checkEdgeFunctionStatus = async () => {
   try {
-    const status = await // TODO: Implement WhatsApp service - checkEdgeFunctionStatus()
+    const status = await starsenderService.checkEdgeFunctionStatus()
     edgeFunctionStatus.available = status.available
     edgeFunctionStatus.message = status.message
   } catch (error) {
@@ -333,7 +334,7 @@ const testStarSender = async () => {
     testing.starsender = true
 
     // Test konfigurasi API key
-    const result = await // TODO: Implement WhatsApp service - testConnectionSafe()
+    const result = await starsenderService.testConnectionSafe()
 
     if (result.success) {
       toast.success('StarSender konfigurasi berhasil! API key valid dan siap digunakan.')

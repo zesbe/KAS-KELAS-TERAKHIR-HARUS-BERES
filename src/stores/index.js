@@ -321,6 +321,41 @@ export const useAppStore = defineStore('app', {
 
       // Fallback
       return error.toString()
+    },
+
+    // Clear all loading states
+    clearAllLoading() {
+      this.loading.students = false
+      this.loading.transactions = false
+      this.loading.expenses = false
+      this.loading.paymentLinks = false
+      this.loading.global = false
+    },
+
+    // Clear error
+    clearError() {
+      this.error = null
+    },
+
+    // Retry loading all data
+    async retryLoadAll() {
+      try {
+        this.clearError()
+        await Promise.all([
+          this.fetchStudents(),
+          this.fetchTransactions(),
+          this.fetchExpenses(),
+          this.fetchPaymentLinks()
+        ])
+      } catch (error) {
+        console.error('Error retrying data load:', error)
+        this.error = this.formatError(error)
+      }
+    },
+
+    // Check if any data is loading
+    get isAnyLoading() {
+      return Object.values(this.loading).some(Boolean)
     }
   }
 })

@@ -145,6 +145,8 @@ export const useAppStore = defineStore('app', {
 
     // Expenses management
     async fetchExpenses() {
+      this.loading.expenses = true
+      this.loading.global = true
       try {
         const { data, error } = await db.getExpenses()
         if (error) throw error
@@ -152,6 +154,9 @@ export const useAppStore = defineStore('app', {
       } catch (error) {
         this.error = this.formatError(error)
         console.error('Error fetching expenses:', this.formatError(error))
+      } finally {
+        this.loading.expenses = false
+        this.loading.global = false
       }
     },
 
@@ -193,6 +198,8 @@ export const useAppStore = defineStore('app', {
 
     // Payment links management
     async fetchPaymentLinks() {
+      this.loading.paymentLinks = true
+      this.loading.global = true
       try {
         const { data, error } = await db.getPaymentLinks()
         if (error) throw error
@@ -200,6 +207,9 @@ export const useAppStore = defineStore('app', {
       } catch (error) {
         this.error = this.formatError(error)
         console.error('Error fetching payment links:', this.formatError(error))
+      } finally {
+        this.loading.paymentLinks = false
+        this.loading.global = false
       }
     },
 

@@ -320,7 +320,8 @@ const defaultStudents = [
 
 const checkEdgeFunctionStatus = async () => {
   try {
-    const status = await starsenderService.checkEdgeFunctionStatus()
+    // TODO: Implement WhatsApp service
+    const status = { available: false, message: 'WhatsApp integration coming soon' }
     edgeFunctionStatus.available = status.available
     edgeFunctionStatus.message = status.message
   } catch (error) {

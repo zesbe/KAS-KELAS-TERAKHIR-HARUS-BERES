@@ -115,21 +115,7 @@
 
       <!-- Page content -->
       <main class="p-4 sm:p-6">
-        <router-view v-slot="{ Component }">
-          <Suspense>
-            <template #default>
-              <component :is="Component" />
-            </template>
-            <template #fallback>
-              <div class="flex items-center justify-center py-12">
-                <div class="text-center">
-                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-2"></div>
-                  <p class="text-gray-600 text-sm">Memuat...</p>
-                </div>
-              </div>
-            </template>
-          </Suspense>
-        </router-view>
+        <router-view />
       </main>
     </div>
 

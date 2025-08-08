@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { db } from '@/lib/supabase'
 import pakasirService from '@/services/pakasir'
-import starsenderService from '@/services/starsender'
 
 export const useAppStore = defineStore('app', {
   state: () => ({

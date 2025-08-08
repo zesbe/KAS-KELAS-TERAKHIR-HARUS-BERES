@@ -319,7 +319,7 @@ const defaultStudents = [
 
 const checkEdgeFunctionStatus = async () => {
   try {
-    const status = await starsenderService.checkEdgeFunctionStatus()
+    const status = await // TODO: Implement WhatsApp service - checkEdgeFunctionStatus()
     edgeFunctionStatus.available = status.available
     edgeFunctionStatus.message = status.message
   } catch (error) {
@@ -333,7 +333,7 @@ const testStarSender = async () => {
     testing.starsender = true
 
     // Test konfigurasi API key
-    const result = await starsenderService.testConnectionSafe()
+    const result = await // TODO: Implement WhatsApp service - testConnectionSafe()
 
     if (result.success) {
       toast.success('StarSender konfigurasi berhasil! API key valid dan siap digunakan.')

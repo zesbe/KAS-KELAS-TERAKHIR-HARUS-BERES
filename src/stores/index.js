@@ -80,7 +80,8 @@ export const useAppStore = defineStore('app', {
   actions: {
     // Students management
     async fetchStudents() {
-      this.loading = true
+      this.loading.students = true
+      this.loading.global = true
       try {
         const { data, error } = await db.getStudents()
         if (error) {
@@ -96,7 +97,8 @@ export const useAppStore = defineStore('app', {
         this.databaseStatus = 'error'
         console.error('Error fetching students:', this.formatError(error))
       } finally {
-        this.loading = false
+        this.loading.students = false
+        this.loading.global = false
       }
     },
 
@@ -114,7 +116,8 @@ export const useAppStore = defineStore('app', {
 
     // Transactions management
     async fetchTransactions() {
-      this.loading = true
+      this.loading.transactions = true
+      this.loading.global = true
       try {
         const { data, error } = await db.getTransactions()
         if (error) throw error
@@ -123,7 +126,8 @@ export const useAppStore = defineStore('app', {
         this.error = this.formatError(error)
         console.error('Error fetching transactions:', this.formatError(error))
       } finally {
-        this.loading = false
+        this.loading.transactions = false
+        this.loading.global = false
       }
     },
 

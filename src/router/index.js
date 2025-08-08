@@ -1,49 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { usePermissions } from '@/composables/usePermissions'
 
-// Loading component for async routes
-const LoadingComponent = {
-  template: `
-    <div class="flex items-center justify-center min-h-screen">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-    </div>
-  `
-}
-
-// Error component for failed loads
-const ErrorComponent = {
-  template: `
-    <div class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
-        <h2 class="text-xl font-semibold text-gray-900 mb-2">Gagal memuat halaman</h2>
-        <p class="text-gray-600 mb-4">Terjadi kesalahan saat memuat halaman.</p>
-        <button 
-          @click="$router.go(0)" 
-          class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-        >
-          Muat Ulang
-        </button>
-      </div>
-    </div>
-  `
-}
-
-// Function to create async component with loading and error states
-const createAsyncComponent = (importFunc) => {
-  return () => ({
-    component: importFunc(),
-    loading: LoadingComponent,
-    error: ErrorComponent,
-    delay: 200,
-    timeout: 10000
-  })
-}
-
 const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: createAsyncComponent(() => import('@/views/Login.vue')),
+    component: () => import('@/views/Login.vue'),
     meta: {
       title: 'Login',
       requiresAuth: false,
@@ -53,7 +15,7 @@ const routes = [
   {
     path: '/',
     name: 'Dashboard',
-    component: createAsyncComponent(() => import('@/views/Dashboard.vue')),
+    component: () => import('@/views/Dashboard.vue'),
     meta: {
       title: 'Dashboard',
       requiresAuth: true,
@@ -63,7 +25,7 @@ const routes = [
   {
     path: '/students',
     name: 'Students',
-    component: createAsyncComponent(() => import('@/views/Students.vue')),
+    component: () => import('@/views/Students.vue'),
     meta: {
       title: 'Data Siswa',
       requiresAuth: true,
@@ -73,7 +35,7 @@ const routes = [
   {
     path: '/transactions',
     name: 'Transactions',
-    component: createAsyncComponent(() => import('@/views/Transactions.vue')),
+    component: () => import('@/views/Transactions.vue'),
     meta: {
       title: 'Transaksi Kas',
       requiresAuth: true,
@@ -83,7 +45,7 @@ const routes = [
   {
     path: '/expenses',
     name: 'Expenses',
-    component: createAsyncComponent(() => import('@/views/Expenses.vue')),
+    component: () => import('@/views/Expenses.vue'),
     meta: {
       title: 'Pengeluaran',
       requiresAuth: true,
@@ -93,7 +55,7 @@ const routes = [
   {
     path: '/payments',
     name: 'Payments',
-    component: createAsyncComponent(() => import('@/views/Payments.vue')),
+    component: () => import('@/views/Payments.vue'),
     meta: {
       title: 'Link Pembayaran',
       requiresAuth: true,
@@ -103,7 +65,7 @@ const routes = [
   {
     path: '/campaigns',
     name: 'Campaigns',
-    component: createAsyncComponent(() => import('@/views/Campaigns.vue')),
+    component: () => import('@/views/Campaigns.vue'),
     meta: {
       title: 'Campaign WhatsApp',
       requiresAuth: true,
@@ -113,7 +75,7 @@ const routes = [
   {
     path: '/reports',
     name: 'Reports',
-    component: createAsyncComponent(() => import('@/views/Reports.vue')),
+    component: () => import('@/views/Reports.vue'),
     meta: {
       title: 'Laporan Keuangan',
       requiresAuth: true,
@@ -123,7 +85,7 @@ const routes = [
   {
     path: '/settings',
     name: 'Settings',
-    component: createAsyncComponent(() => import('@/views/Settings.vue')),
+    component: () => import('@/views/Settings.vue'),
     meta: {
       title: 'Pengaturan',
       requiresAuth: true,
@@ -133,7 +95,7 @@ const routes = [
   {
     path: '/webhook/payment',
     name: 'PaymentWebhook',
-    component: createAsyncComponent(() => import('@/views/PaymentWebhook.vue')),
+    component: () => import('@/views/PaymentWebhook.vue'),
     meta: {
       title: 'Payment Webhook',
       hideInNav: true,
@@ -143,7 +105,7 @@ const routes = [
   {
     path: '/invoice',
     name: 'Invoice',
-    component: createAsyncComponent(() => import('@/views/Invoice.vue')),
+    component: () => import('@/views/Invoice.vue'),
     meta: {
       title: 'Invoice Pembayaran',
       hideInNav: true,
@@ -227,14 +189,6 @@ router.beforeEach(async (to, from, next) => {
 // Handle route errors
 router.onError((error) => {
   console.error('Router error:', error)
-  // Could implement more sophisticated error handling here
-})
-
-// After navigation hook for cleanup
-router.afterEach((to, from, failure) => {
-  if (failure) {
-    console.error('Navigation failed:', failure)
-  }
 })
 
 export default router

@@ -291,33 +291,62 @@ const handleGlobalError = (errorInfo) => {
   toast.error('Terjadi kesalahan pada aplikasi')
 }
 
-onMounted(async () => {
-  // Initial auth check
-  permissions.initializeAuth()
-
-  // Load initial data with error handling
+const retryDataLoad = async () => {
   try {
     isLoading.value = true
-
-    await Promise.all([
-      store.fetchStudents(),
-      store.fetchTransactions(),
-      store.fetchExpenses(),
-      store.fetchPaymentLinks()
-    ])
-
-    // If we're using mock data successfully, clear any errors
-    if (store.isUsingMockData && !store.error) {
-      console.log('Successfully loaded demo data')
-    }
+    await store.retryLoadAll()
+    toast.success('Data berhasil dimuat')
   } catch (error) {
-    console.error('Error loading initial data:', error)
-    // If we're successfully using mock data, clear the error
-    if (store.isUsingMockData) {
-      store.clearError()
-    }
+    toast.error('Gagal memuat data. Silakan coba lagi.')
   } finally {
     isLoading.value = false
+  }
+}
+
+onMounted(async () => {
+  // Initial auth check
+  await permissions.initializeAuth()
+
+  // Load initial data with error handling and retry mechanism
+  let retryCount = 0
+  const maxRetries = 3
+
+  while (retryCount < maxRetries) {
+    try {
+      isLoading.value = true
+
+      await Promise.all([
+        store.fetchStudents(),
+        store.fetchTransactions(),
+        store.fetchExpenses(),
+        store.fetchPaymentLinks()
+      ])
+
+      // If we're using mock data successfully, clear any errors
+      if (store.isUsingMockData && !store.error) {
+        console.log('Successfully loaded demo data')
+      }
+      break // Success, exit retry loop
+    } catch (error) {
+      retryCount++
+      console.error(`Error loading initial data (attempt ${retryCount}):`, error)
+
+      if (retryCount >= maxRetries) {
+        // If we're successfully using mock data, clear the error
+        if (store.isUsingMockData) {
+          store.clearError()
+        } else {
+          toast.error('Gagal memuat data. Silakan refresh halaman.')
+        }
+      } else {
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
+      }
+    } finally {
+      if (retryCount >= maxRetries || !store.error) {
+        isLoading.value = false
+      }
+    }
   }
 })
 </script>

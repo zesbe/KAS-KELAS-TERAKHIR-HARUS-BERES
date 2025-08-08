@@ -253,6 +253,7 @@ import { useToast } from 'vue-toastification'
 import { usePermissions } from '@/composables/usePermissions'
 import RoleManagement from '@/components/RoleManagement.vue'
 import PaymentNotificationTester from '@/components/PaymentNotificationTester.vue'
+import starsenderService from '@/services/starsender'
 import { supabase } from '@/lib/supabase'
 import {
   EyeIcon,

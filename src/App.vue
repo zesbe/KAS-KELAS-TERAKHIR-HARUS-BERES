@@ -144,9 +144,18 @@
             <h3 class="text-sm font-medium text-red-800">Database Error</h3>
             <div class="mt-1 text-sm text-red-700">
               <p>{{ store.error }}</p>
-              <router-link to="/settings" class="mt-2 inline-block font-medium underline hover:no-underline">
-                Fix in Settings
-              </router-link>
+              <div class="mt-2 flex gap-2">
+                <button
+                  @click="retryDataLoad"
+                  :disabled="isLoading"
+                  class="text-xs font-medium px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                >
+                  {{ isLoading ? 'Memuat...' : 'Coba Lagi' }}
+                </button>
+                <router-link to="/settings" class="text-xs font-medium px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700">
+                  Pengaturan
+                </router-link>
+              </div>
             </div>
           </div>
           <div class="ml-auto pl-3">

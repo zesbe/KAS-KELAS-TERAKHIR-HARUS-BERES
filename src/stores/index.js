@@ -353,9 +353,5 @@ export const useAppStore = defineStore('app', {
       }
     },
 
-    // Check if any data is loading
-    get isAnyLoading() {
-      return Object.values(this.loading).some(Boolean)
-    }
   }
 })

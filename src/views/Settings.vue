@@ -334,17 +334,17 @@ const testStarSender = async () => {
   try {
     testing.starsender = true
 
-    // Test konfigurasi API key
-    const result = await starsenderService.testConnectionSafe()
+    // TODO: Implement WhatsApp service
+    const result = { success: false, message: 'WhatsApp integration coming soon' }
 
     if (result.success) {
-      toast.success('StarSender konfigurasi berhasil! API key valid dan siap digunakan.')
+      toast.success('WhatsApp konfigurasi berhasil!')
     } else {
-      toast.error('StarSender test gagal: Konfigurasi tidak valid')
+      toast.info('WhatsApp integration coming soon')
     }
 
   } catch (error) {
-    toast.error(`StarSender test gagal: ${error.message}`)
+    toast.error(`WhatsApp test gagal: ${error.message}`)
   } finally {
     testing.starsender = false
   }

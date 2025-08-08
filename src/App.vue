@@ -265,12 +265,17 @@ const handleLogout = () => {
 }
 
 // Watch for route changes to show loading
-watch(() => route.path, () => {
-  isLoading.value = true
-  // Hide loading after a short delay to allow component to mount
-  setTimeout(() => {
-    isLoading.value = false
-  }, 100)
+watch(() => route.path, (newPath, oldPath) => {
+  if (newPath !== oldPath) {
+    isLoading.value = true
+    // Hide loading after a short delay to allow component to mount
+    const timer = setTimeout(() => {
+      isLoading.value = false
+    }, 300)
+
+    // Clear timer if component unmounts
+    return () => clearTimeout(timer)
+  }
 }, { immediate: false })
 
 // Handle router errors

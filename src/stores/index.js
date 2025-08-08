@@ -69,11 +69,16 @@ export const useAppStore = defineStore('app', {
       const paidStudents = state.transactions
         .filter(t => t.type === 'income' && t.status === 'completed')
         .map(t => t.student_id)
-      
+
       return {
         paid: state.students.filter(s => paidStudents.includes(s.id)),
         unpaid: state.students.filter(s => !paidStudents.includes(s.id))
       }
+    },
+
+    // Check if any data is loading
+    isAnyLoading: (state) => {
+      return Object.values(state.loading).some(Boolean)
     }
   },
 

@@ -280,6 +280,12 @@ router.onError((error) => {
   toast.error('Gagal memuat halaman. Silakan coba lagi.')
 })
 
+// Global error handler
+const handleGlobalError = (errorInfo) => {
+  console.error('Global app error:', errorInfo)
+  toast.error('Terjadi kesalahan pada aplikasi')
+}
+
 onMounted(async () => {
   // Initial auth check
   permissions.initializeAuth()

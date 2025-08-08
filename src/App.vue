@@ -1,5 +1,12 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+    <!-- Global loading overlay -->
+    <div v-if="isLoading" class="fixed inset-0 z-50 bg-white bg-opacity-90 flex items-center justify-center">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+        <p class="text-gray-600">Memuat halaman...</p>
+      </div>
+    </div>
     <!-- Mobile menu overlay -->
     <div 
       v-if="store.sidebarOpen" 
@@ -108,7 +115,21 @@
 
       <!-- Page content -->
       <main class="p-4 sm:p-6">
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <Suspense>
+            <template #default>
+              <component :is="Component" />
+            </template>
+            <template #fallback>
+              <div class="flex items-center justify-center py-12">
+                <div class="text-center">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-2"></div>
+                  <p class="text-gray-600 text-sm">Memuat...</p>
+                </div>
+              </div>
+            </template>
+          </Suspense>
+        </router-view>
       </main>
     </div>
 
@@ -173,8 +194,8 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, computed, ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores'
 import { usePermissions } from '@/composables/usePermissions'
 import { useToast } from 'vue-toastification'
@@ -196,7 +217,11 @@ import {
 const store = useAppStore()
 const permissions = usePermissions()
 const router = useRouter()
+const route = useRoute()
 const toast = useToast()
+
+// Global loading state
+const isLoading = ref(false)
 
 const navigation = [
   { name: 'Dashboard', label: 'Dashboard', href: '/', icon: HomeIcon, requiresPermission: 'dashboard' },
@@ -239,9 +264,30 @@ const handleLogout = () => {
   }
 }
 
+// Watch for route changes to show loading
+watch(() => route.path, () => {
+  isLoading.value = true
+  // Hide loading after a short delay to allow component to mount
+  setTimeout(() => {
+    isLoading.value = false
+  }, 100)
+}, { immediate: false })
+
+// Handle router errors
+router.onError((error) => {
+  console.error('Router error:', error)
+  isLoading.value = false
+  toast.error('Gagal memuat halaman. Silakan coba lagi.')
+})
+
 onMounted(async () => {
+  // Initial auth check
+  permissions.initializeAuth()
+
   // Load initial data with error handling
   try {
+    isLoading.value = true
+
     await Promise.all([
       store.fetchStudents(),
       store.fetchTransactions(),
@@ -259,6 +305,8 @@ onMounted(async () => {
     if (store.isUsingMockData) {
       store.clearError()
     }
+  } finally {
+    isLoading.value = false
   }
 })
 </script>

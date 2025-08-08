@@ -1,12 +1,4 @@
 {
-  "functions": {
-    "api/starsender.js": {
-      "maxDuration": 30
-    }
-  },
-  "env": {
-    "STARSENDER_DEVICE_API_KEY": "@starsender-api-key"
-  },
   "build": {
     "env": {
       "VITE_VERCEL_API_URL": "https://your-app.vercel.app"

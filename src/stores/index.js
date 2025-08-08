@@ -19,7 +19,13 @@ export const useAppStore = defineStore('app', {
     paymentLinks: [],
 
     // UI state
-    loading: false,
+    loading: {
+      students: false,
+      transactions: false,
+      expenses: false,
+      paymentLinks: false,
+      global: false
+    },
     error: null,
 
     // Database status

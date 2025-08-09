@@ -1361,92 +1361,9 @@ Wassalamu'alaikum Wr. Wb.
 *Sistem Kas Kelas Otomatis*`
 }
 
-const downloadPaymentsPDF = async () => {
-  try {
-    const pdfContent = generatePaymentsPDFContent()
-    const timestamp = new Date().toLocaleDateString('id-ID').replace(/\//g, '_')
-    const fileName = `Laporan_Pembayaran_${timestamp}.html`
-
-    // Create complete HTML content
-    const htmlContent = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laporan Pembayaran - ${new Date().toLocaleDateString('id-ID')}</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.5; }
-    h1 { color: #1f2937; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; margin-bottom: 20px; }
-    h2 { color: #374151; margin-top: 30px; margin-bottom: 15px; border-left: 4px solid #3b82f6; padding-left: 10px; }
-    h3 { color: #4b5563; margin-top: 20px; margin-bottom: 10px; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    th, td { border: 1px solid #d1d5db; padding: 10px; text-align: left; font-size: 11px; }
-    th { background-color: #f3f4f6; font-weight: bold; color: #374151; }
-    .status-pending { color: #d97706; font-weight: bold; }
-    .status-completed { color: #059669; font-weight: bold; }
-    .status-expired { color: #dc2626; font-weight: bold; }
-    .summary { background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6; }
-    .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 12px; border-top: 1px solid #d1d5db; padding-top: 15px; }
-    tr:nth-child(even) { background-color: #f9fafb; }
-    .mobile-info { background-color: #ecfdf5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
-    @media print { .mobile-info { display: none; } }
-    @media (max-width: 768px) {
-      table { font-size: 9px; }
-      th, td { padding: 6px; }
-      .summary { padding: 15px; }
-    }
-  </style>
-</head>
-<body>
-  <div class="mobile-info">
-    <h3 style="color: #065f46; margin: 0 0 10px 0;">📱 Panduan Download:</h3>
-    <ul style="margin: 0; color: #047857; font-size: 14px;">
-      <li><strong>Mobile:</strong> Menu browser (⋮) → "Simpan halaman" atau "Unduh"</li>
-      <li><strong>Share:</strong> Gunakan tombol share browser untuk kirim via WhatsApp</li>
-      <li><strong>Print:</strong> Menu browser → "Cetak" → "Simpan sebagai PDF"</li>
-    </ul>
-  </div>
-  ${pdfContent}
-  <div class="footer">
-    Generated on ${new Date().toLocaleString('id-ID')} | Sistem Kas Kelas SD Islam Al Husna
-  </div>
-</body>
-</html>`
-
-    // Detect mobile device
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-
-    if (isMobile) {
-      // Mobile: Open in new tab with download instructions
-      const newWindow = window.open('', '_blank')
-      if (newWindow) {
-        newWindow.document.write(htmlContent)
-        newWindow.document.close()
-        toast.success('📱 Laporan terbuka di tab baru. Gunakan menu browser (⋮) untuk download!', { timeout: 6000 })
-      } else {
-        // Fallback for blocked popups
-        createPaymentDownloadLink(htmlContent, fileName)
-      }
-    } else {
-      // Desktop: Direct download + preview
-      createPaymentDownloadLink(htmlContent, fileName)
-
-      // Open preview
-      setTimeout(() => {
-        const previewWindow = window.open('', '_blank')
-        if (previewWindow) {
-          previewWindow.document.write(htmlContent)
-          previewWindow.document.close()
-        }
-      }, 300)
-    }
-
-    console.log('✅ Payment PDF Report generated successfully')
-
-  } catch (error) {
-    console.error('Error generating PDF:', error)
-    toast.error('Gagal membuat PDF report')
-  }
+// Legacy function - now shows modal
+const downloadPaymentsPDF = () => {
+  showPaymentsPdfModal.value = true
 }
 
 // Handle PDF actions from modal

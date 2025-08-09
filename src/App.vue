@@ -25,7 +25,7 @@
         <!-- Logo -->
         <div class="flex items-center px-4 sm:px-6 py-4 border-b border-gray-200">
           <div class="flex items-center">
-            <div class="relative w-10 h-10 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg animate-pulse">
+            <div class="relative w-10 h-10 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
               <!-- Enhanced Book icon -->
               <svg class="w-6 h-6 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C10.895 2 10 2.895 10 4v16c0 1.105.895 2 2 2s2-.895 2-2V4c0-1.105-.895-2-2-2z"/>

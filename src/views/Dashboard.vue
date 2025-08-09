@@ -431,13 +431,19 @@
                 {{ student.name }} ({{ student.nickname }})
               </option>
             </select>
+            <select v-model="quickMarkMonth" class="input-field text-sm">
+              <option value="">Pilih Bulan...</option>
+              <option v-for="month in availableMonths" :key="month.value" :value="month.value">
+                {{ month.label }}
+              </option>
+            </select>
             <button
               @click="quickMarkAsPaid"
-              :disabled="!quickMarkStudent"
+              :disabled="!quickMarkStudent || !quickMarkMonth"
               class="w-full btn-success text-sm py-2"
-              :class="{ 'opacity-50 cursor-not-allowed': !quickMarkStudent }"
+              :class="{ 'opacity-50 cursor-not-allowed': !quickMarkStudent || !quickMarkMonth }"
             >
-              Tandai Sudah Bayar Kas
+              Tandai Sudah Bayar
             </button>
           </div>
         </div>
@@ -847,6 +853,7 @@ const showDownloadOptions = ref(false)
 // Quick Payment Modal
 const showQuickPaymentModal = ref(false)
 const quickMarkStudent = ref('')
+const quickMarkMonth = ref('')
 const quickMarkAmount = ref(0)
 const quickMarkDuration = ref(0)
 
@@ -860,6 +867,61 @@ const paymentForm = ref({
   months: 0,
   notes: '',
   selectedStudents: []
+})
+
+// Available months for payment marking (last 6 months + next 6 months)
+const availableMonths = computed(() => {
+  const months = []
+  const now = new Date()
+  
+  // Add past 6 months
+  for (let i = 6; i >= 1; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    months.push({
+      value: date.toISOString().slice(0, 7),
+      label: `${date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })} (${i} bulan lalu)`
+    })
+  }
+  
+  // Add current month
+  months.push({
+    value: now.toISOString().slice(0, 7),
+    label: `${now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })} (Bulan ini)`
+  })
+  
+  // Add next 6 months
+  for (let i = 1; i <= 6; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() + i, 1)
+    months.push({
+      value: date.toISOString().slice(0, 7),
+      label: `${date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })} (${i} bulan ke depan)`
+    })
+  }
+  
+  return months
+})
+
+// Get unpaid students for a specific month (default current month)
+const getUnpaidStudentsForMonth = (targetMonth = null) => {
+  const monthCode = targetMonth || new Date().toISOString().slice(0, 7)
+  
+  return store.students.filter(student => {
+    // Check if student has paid for the target month
+    const hasPaidForMonth = store.transactions.some(t => {
+      const paymentMonth = t.month || new Date(t.created_at).toISOString().slice(0, 7)
+      return t.student_id === student.id && 
+             t.type === 'income' && 
+             t.status === 'completed' && 
+             paymentMonth === monthCode
+    })
+    
+    return !hasPaidForMonth
+  })
+}
+
+// Get unpaid students for the current month (for display)
+const unpaidStudentsThisMonth = computed(() => {
+  return getUnpaidStudentsForMonth()
 })
 
 // Check if database setup is needed (no data loaded despite being configured)
@@ -1300,15 +1362,16 @@ const generateDashboardPDFContent = () => {
 
 // Quick Mark as Paid
 const quickMarkAsPaid = async () => {
-  if (!quickMarkStudent.value) return
+  if (!quickMarkStudent.value || !quickMarkMonth.value) return
 
   const amount = prompt('Masukkan jumlah pembayaran (IDR):', '50000')
   if (!amount || amount === '') return
 
   try {
-    await store.markPaymentAsPaid(quickMarkStudent.value, parseInt(amount), 0)
+    const result = await store.markPaymentAsPaid(quickMarkStudent.value, parseInt(amount), quickMarkMonth.value)
     quickMarkStudent.value = ''
-    toast.success('Siswa berhasil ditandai sudah bayar!')
+    quickMarkMonth.value = ''
+    toast.success(`✅ ${result.student} berhasil ditandai sudah bayar untuk ${result.month}!`)
   } catch (error) {
     console.error('Error marking payment as paid:', error)
     toast.error('Gagal menandai pembayaran: ' + error.message)
@@ -1319,22 +1382,35 @@ const quickMarkAsPaid = async () => {
 const createMultiMonthPayment = async (months) => {
   const totalAmount = months * 50000 // 50k per month
   
-  if (!confirm(`Buat link pembayaran ${months} bulan (${formatCurrency(totalAmount)}) untuk semua siswa?`)) {
+  if (!confirm(`Buat link pembayaran ${months} bulan (${formatCurrency(totalAmount)}) untuk siswa yang belum bayar?`)) {
     return
   }
 
   try {
-    const studentIds = store.students.map(s => s.id)
+    // Only target unpaid students
+    const unpaidStudents = getUnpaidStudentsForMonth()
+    const studentIds = unpaidStudents.map(s => s.id)
+    
+    if (studentIds.length === 0) {
+      toast.info('📋 Semua siswa sudah membayar bulan ini!')
+      return
+    }
+    
     const results = await store.createMultiMonthPayment(studentIds, totalAmount, months)
     
     const successful = results.filter(r => r.success).length
-    const failed = results.filter(r => !r.success).length
+    const skipped = results.filter(r => r.skipped).length
+    const failed = results.filter(r => !r.success && !r.skipped).length
+    
+    let message = []
+    if (successful > 0) message.push(`✅ ${successful} link berhasil dibuat`)
+    if (skipped > 0) message.push(`⏭️ ${skipped} siswa sudah bayar`)
+    if (failed > 0) message.push(`❌ ${failed} link gagal dibuat`)
     
     if (successful > 0) {
-      toast.success(`✅ ${successful} link pembayaran ${months} bulan berhasil dibuat!`)
-    }
-    if (failed > 0) {
-      toast.warning(`⚠️ ${failed} link gagal dibuat`)
+      toast.success(`🎉 Link pembayaran ${months} bulan: ${message.join(', ')}`)
+    } else {
+      toast.warning(`⚠️ ${message.join(', ')}`)
     }
   } catch (error) {
     console.error('Error creating multi-month payment:', error)
@@ -1353,13 +1429,18 @@ const createCustomPayment = async (type, description, amount) => {
     const results = await store.createCustomPayment(studentIds, 1, type, description, amount)
     
     const successful = results.filter(r => r.success).length
-    const failed = results.filter(r => !r.success).length
+    const skipped = results.filter(r => r.skipped).length
+    const failed = results.filter(r => !r.success && !r.skipped).length
+    
+    let message = []
+    if (successful > 0) message.push(`✅ ${successful} link berhasil dibuat`)
+    if (skipped > 0) message.push(`⏭️ ${skipped} link sudah ada`)
+    if (failed > 0) message.push(`❌ ${failed} link gagal dibuat`)
     
     if (successful > 0) {
-      toast.success(`✅ ${successful} link "${description}" berhasil dibuat!`)
-    }
-    if (failed > 0) {
-      toast.warning(`⚠️ ${failed} link gagal dibuat`)
+      toast.success(`🎯 "${description}": ${message.join(', ')}`)
+    } else {
+      toast.warning(`⚠️ ${message.join(', ')}`)
     }
   } catch (error) {
     console.error('Error creating custom payment:', error)
@@ -1423,13 +1504,18 @@ const createPaymentLinks = async () => {
     }
     
     const successful = results.filter(r => r.success).length
-    const failed = results.filter(r => !r.success).length
+    const skipped = results.filter(r => r.skipped).length
+    const failed = results.filter(r => !r.success && !r.skipped).length
+    
+    let message = []
+    if (successful > 0) message.push(`✅ ${successful} link berhasil dibuat`)
+    if (skipped > 0) message.push(`⏭️ ${skipped} siswa dilewati`)
+    if (failed > 0) message.push(`❌ ${failed} link gagal dibuat`)
     
     if (successful > 0) {
-      toast.success(`✅ ${successful} link "${paymentForm.value.description}" berhasil dibuat!`)
-    }
-    if (failed > 0) {
-      toast.warning(`⚠️ ${failed} link gagal dibuat`)
+      toast.success(`🚀 "${paymentForm.value.description}": ${message.join(', ')}`)
+    } else {
+      toast.warning(`⚠️ ${message.join(', ')}`)
     }
     
     showPaymentForm.value = false
@@ -1441,32 +1527,15 @@ const createPaymentLinks = async () => {
   }
 }
 
-// Get unpaid students for the current month
-const unpaidStudentsThisMonth = computed(() => {
-  const currentMonthCode = new Date().toISOString().slice(0, 7)
-  
-  return store.students.filter(student => {
-    // Check if student has paid this month
-    const hasPaidThisMonth = store.transactions.some(t => {
-      const paymentMonth = t.month || new Date(t.created_at).toISOString().slice(0, 7)
-      return t.student_id === student.id && 
-             t.type === 'income' && 
-             t.status === 'completed' && 
-             paymentMonth === currentMonthCode
-    })
-    
-    return !hasPaidThisMonth
-  })
-})
-
 // Quick mark a specific student as paid
 const quickMarkStudentPaid = async (student) => {
+  const currentMonth = new Date().toISOString().slice(0, 7)
   const amount = prompt(`Masukkan jumlah pembayaran untuk ${student.name} (IDR):`, '50000')
   if (!amount || amount === '') return
 
   try {
-    await store.markPaymentAsPaid(student.id, parseInt(amount), 0)
-    toast.success(`✅ ${student.name} berhasil ditandai sudah bayar!`)
+    const result = await store.markPaymentAsPaid(student.id, parseInt(amount), currentMonth)
+    toast.success(`✅ ${result.student} berhasil ditandai sudah bayar untuk ${result.month}!`)
   } catch (error) {
     console.error('Error marking payment as paid:', error)
     toast.error('Gagal menandai pembayaran: ' + error.message)

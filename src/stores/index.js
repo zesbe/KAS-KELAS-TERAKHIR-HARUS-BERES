@@ -491,6 +491,7 @@ export const useAppStore = defineStore('app', {
       try {
         const monthlyAmount = Math.round(totalAmount / months)
         const results = []
+        const currentMonth = new Date().toISOString().slice(0, 7)
         
         // Ensure studentIds is an array
         const targetStudents = Array.isArray(studentIds) ? studentIds : [studentIds]
@@ -498,6 +499,25 @@ export const useAppStore = defineStore('app', {
         for (const studentId of targetStudents) {
           const student = this.students.find(s => s.id === studentId)
           if (!student) continue
+          
+          // Check if student already paid for current month
+          const alreadyPaid = this.transactions.some(t => {
+            const paymentMonth = t.month || new Date(t.created_at).toISOString().slice(0, 7)
+            return t.student_id === studentId && 
+                   t.type === 'income' && 
+                   t.status === 'completed' && 
+                   paymentMonth === currentMonth
+          })
+          
+          if (alreadyPaid) {
+            results.push({ 
+              student: student.name, 
+              success: false, 
+              skipped: true,
+              reason: 'Sudah membayar bulan ini'
+            })
+            continue
+          }
           
           // Create single payment link for the total amount
           const description = `Kas Kelas ${months} Bulan (${monthlyAmount.toLocaleString('id-ID')}/bulan)`
@@ -514,6 +534,7 @@ export const useAppStore = defineStore('app', {
               months: months,
               monthly_amount: monthlyAmount,
               payment_type: 'multi_month',
+              month: currentMonth,
               notes: `Pembayaran kas ${months} bulan dengan cicilan ${monthlyAmount.toLocaleString('id-ID')}/bulan`
             })
             
@@ -536,6 +557,7 @@ export const useAppStore = defineStore('app', {
     async createCustomPayment(studentIds, months, type, description, amount) {
       try {
         const results = []
+        const currentMonth = new Date().toISOString().slice(0, 7)
         
         // Ensure studentIds is an array
         const targetStudents = Array.isArray(studentIds) ? studentIds : [studentIds]
@@ -543,6 +565,24 @@ export const useAppStore = defineStore('app', {
         for (const studentId of targetStudents) {
           const student = this.students.find(s => s.id === studentId)
           if (!student) continue
+          
+          // For custom payments, we don't skip based on regular monthly payments
+          // Only skip if there's already a payment link for the same type and description
+          const existingPayment = this.paymentLinks.find(p => 
+            p.student_id === studentId && 
+            p.description === description && 
+            p.status === 'pending'
+          )
+          
+          if (existingPayment) {
+            results.push({ 
+              student: student.name, 
+              success: false, 
+              skipped: true,
+              reason: 'Link pembayaran sudah ada'
+            })
+            continue
+          }
           
           try {
             const paymentData = pakasirService.createPaymentLink(student, amount, description)
@@ -554,6 +594,7 @@ export const useAppStore = defineStore('app', {
               amount: amount,
               description: description,
               payment_type: type,
+              month: currentMonth,
               notes: `Pembayaran khusus: ${description}`
             })
             
@@ -573,18 +614,35 @@ export const useAppStore = defineStore('app', {
     },
 
     // Quick mark payment as paid (for dashboard)
-    async markPaymentAsPaid(studentId, amount, duration) {
+    async markPaymentAsPaid(studentId, amount, targetMonth) {
       try {
         const student = this.students.find(s => s.id === studentId)
         if (!student) throw new Error('Student not found')
 
-        const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
-        const currentMonthCode = new Date().toISOString().slice(0, 7)
-        
-        let description = `Kas Kelas ${currentMonth}`
-        if (duration > 1) {
-          description = `Kas Kelas ${duration} Bulan - ${currentMonth}`
+        // Use provided month or current month
+        let monthCode, monthName
+        if (targetMonth && typeof targetMonth === 'string') {
+          monthCode = targetMonth
+          monthName = new Date(targetMonth + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+        } else {
+          monthCode = new Date().toISOString().slice(0, 7)
+          monthName = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
         }
+        
+        // Check if student already paid for this month
+        const alreadyPaid = this.transactions.some(t => {
+          const paymentMonth = t.month || new Date(t.created_at).toISOString().slice(0, 7)
+          return t.student_id === studentId && 
+                 t.type === 'income' && 
+                 t.status === 'completed' && 
+                 paymentMonth === monthCode
+        })
+        
+        if (alreadyPaid) {
+          throw new Error(`Siswa ${student.name} sudah membayar untuk bulan ${monthName}`)
+        }
+
+        const description = `Kas Kelas ${monthName}`
 
         // Create transaction record directly
         await this.addTransaction({
@@ -594,12 +652,12 @@ export const useAppStore = defineStore('app', {
           student_id: studentId,
           payment_method: 'manual_dashboard',
           status: 'completed',
-          month: currentMonthCode,
+          month: monthCode,
           created_at: new Date().toISOString(),
-          notes: `Pembayaran manual dari dashboard untuk ${currentMonth}`
+          notes: `Pembayaran manual dari dashboard untuk ${monthName}`
         })
 
-        return { success: true, student: student.name }
+        return { success: true, student: student.name, month: monthName }
       } catch (error) {
         this.error = error.message
         throw error

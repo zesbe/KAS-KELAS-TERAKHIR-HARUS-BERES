@@ -355,6 +355,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useAppStore } from '@/stores'
+import { useToast } from 'vue-toastification'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { runDatabaseDiagnostics, generateSetupRecommendation } from '@/utils/databaseDiagnostics'

@@ -671,6 +671,14 @@ const useTemplate = (template) => {
   showCreateModal.value = true
 }
 
+const getMonthName = (monthIndex) => {
+  const monthNames = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ]
+  return monthNames[(monthIndex - 1) % 12]
+}
+
 const closeCreateModal = () => {
   showCreateModal.value = false
   selectedPayment.value = null
@@ -681,7 +689,8 @@ const closeCreateModal = () => {
     startMonth: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
     months: 6,
-    monthlyAmount: 50000
+    monthlyAmount: 50000,
+    linkType: 'both'
   })
 }
 

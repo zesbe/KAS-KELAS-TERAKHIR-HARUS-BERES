@@ -337,6 +337,15 @@
     <!-- Monthly Payment Tracking -->
     <MonthlyPaymentTracker />
 
+    <!-- PDF Action Modal -->
+    <PdfActionModal
+      :show="showPdfModal"
+      @close="showPdfModal = false"
+      @print="handleDashboardPrint"
+      @download="handleDashboardDownload"
+      @preview="handleDashboardPreview"
+    />
+
     <!-- Quick Actions -->
     <div class="card p-6 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
       <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">

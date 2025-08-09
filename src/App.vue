@@ -323,6 +323,10 @@ const retryDataLoad = async () => {
 }
 
 onMounted(async () => {
+  // Add scroll event listener
+  window.addEventListener('scroll', handleScroll)
+  window.addEventListener('resize', handleScroll)
+
   // Initial auth check
   await permissions.initializeAuth()
 
@@ -367,5 +371,12 @@ onMounted(async () => {
       }
     }
   }
+})
+
+// Cleanup on unmount
+const { onUnmounted } = require('vue')
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('resize', handleScroll)
 })
 </script>

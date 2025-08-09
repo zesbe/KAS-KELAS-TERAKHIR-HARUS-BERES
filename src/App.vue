@@ -79,14 +79,14 @@
     </div>
 
     <!-- Main content -->
-    <div class="lg:pl-64">
+    <div class="lg:pl-64 min-h-screen flex flex-col">
       <!-- Top bar -->
-      <header class="bg-white shadow-sm border-b border-gray-200">
+      <header class="sticky top-0 z-40 bg-white shadow-sm border-b border-gray-200 lg:z-20">
         <div class="flex items-center justify-between px-4 py-3">
           <div class="flex items-center min-w-0 flex-1">
             <button
               @click="store.toggleSidebar()"
-              class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 mr-2"
+              class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 mr-2 z-50"
             >
               <Bars3Icon class="w-6 h-6" />
             </button>
@@ -114,7 +114,7 @@
       </header>
 
       <!-- Page content -->
-      <main class="p-4 sm:p-6">
+      <main class="flex-1 p-4 sm:p-6 pt-6">
         <router-view />
       </main>
     </div>

@@ -598,52 +598,128 @@ const deleteExpense = async (expense) => {
   }
 }
 
-const exportExpenses = () => {
-  exportService.exportExpenses(filteredExpenses.value)
-  showExportMenu.value = false
-  toast.success('Data pengeluaran berhasil di-export')
+// Excel export functions
+const exportExpensesToExcel = () => {
+  try {
+    const data = filteredExpenses.value.map(expense => ({
+      'Tanggal': new Date(expense.created_at).toLocaleDateString('id-ID'),
+      'Kategori': getCategoryLabel(expense.category),
+      'Keterangan': expense.description,
+      'Catatan': expense.notes || '',
+      'Jumlah': expense.amount,
+      'Status': getStatusLabel(expense.status),
+      'Disetujui Oleh': expense.approved_by || '',
+      'Tanggal Disetujui': expense.approved_at ? new Date(expense.approved_at).toLocaleDateString('id-ID') : ''
+    }))
+
+    downloadExcelFile(data, `Pengeluaran_${new Date().toLocaleDateString('id-ID').replace(/\//g, '_')}`)
+    showExportMenu.value = false
+    toast.success('📊 Data pengeluaran berhasil di-export ke Excel!')
+  } catch (error) {
+    toast.error('Gagal export ke Excel')
+    console.error('Excel export error:', error)
+  }
 }
 
-const exportByCategory = () => {
-  exportService.exportExpensesByCategory(store.expenses)
-  showExportMenu.value = false
-  toast.success('Data pengeluaran per kategori berhasil di-export')
+const exportByCategoryToExcel = () => {
+  try {
+    const categoryTotals = {}
+
+    store.expenses.filter(e => e.status === 'approved').forEach(e => {
+      const category = getCategoryLabel(e.category)
+      if (!categoryTotals[category]) {
+        categoryTotals[category] = { count: 0, amount: 0, items: [] }
+      }
+      categoryTotals[category].count += 1
+      categoryTotals[category].amount += e.amount
+      categoryTotals[category].items.push({
+        tanggal: new Date(e.created_at).toLocaleDateString('id-ID'),
+        keterangan: e.description,
+        jumlah: e.amount
+      })
+    })
+
+    const data = Object.entries(categoryTotals).map(([category, data]) => ({
+      'Kategori': category,
+      'Jumlah Item': data.count,
+      'Total Amount': data.amount,
+      'Persentase': ((data.amount / Object.values(categoryTotals).reduce((sum, cat) => sum + cat.amount, 0)) * 100).toFixed(1) + '%'
+    }))
+
+    downloadExcelFile(data, `Pengeluaran_per_Kategori_${new Date().toLocaleDateString('id-ID').replace(/\//g, '_')}`)
+    showExportMenu.value = false
+    toast.success('📈 Data pengeluaran per kategori berhasil di-export ke Excel!')
+  } catch (error) {
+    toast.error('Gagal export ke Excel')
+    console.error('Excel export error:', error)
+  }
 }
 
-const exportFiltered = () => {
-  const headers = [
-    'Tanggal',
-    'Kategori',
-    'Keterangan',
-    'Catatan',
-    'Jumlah (IDR)',
-    'Status',
-    'Disetujui Oleh',
-    'Tanggal Disetujui'
-  ]
+const exportFilteredToExcel = () => {
+  try {
+    const data = filteredExpenses.value.map(expense => ({
+      'Tanggal': new Date(expense.created_at).toLocaleDateString('id-ID'),
+      'Kategori': getCategoryLabel(expense.category),
+      'Keterangan': expense.description,
+      'Catatan': expense.notes || '',
+      'Jumlah': expense.amount,
+      'Status': getStatusLabel(expense.status),
+      'Disetujui Oleh': expense.approved_by || '',
+      'Tanggal Disetujui': expense.approved_at ? new Date(expense.approved_at).toLocaleDateString('id-ID') : ''
+    }))
 
-  const csvData = filteredExpenses.value.map(expense => [
-    exportService.formatDate(expense.created_at),
-    getCategoryLabel(expense.category),
-    expense.description,
-    expense.notes || '',
-    exportService.formatCurrency(expense.amount),
-    getStatusLabel(expense.status),
-    expense.approved_by || '',
-    expense.approved_at ? exportService.formatDate(expense.approved_at) : ''
-  ])
+    const filterInfo = []
+    if (filters.status) filterInfo.push(`status-${filters.status}`)
+    if (filters.category) filterInfo.push(`kategori-${filters.category}`)
+    if (filters.dateFrom) filterInfo.push(`dari-${filters.dateFrom}`)
+    if (filters.dateTo) filterInfo.push(`sampai-${filters.dateTo}`)
 
-  const filterInfo = []
-  if (filters.status) filterInfo.push(`status-${filters.status}`)
-  if (filters.category) filterInfo.push(`kategori-${filters.category}`)
-  if (filters.dateFrom) filterInfo.push(`dari-${filters.dateFrom}`)
-  if (filters.dateTo) filterInfo.push(`sampai-${filters.dateTo}`)
+    const filename = `Pengeluaran_Terfilter${filterInfo.length ? '_' + filterInfo.join('_') : ''}_${new Date().toLocaleDateString('id-ID').replace(/\//g, '_')}`
 
-  const filename = `pengeluaran_terfilter${filterInfo.length ? '_' + filterInfo.join('_') : ''}_${new Date().toISOString().slice(0, 10)}`
+    downloadExcelFile(data, filename)
+    showExportMenu.value = false
+    toast.success('🔍 Data pengeluaran terfilter berhasil di-export ke Excel!')
+  } catch (error) {
+    toast.error('Gagal export ke Excel')
+    console.error('Excel export error:', error)
+  }
+}
 
-  exportService.downloadCSV(headers, csvData, filename)
-  showExportMenu.value = false
-  toast.success('Data pengeluaran terfilter berhasil di-export')
+// Helper function to download Excel file
+const downloadExcelFile = (data, filename) => {
+  // Convert JSON to CSV format (Excel can open CSV)
+  if (data.length === 0) {
+    toast.warning('Tidak ada data untuk di-export')
+    return
+  }
+
+  const headers = Object.keys(data[0])
+  const csvContent = [
+    headers.join(','),
+    ...data.map(row =>
+      headers.map(header => {
+        const value = row[header]
+        // Handle numbers and strings with commas
+        if (typeof value === 'number') {
+          return value
+        }
+        return `"${String(value).replace(/"/g, '""')}"`
+      }).join(',')
+    )
+  ].join('\n')
+
+  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${filename}.csv`
+  link.style.display = 'none'
+
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+
+  URL.revokeObjectURL(url)
 }
 
 // PDF Generation Functions

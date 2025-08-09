@@ -361,35 +361,95 @@ async function loadFromOrderId(orderId) {
   if (stored) {
     const links = JSON.parse(stored)
     const paymentLink = links.find(link => link.order_id === orderId)
-    
+
     if (paymentLink) {
-      // Get student data
+      // Get student data from multiple sources
+      let student = null
+
+      // First try from students collection
       const studentsData = localStorage.getItem('students')
       if (studentsData) {
         const students = JSON.parse(studentsData)
-        const student = students.find(s => s.id === paymentLink.student_id)
-        
-        if (student) {
-          invoice.value = {
-            id: paymentLink.id,
-            invoiceNumber: `INV-${orderId.slice(-8).toUpperCase()}`,
-            orderId: orderId,
-            student: student,
-            description: paymentLink.description || 'Kas Kelas',
-            amount: paymentLink.amount,
-            period: getCurrentMonth(),
-            paymentMethod: paymentLink.payment_method || 'qris',
-            paidAt: paymentLink.completed_at || new Date().toISOString(),
-            createdAt: paymentLink.created_at || new Date().toISOString(),
-            reference: orderId.slice(-8).toUpperCase(),
-            status: 'completed'
-          }
-          return
+        student = students.find(s => s.id === paymentLink.student_id)
+      }
+
+      // If not found, try from demo students
+      if (!student) {
+        const demoData = localStorage.getItem('demo_students')
+        if (demoData) {
+          const demoStudents = JSON.parse(demoData)
+          student = demoStudents.find(s => s.id === paymentLink.student_id)
         }
+      }
+
+      // If still not found, check if payment link has embedded student data
+      if (!student && paymentLink.student) {
+        student = paymentLink.student
+      }
+
+      if (student) {
+        invoice.value = {
+          id: paymentLink.id,
+          invoiceNumber: `INV-${orderId.slice(-8).toUpperCase()}`,
+          orderId: orderId,
+          student: {
+            name: student.name,
+            nickname: student.nickname || '',
+            phone: student.phone || student.parent_phone || ''
+          },
+          description: paymentLink.description || `Kas Kelas Bulan ${getCurrentMonth()}`,
+          amount: paymentLink.amount,
+          period: paymentLink.period || getCurrentMonth(),
+          paymentMethod: paymentLink.payment_method || 'qris',
+          paidAt: paymentLink.completed_at || paymentLink.paid_at || new Date().toISOString(),
+          createdAt: paymentLink.created_at || new Date().toISOString(),
+          reference: paymentLink.reference || orderId.slice(-8).toUpperCase(),
+          status: 'completed'
+        }
+        return
       }
     }
   }
-  
+
+  // Try to find in transactions data
+  const transactionsData = localStorage.getItem('transactions')
+  if (transactionsData) {
+    const transactions = JSON.parse(transactionsData)
+    const transaction = transactions.find(t => t.order_id === orderId || t.id === orderId)
+
+    if (transaction) {
+      // Get student data
+      let student = null
+      const studentsData = localStorage.getItem('students')
+      if (studentsData) {
+        const students = JSON.parse(studentsData)
+        student = students.find(s => s.id === transaction.student_id)
+      }
+
+      if (student) {
+        invoice.value = {
+          id: transaction.id,
+          invoiceNumber: `INV-${orderId.slice(-8).toUpperCase()}`,
+          orderId: orderId,
+          student: {
+            name: student.name,
+            nickname: student.nickname || '',
+            phone: student.phone || student.parent_phone || ''
+          },
+          description: transaction.description || `Kas Kelas Bulan ${getCurrentMonth()}`,
+          amount: transaction.amount,
+          period: transaction.period || getCurrentMonth(),
+          paymentMethod: transaction.payment_method || 'qris',
+          paidAt: transaction.paid_at || transaction.created_at || new Date().toISOString(),
+          createdAt: transaction.created_at || new Date().toISOString(),
+          reference: transaction.reference || orderId.slice(-8).toUpperCase(),
+          status: 'completed'
+        }
+        return
+      }
+    }
+  }
+
   // If not found, load demo data
   loadDemoData()
 }

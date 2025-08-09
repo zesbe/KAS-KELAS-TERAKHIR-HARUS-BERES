@@ -592,44 +592,75 @@ const useTemplate = (template) => {
   showCreateModal.value = true
 }
 
+const closeCreateModal = () => {
+  showCreateModal.value = false
+  selectedPayment.value = null
+
+  // Reset form
+  Object.assign(form, {
+    studentId: '',
+    startMonth: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
+    months: 6,
+    monthlyAmount: 50000
+  })
+}
+
 const createMultiMonthPayment = async () => {
   creating.value = true
   try {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     const student = students.value.find(s => s.id === form.studentId)
     const totalAmount = calculateTotal()
-    const newPayment = {
-      id: Date.now().toString(),
-      student,
-      period_label: getPeriodLabel(),
-      months: form.months,
-      monthly_amount: form.monthlyAmount,
-      total_amount: totalAmount,
-      paid_amount: 0,
-      progress_percentage: 0,
-      status: 'pending',
-      payment_url: `https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/${totalAmount}?order_id=${student.nickname.toUpperCase()}${Date.now()}`,
-      month_details: []
+
+    if (selectedPayment.value) {
+      // Edit mode - update existing payment
+      const paymentToUpdate = selectedPayment.value
+      const index = multiMonthPayments.value.findIndex(p => p.id === paymentToUpdate.id)
+
+      if (index !== -1) {
+        // Preserve paid amount and progress when editing
+        const updatedPayment = {
+          ...paymentToUpdate,
+          student,
+          period_label: getPeriodLabel(),
+          months: form.months,
+          monthly_amount: form.monthlyAmount,
+          total_amount: totalAmount,
+          progress_percentage: Math.round((paymentToUpdate.paid_amount / totalAmount) * 100),
+          payment_url: `https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/${totalAmount}?order_id=${student.nickname.toUpperCase()}${paymentToUpdate.id}`
+        }
+
+        multiMonthPayments.value[index] = updatedPayment
+        toast.success(`✅ Pembayaran ${student.name} berhasil diupdate!`)
+      }
+    } else {
+      // Create mode - add new payment
+      const newPayment = {
+        id: Date.now().toString(),
+        student,
+        period_label: getPeriodLabel(),
+        months: form.months,
+        monthly_amount: form.monthlyAmount,
+        total_amount: totalAmount,
+        paid_amount: 0,
+        progress_percentage: 0,
+        status: 'pending',
+        payment_url: `https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/${totalAmount}?order_id=${student.nickname.toUpperCase()}${Date.now()}`,
+        month_details: []
+      }
+
+      multiMonthPayments.value.unshift(newPayment)
+      toast.success('✅ Pembayaran multi-bulan berhasil dibuat!')
     }
-    
-    multiMonthPayments.value.unshift(newPayment)
-    
-    toast.success('Pembayaran multi-bulan berhasil dibuat!')
-    showCreateModal.value = false
-    
-    // Reset form
-    Object.assign(form, {
-      studentId: '',
-      startMonth: new Date().getMonth() + 1,
-      year: new Date().getFullYear(),
-      months: 6,
-      monthlyAmount: 50000
-    })
-    
+
+    closeCreateModal()
+
   } catch (error) {
-    toast.error('Gagal membuat pembayaran multi-bulan')
+    console.error('Error saving payment:', error)
+    toast.error('Gagal menyimpan pembayaran multi-bulan')
   } finally {
     creating.value = false
   }

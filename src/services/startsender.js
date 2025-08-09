@@ -760,11 +760,16 @@ ${recipient.paymentLink}
 
   // Get sending statistics
   getStats() {
+    const currentTrack = this.musicManager.getCurrentTrack()
+
     return {
       ...this.progress,
       isPlaying: this.isPlaying,
-      currentSong: this.songs[this.currentSongIndex].name,
-      status: this.isPlaying ? 'active' : 'idle'
+      currentSong: currentTrack ? currentTrack.name : 'Ready',
+      currentTrackDescription: currentTrack ? currentTrack.description : 'Music system ready',
+      trackList: this.musicManager.getTrackList(),
+      status: this.isPlaying ? 'active' : 'idle',
+      musicStatus: this.musicManager.isPlaying ? 'playing' : 'stopped'
     }
   }
 

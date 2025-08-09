@@ -361,51 +361,56 @@
     />
 
     <!-- Quick Actions -->
-    <div class="card p-6 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
-      <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-        <span class="text-2xl mr-2">⚡</span>
-        Aksi Cepat
-      </h3>
+    <div class="card">
+      <div class="card-header">
+        <h3 class="heading-3">Quick Actions</h3>
+      </div>
+      <div class="card-body">
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <router-link
           to="/payments"
-          class="group flex flex-col items-center p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl hover:from-blue-200 hover:to-indigo-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl border border-blue-200"
+          class="group flex flex-col items-center p-6 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all duration-200 border border-slate-200 hover:border-slate-300"
+          style="box-shadow: var(--shadow-enterprise)"
         >
-          <div class="p-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <CreditCardIcon class="w-8 h-8 text-white" />
+          <div class="p-3 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors duration-200">
+            <CreditCardIcon class="w-6 h-6 text-blue-600" />
           </div>
-          <span class="text-sm font-semibold text-blue-800 text-center mt-3">💳 Buat Link Bayar</span>
+          <span class="text-sm font-semibold text-slate-700 text-center mt-3">Payment Links</span>
         </router-link>
 
         <router-link
           to="/campaigns"
-          class="group flex flex-col items-center p-6 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl hover:from-green-200 hover:to-emerald-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl border border-green-200"
+          class="group flex flex-col items-center p-6 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all duration-200 border border-slate-200 hover:border-slate-300"
+          style="box-shadow: var(--shadow-enterprise)"
         >
-          <div class="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <SpeakerWaveIcon class="w-8 h-8 text-white" />
+          <div class="p-3 bg-emerald-100 rounded-lg group-hover:bg-emerald-200 transition-colors duration-200">
+            <SpeakerWaveIcon class="w-6 h-6 text-emerald-600" />
           </div>
-          <span class="text-sm font-semibold text-green-800 text-center mt-3">📢 Kirim Pesan</span>
+          <span class="text-sm font-semibold text-slate-700 text-center mt-3">Campaigns</span>
         </router-link>
 
         <router-link
           to="/expenses"
-          class="group flex flex-col items-center p-6 bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl hover:from-orange-200 hover:to-amber-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl border border-orange-200"
+          class="group flex flex-col items-center p-6 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all duration-200 border border-slate-200 hover:border-slate-300"
+          style="box-shadow: var(--shadow-enterprise)"
         >
-          <div class="p-3 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <ReceiptPercentIcon class="w-8 h-8 text-white" />
+          <div class="p-3 bg-amber-100 rounded-lg group-hover:bg-amber-200 transition-colors duration-200">
+            <ReceiptPercentIcon class="w-6 h-6 text-amber-600" />
           </div>
-          <span class="text-sm font-semibold text-orange-800 text-center mt-3">💰 Catat Pengeluaran</span>
+          <span class="text-sm font-semibold text-slate-700 text-center mt-3">Expenses</span>
         </router-link>
 
         <router-link
           to="/reports"
-          class="group flex flex-col items-center p-6 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl hover:from-purple-200 hover:to-pink-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl border border-purple-200"
+          class="group flex flex-col items-center p-6 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all duration-200 border border-slate-200 hover:border-slate-300"
+          style="box-shadow: var(--shadow-enterprise)"
         >
-          <div class="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <DocumentChartBarIcon class="w-8 h-8 text-white" />
+          <div class="p-3 bg-slate-200 rounded-lg group-hover:bg-slate-300 transition-colors duration-200">
+            <DocumentChartBarIcon class="w-6 h-6 text-slate-600" />
           </div>
-          <span class="text-sm font-semibold text-purple-800 text-center mt-3">📊 Lihat Laporan</span>
+          <span class="text-sm font-semibold text-slate-700 text-center mt-3">Reports</span>
         </router-link>
+      </div>
       </div>
     </div>
   </div>

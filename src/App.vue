@@ -145,7 +145,7 @@
         >
           <Bars3Icon class="w-5 h-5" />
           <!-- Small pulse animation -->
-          <div class="absolute inset-0 rounded-full bg-blue-400 animate-ping opacity-20"></div>
+          <div class="absolute inset-0 rounded-full bg-blue-400 gentle-pulse"></div>
         </button>
       </Transition>
     </div>

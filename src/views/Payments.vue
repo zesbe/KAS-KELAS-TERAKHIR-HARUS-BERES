@@ -1149,6 +1149,120 @@ Wassalamu'alaikum Wr. Wb.
 *Sistem Kas Kelas Otomatis*`
 }
 
+const downloadPaymentsPDF = async () => {
+  try {
+    // Create PDF content
+    const pdfContent = generatePaymentsPDFContent()
+
+    // Create a temporary HTML element for PDF generation
+    const element = document.createElement('div')
+    element.innerHTML = pdfContent
+    element.style.position = 'absolute'
+    element.style.left = '-9999px'
+    element.style.top = '-9999px'
+    document.body.appendChild(element)
+
+    // Simple implementation: Create a new window with the content
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Laporan Pembayaran - ${new Date().toLocaleDateString('id-ID')}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
+            h2 { color: #374151; margin-top: 20px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
+            th { background-color: #f3f4f6; font-weight: bold; }
+            .status-pending { color: #d97706; }
+            .status-completed { color: #059669; }
+            .status-expired { color: #dc2626; }
+            .summary { background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0; }
+            .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          ${pdfContent}
+          <div class="footer">
+            Generated on ${new Date().toLocaleString('id-ID')} | Sistem Kas Kelas
+          </div>
+        </body>
+        </html>
+      `)
+      printWindow.document.close()
+
+      setTimeout(() => {
+        printWindow.print()
+      }, 500)
+    }
+
+    // Clean up
+    document.body.removeChild(element)
+
+    toast.success('PDF Report siap untuk di-print/save')
+
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    toast.error('Gagal membuat PDF report')
+  }
+}
+
+const generatePaymentsPDFContent = () => {
+  const payments = filteredPayments.value
+  const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0)
+  const pendingCount = payments.filter(p => p.status === 'pending').length
+  const completedCount = payments.filter(p => p.status === 'completed').length
+
+  let tableRows = ''
+  payments.forEach(payment => {
+    const statusClass = `status-${payment.status}`
+    tableRows += `
+      <tr>
+        <td>${payment.student?.name || '-'}</td>
+        <td>${payment.student?.nickname || '-'}</td>
+        <td>${formatCurrency(payment.amount)}</td>
+        <td>${payment.description}</td>
+        <td class="${statusClass}">${getStatusLabel(payment.status)}</td>
+        <td>${formatDate(payment.created_at)}</td>
+        <td style="font-family: monospace; font-size: 11px;">${payment.order_id}</td>
+      </tr>
+    `
+  })
+
+  return `
+    <h1>📊 Laporan Pembayaran Kas Kelas</h1>
+
+    <div class="summary">
+      <h2>📈 Ringkasan</h2>
+      <p><strong>Total Link Pembayaran:</strong> ${payments.length}</p>
+      <p><strong>Pending:</strong> ${pendingCount} | <strong>Selesai:</strong> ${completedCount}</p>
+      <p><strong>Total Amount:</strong> ${formatCurrency(totalAmount)}</p>
+      <p><strong>Filter Status:</strong> ${statusFilter.value || 'Semua Status'}</p>
+    </div>
+
+    <h2>📋 Detail Pembayaran</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Siswa</th>
+          <th>Nickname</th>
+          <th>Jumlah</th>
+          <th>Keterangan</th>
+          <th>Status</th>
+          <th>Tanggal Dibuat</th>
+          <th>Order ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows || '<tr><td colspan="7" style="text-align: center; color: #6b7280;">Tidak ada data pembayaran</td></tr>'}
+      </tbody>
+    </table>
+  `
+}
+
 const sendBulkMessages = async () => {
   try {
     sending.value = true

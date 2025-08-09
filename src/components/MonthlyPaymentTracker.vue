@@ -21,7 +21,7 @@
     <div class="card p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
       <div class="flex items-center justify-between mb-4">
         <h4 class="text-lg font-semibold text-blue-900">
-          📊 {{ currentMonthName }} {{ new Date().getFullYear() }}
+          📊 {{ currentMonthName }} {{ selectedYear }}
         </h4>
         <div class="flex items-center space-x-4">
           <div class="text-center">
@@ -273,21 +273,13 @@ const availableYears = computed(() => {
 })
 
 const currentMonthName = computed(() => {
-  const now = new Date()
-  return now.toLocaleDateString('id-ID', { month: 'long' })
+  return new Date().toLocaleDateString('id-ID', { month: 'long' })
 })
 
 const currentMonthStats = computed(() => {
-  const now = new Date()
-  const currentMonthCode = now.toISOString().slice(0, 7)
-
-  // Find current month in the selected year's data
-  const currentMonth = monthlyData.value.find(m => {
-    const monthDate = new Date(m.year, new Date(m.monthCode + '-01').getMonth(), 1)
-    const monthCode = monthDate.toISOString().slice(0, 7)
-    return monthCode === currentMonthCode
-  })
-
+  const currentMonthCode = new Date().toISOString().slice(0, 7)
+  const currentMonth = monthlyData.value.find(m => m.monthCode === currentMonthCode)
+  
   if (!currentMonth) {
     return {
       paid: 0,
@@ -296,7 +288,7 @@ const currentMonthStats = computed(() => {
       totalIncome: 0
     }
   }
-
+  
   return {
     paid: currentMonth.paidStudents.length,
     unpaid: currentMonth.unpaidStudents.length,
@@ -326,10 +318,7 @@ const loadMonthlyData = () => {
     const monthDate = new Date(year, i, 1)
     const monthCode = monthDate.toISOString().slice(0, 7) // YYYY-MM
     const monthName = monthDate.toLocaleDateString('id-ID', { month: 'long' })
-    const now = new Date()
-    const currentMonthCode = now.toISOString().slice(0, 7)
-    // Only highlight current month if we're viewing the current year
-    const isCurrentMonth = monthCode === currentMonthCode && year === now.getFullYear()
+    const isCurrentMonth = monthCode === new Date().toISOString().slice(0, 7)
     
     // Get transactions for this month
     const monthTransactions = store.transactions.filter(t => {

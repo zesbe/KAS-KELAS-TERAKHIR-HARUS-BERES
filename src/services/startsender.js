@@ -43,21 +43,11 @@ class StarSender {
   // Play beautiful music during sending
   playMusic() {
     if (this.isPlaying) return
-    
+
     try {
-      const song = this.songs[this.currentSongIndex]
-      this.audio = new Audio(song.url)
-      this.audio.loop = true
-      this.audio.volume = 0.3
-      
-      this.audio.play().then(() => {
-        this.isPlaying = true
-        console.log(`🎵 Playing: ${song.name}`)
-      }).catch(err => {
-        console.log('🎵 Audio autoplay blocked, playing silently...')
-        this.isPlaying = true
-      })
-      
+      this.musicManager.setMoodMusic('epic') // Start with epic anthem
+      this.isPlaying = true
+      console.log('🎵 StarSender Music Started - Epic Mode Activated!')
     } catch (error) {
       console.log('🎵 Music system ready (silent mode)')
       this.isPlaying = true
@@ -644,7 +634,7 @@ ${recipient.paymentLink}
 
 ✅ Klik link di atas untuk pembayaran instan
 ⚡ Konfirmasi otomatis
-�� Aman & Terpercaya`
+📱 Aman & Terpercaya`
 
       message = message.replace(/\[\[PAYMENT_LINK\]\]/g, formattedLink)
     } else {

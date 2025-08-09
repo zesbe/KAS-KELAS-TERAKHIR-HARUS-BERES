@@ -194,18 +194,28 @@
             </div>
           </div>
           
-          <div class="flex items-center justify-center space-x-3 mt-3 pt-3 border-t border-gray-200">
-            <button @click="viewDetails(payment)" class="flex items-center text-primary-600">
+          <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-gray-200">
+            <button @click="viewDetails(payment)" class="flex items-center justify-center text-primary-600 py-2">
               <EyeIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Detail</span>
             </button>
-            <button @click="sendReminder(payment)" class="flex items-center text-success-600">
+            <button @click="sendReminder(payment)" class="flex items-center justify-center text-success-600 py-2">
               <ChatBubbleLeftIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Kirim</span>
             </button>
-            <button @click="copyPaymentLink(payment)" class="flex items-center text-warning-600">
+            <button @click="copyPaymentLink(payment)" class="flex items-center justify-center text-warning-600 py-2">
               <LinkIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Copy</span>
+            </button>
+            <button @click="editPayment(payment)" class="flex items-center justify-center text-blue-600 py-2">
+              <PencilIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Edit</span>
+            </button>
+          </div>
+          <div class="flex justify-center mt-2">
+            <button @click="deletePayment(payment)" class="flex items-center justify-center text-red-600 py-2 w-full">
+              <TrashIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Hapus</span>
             </button>
           </div>
         </div>

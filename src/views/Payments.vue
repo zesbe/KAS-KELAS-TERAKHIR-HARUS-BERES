@@ -833,32 +833,60 @@ const getStatusClass = (status) => {
 const generateBulkLinks = async () => {
   try {
     generating.value = true
-    
+
     let targetStudents = []
-    
+    const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+
     if (quickGenerate.target === 'all') {
       targetStudents = store.students
     } else if (quickGenerate.target === 'unpaid') {
-      const paidStudentIds = store.transactions
-        .filter(t => t.type === 'income' && t.status === 'completed')
-        .map(t => t.student_id)
-      targetStudents = store.students.filter(s => !paidStudentIds.includes(s.id))
+      // Use the new getter that excludes students who already paid this month
+      targetStudents = store.unpaidStudentsThisMonth
+
+      if (targetStudents.length === 0) {
+        toast.info(`Semua siswa sudah membayar untuk bulan ${currentMonth}! 🎉`)
+        return
+      }
     } else if (quickGenerate.target === 'selected') {
       targetStudents = store.students.filter(s => quickGenerate.selectedStudents.includes(s.id))
     }
-    
-    const promises = targetStudents.map(student => 
-      store.generatePaymentLink(student.id, quickGenerate.amount, quickGenerate.description)
-    )
-    
-    await Promise.all(promises)
-    
-    toast.success(`Berhasil generate ${targetStudents.length} link pembayaran`)
-    
+
+    // Show confirmation for bulk generation
+    if (targetStudents.length > 5) {
+      const confirmed = confirm(`Generate link pembayaran untuk ${targetStudents.length} siswa?\n\nBulan: ${currentMonth}\nJumlah: ${formatCurrency(quickGenerate.amount)}\nKeterangan: ${quickGenerate.description}`)
+      if (!confirmed) return
+    }
+
+    // Use the new bulk generation method
+    try {
+      const results = await store.generateBulkPaymentLinks(
+        quickGenerate.amount,
+        quickGenerate.description,
+        quickGenerate.target === 'unpaid'
+      )
+
+      const successful = results.filter(r => r.success).length
+      const failed = results.filter(r => !r.success).length
+
+      if (successful > 0) {
+        toast.success(`✅ Berhasil generate ${successful} link pembayaran untuk bulan ${currentMonth}`)
+      }
+      if (failed > 0) {
+        toast.warning(`⚠️ ${failed} link gagal dibuat (mungkin siswa sudah bayar)`)
+      }
+
+    } catch (error) {
+      if (error.message.includes('sudah membayar')) {
+        toast.info(error.message)
+      } else {
+        throw error
+      }
+    }
+
     // Reset form
     quickGenerate.selectedStudents = []
   } catch (error) {
-    toast.error('Gagal generate link pembayaran')
+    toast.error('Gagal generate link pembayaran: ' + error.message)
     console.error('Error generating bulk links:', error)
   } finally {
     generating.value = false

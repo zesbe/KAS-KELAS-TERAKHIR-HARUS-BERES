@@ -1,5 +1,6 @@
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
+import * as XLSX from 'xlsx'
 
 class ExportService {
   constructor() {
@@ -48,6 +49,49 @@ class ExportService {
     link.href = URL.createObjectURL(blob)
     link.download = `${filename}.json`
     link.click()
+  }
+
+  // Download Excel utility
+  downloadExcel(worksheets, filename) {
+    const wb = XLSX.utils.book_new()
+    
+    worksheets.forEach(({ name, data, headers }) => {
+      let wsData = []
+      
+      // Add headers if provided
+      if (headers) {
+        wsData.push(headers)
+      }
+      
+      // Add data
+      wsData = wsData.concat(data)
+      
+      const ws = XLSX.utils.aoa_to_sheet(wsData)
+      
+      // Auto-size columns
+      const range = XLSX.utils.decode_range(ws['!ref'])
+      const colWidths = []
+      
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        let maxWidth = 10
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+          const cellAddress = XLSX.utils.encode_cell({ r: R, c: C })
+          const cell = ws[cellAddress]
+          if (cell && cell.v) {
+            const cellLength = cell.v.toString().length
+            if (cellLength > maxWidth) {
+              maxWidth = Math.min(cellLength, 50) // Max width 50
+            }
+          }
+        }
+        colWidths.push({ width: maxWidth })
+      }
+      
+      ws['!cols'] = colWidths
+      XLSX.utils.book_append_sheet(wb, ws, name)
+    })
+    
+    XLSX.writeFile(wb, `${filename}.xlsx`)
   }
 
   // Export students data

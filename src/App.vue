@@ -130,13 +130,24 @@
       </main>
 
       <!-- Mobile floating menu button (visible when scrolled) -->
-      <button
-        v-if="showFloatingMenuButton"
-        @click="store.toggleSidebar()"
-        class="lg:hidden fixed bottom-20 right-4 z-50 w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border-2 border-white/20"
+      <Transition
+        enter-active-class="transition-all duration-300 ease-out"
+        enter-from-class="opacity-0 scale-0 translate-y-4"
+        enter-to-class="opacity-100 scale-100 translate-y-0"
+        leave-active-class="transition-all duration-200 ease-in"
+        leave-from-class="opacity-100 scale-100 translate-y-0"
+        leave-to-class="opacity-0 scale-0 translate-y-4"
       >
-        <Bars3Icon class="w-5 h-5" />
-      </button>
+        <button
+          v-if="showFloatingMenuButton"
+          @click="store.toggleSidebar()"
+          class="lg:hidden fixed bottom-20 right-4 z-50 w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border-2 border-white/20 active:scale-95"
+        >
+          <Bars3Icon class="w-5 h-5" />
+          <!-- Small pulse animation -->
+          <div class="absolute inset-0 rounded-full bg-blue-400 animate-ping opacity-20"></div>
+        </button>
+      </Transition>
     </div>
 
     <!-- Error toast -->

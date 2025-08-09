@@ -57,6 +57,25 @@
         </div>
       </div>
     </div>
+
+    <!-- Dashboard Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Dashboard Kas Kelas</h1>
+        <p class="mt-1 text-sm text-gray-500">
+          Overview keuangan dan statistik pembayaran
+        </p>
+      </div>
+      <button
+        @click="downloadDashboardPDF"
+        class="btn-primary mt-4 sm:mt-0 flex items-center"
+        title="Download Dashboard Report"
+      >
+        <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+        Download PDF Report
+      </button>
+    </div>
+
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="card p-6">

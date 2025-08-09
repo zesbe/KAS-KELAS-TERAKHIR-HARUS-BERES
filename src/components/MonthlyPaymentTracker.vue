@@ -335,6 +335,17 @@ const loadMonthlyData = () => {
     const monthCode = monthDate.toISOString().slice(0, 7) // YYYY-MM
     const monthName = monthDate.toLocaleDateString('id-ID', { month: 'long' })
 
+    // Debug for August 2025
+    if (monthName === 'Agustus' && monthYear === 2025) {
+      console.log(`📅 Month generation for Agustus 2025:`, {
+        monthIndex,
+        monthYear,
+        monthDate: monthDate.toISOString(),
+        monthCode,
+        monthName
+      })
+    }
+
     const currentDate = new Date()
     const currentMonthCode = currentDate.toISOString().slice(0, 7)
 

@@ -66,10 +66,11 @@ class StarSender {
 
   // Switch to next song
   nextSong() {
-    if (this.audio) {
-      this.stopMusic()
-      this.currentSongIndex = (this.currentSongIndex + 1) % this.songs.length
-      this.playMusic()
+    try {
+      this.musicManager.nextTrack()
+      console.log('⏭️ Switched to next epic track!')
+    } catch (error) {
+      console.log('⏭️ Next song (silent mode)')
     }
   }
 

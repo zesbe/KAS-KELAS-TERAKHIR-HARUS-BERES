@@ -900,14 +900,17 @@ const viewDetails = (payment) => {
 
 const sendReminder = async (payment) => {
   try {
-    // Create comprehensive reminder message
+    // Create comprehensive reminder message with dynamic greeting
     const student = payment.student
     const remainingAmount = payment.total_amount - payment.paid_amount
     const progressPercent = payment.progress_percentage
+    const greeting = getIndonesianTimeGreeting()
 
     let message = `🔔 *REMINDER PEMBAYARAN KAS KELAS* 🔔
 
-Halo ${student.name} (${student.nickname})! 👋
+Assalamu'alaikum Wr. Wb.
+
+${greeting} orang tua dari ${student.name} (${student.nickname})! 👋
 
 📋 *Detail Pembayaran Multi-Bulan:*
 • Periode: ${payment.period_label}

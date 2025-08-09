@@ -8,7 +8,9 @@
       </div>
       <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
         <select v-model="selectedYear" @change="loadMonthlyData" class="input-field w-full sm:w-auto">
-          <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+          <option v-for="year in availableYears" :key="year" :value="year">
+            {{ year }}/{{ year + 1 }}
+          </option>
         </select>
         <button @click="exportMonthlyReport" class="btn-secondary w-full sm:w-auto">
           <DocumentArrowDownIcon class="w-4 h-4 mr-2" />

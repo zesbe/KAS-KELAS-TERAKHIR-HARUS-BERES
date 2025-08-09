@@ -717,6 +717,39 @@ const createMultiMonthPayment = async () => {
       }
     } else {
       // Create mode - add new payment
+      const baseOrderId = `${student.nickname.toUpperCase()}${Date.now()}`
+      const paymentLinks = []
+
+      // Generate links based on selected type
+      if (form.linkType === 'individual' || form.linkType === 'both') {
+        // Generate individual monthly links
+        for (let i = 1; i <= form.months; i++) {
+          const monthOrderId = `${baseOrderId}M${i.toString().padStart(2, '0')}`
+          paymentLinks.push({
+            id: `individual_${i}`,
+            type: 'individual',
+            month: i,
+            amount: form.monthlyAmount,
+            order_id: monthOrderId,
+            url: `https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/${form.monthlyAmount}?order_id=${monthOrderId}`,
+            description: `Kas Bulan ke-${i} (${getMonthName(form.startMonth + i - 1)})`
+          })
+        }
+      }
+
+      if (form.linkType === 'single' || form.linkType === 'both') {
+        // Generate single total link
+        const totalOrderId = `${baseOrderId}TOTAL`
+        paymentLinks.push({
+          id: 'total',
+          type: 'total',
+          amount: totalAmount,
+          order_id: totalOrderId,
+          url: `https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/${totalAmount}?order_id=${totalOrderId}`,
+          description: `Kas ${form.months} Bulan Sekaligus`
+        })
+      }
+
       const newPayment = {
         id: Date.now().toString(),
         student,
@@ -727,12 +760,17 @@ const createMultiMonthPayment = async () => {
         paid_amount: 0,
         progress_percentage: 0,
         status: 'pending',
-        payment_url: `https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/${totalAmount}?order_id=${student.nickname.toUpperCase()}${Date.now()}`,
+        payment_url: paymentLinks[0]?.url || '', // Default to first link
+        payment_links: paymentLinks,
+        link_type: form.linkType,
         month_details: []
       }
 
       multiMonthPayments.value.unshift(newPayment)
-      toast.success('✅ Pembayaran multi-bulan berhasil dibuat!')
+
+      const linkCount = paymentLinks.length
+      const linkTypes = form.linkType === 'both' ? 'individual + total' : form.linkType
+      toast.success(`✅ Multi-Month Payment berhasil dibuat!\n${linkCount} link ${linkTypes} telah digenerate`)
     }
 
     closeCreateModal()

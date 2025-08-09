@@ -1042,17 +1042,53 @@ async function downloadPDF() {
   }
 }
 
-function shareInvoice() {
-  if (navigator.share) {
-    navigator.share({
-      title: `Invoice ${invoice.value.invoiceNumber}`,
-      text: `Invoice pembayaran kas kelas untuk ${invoice.value.student.name}`,
-      url: window.location.href
-    })
+async function shareInvoice() {
+  const shareData = {
+    title: `Invoice ${invoice.value.invoiceNumber} - ${invoice.value.student.name}`,
+    text: `Invoice pembayaran kas kelas untuk ${invoice.value.student.name} (${invoice.value.student.nickname}) - Total: ${formatCurrency(invoice.value.amount)}`,
+    url: window.location.href
+  }
+
+  if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+    try {
+      await navigator.share(shareData)
+    } catch (error) {
+      console.log('Share canceled or failed:', error)
+      fallbackCopyToClipboard()
+    }
   } else {
-    // Fallback: copy to clipboard
-    navigator.clipboard.writeText(window.location.href)
-    alert('Link invoice telah disalin ke clipboard!')
+    fallbackCopyToClipboard()
+  }
+}
+
+async function fallbackCopyToClipboard() {
+  const textToCopy = `Invoice ${invoice.value.invoiceNumber}
+Nama: ${invoice.value.student.name} (${invoice.value.student.nickname})
+Total: ${formatCurrency(invoice.value.amount)}
+Status: LUNAS ✅
+
+Link: ${window.location.href}`
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(textToCopy)
+    } else {
+      // Fallback for non-secure contexts
+      const textArea = document.createElement('textarea')
+      textArea.value = textToCopy
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      document.execCommand('copy')
+      textArea.remove()
+    }
+    alert('Detail invoice telah disalin ke clipboard!')
+  } catch (error) {
+    console.error('Failed to copy to clipboard:', error)
+    alert('Gagal menyalin ke clipboard. Link: ' + window.location.href)
   }
 }
 

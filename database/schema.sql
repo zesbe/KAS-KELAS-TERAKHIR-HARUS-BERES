@@ -37,6 +37,8 @@ CREATE TABLE transactions (
     payment_method VARCHAR(50),
     order_id VARCHAR(100) UNIQUE,
     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed', 'cancelled')),
+    month VARCHAR(7), -- YYYY-MM format for tracking monthly payments
+    notes TEXT, -- Additional notes for manual payments or special instructions
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -47,6 +49,7 @@ CREATE INDEX idx_transactions_type ON transactions(type);
 CREATE INDEX idx_transactions_status ON transactions(status);
 CREATE INDEX idx_transactions_created_at ON transactions(created_at);
 CREATE INDEX idx_transactions_order_id ON transactions(order_id);
+CREATE INDEX idx_transactions_month ON transactions(month);
 
 -- =========================================
 -- TABLE: expenses

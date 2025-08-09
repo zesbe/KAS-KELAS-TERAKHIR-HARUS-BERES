@@ -1283,22 +1283,23 @@ const checkPaymentStatus = async (payment) => {
 }
 
 const markAsPaid = async (payment) => {
-  const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+  // Use the payment's intended month, not current month
+  const paymentMonth = payment.month || new Date().toISOString().slice(0, 7)
+  const paymentMonthName = new Date(paymentMonth + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
 
-  if (!confirm(`Tandai pembayaran ${payment.student?.name} sebagai LUNAS untuk bulan ${currentMonth}?\n\nJumlah: ${formatCurrency(payment.amount)}\nKeterangan: ${payment.description}\n\n⚠️ Ini akan menambah saldo kas kelas dan menandai siswa sebagai sudah bayar bulan ini.`)) {
+  if (!confirm(`Tandai pembayaran ${payment.student?.name} sebagai LUNAS untuk bulan ${paymentMonthName}?\n\nJumlah: ${formatCurrency(payment.amount)}\nKeterangan: ${payment.description}\n\n⚠️ Ini akan menambah saldo kas kelas dan menandai siswa sebagai sudah bayar untuk ${paymentMonthName}.`)) {
     return
   }
 
   try {
     const now = new Date().toISOString()
-    const currentMonthCode = now.slice(0, 7) // YYYY-MM format
 
     // Update payment status to completed
     await store.updatePaymentLink(payment.id, {
       status: 'completed',
       payment_method: 'manual',
       completed_at: now,
-      month: currentMonthCode,
+      month: paymentMonth, // Keep the original intended month
       notes: `Ditandai lunas secara manual oleh admin pada ${new Date().toLocaleString('id-ID')}`
     })
 
@@ -1306,14 +1307,14 @@ const markAsPaid = async (payment) => {
     await store.addTransaction({
       type: 'income',
       amount: payment.amount,
-      description: `${payment.description} - ${currentMonth} (Manual)`,
+      description: `${payment.description} - ${paymentMonthName} (Manual)`,
       student_id: payment.student_id,
       payment_method: 'manual',
       order_id: payment.order_id,
       status: 'completed',
-      month: currentMonthCode,
+      month: paymentMonth, // Use the payment's intended month
       created_at: now,
-      notes: `Pembayaran manual - ${payment.student?.name} untuk ${currentMonth}`
+      notes: `Pembayaran manual - ${payment.student?.name} untuk ${paymentMonthName}`
     })
 
     // Refresh data to update UI and balance
@@ -1322,7 +1323,7 @@ const markAsPaid = async (payment) => {
 
     // Show success with balance update info
     const newBalance = store.currentBalance
-    toast.success(`✅ ${payment.student?.name} berhasil ditandai LUNAS!\n💰 Saldo kas bertambah: ${formatCurrency(payment.amount)}\n📊 Saldo saat ini: ${formatCurrency(newBalance)}`, {
+    toast.success(`✅ ${payment.student?.name} berhasil ditandai LUNAS untuk ${paymentMonthName}!\n💰 Saldo kas bertambah: ${formatCurrency(payment.amount)}\n📊 Saldo saat ini: ${formatCurrency(newBalance)}`, {
       timeout: 6000
     })
 

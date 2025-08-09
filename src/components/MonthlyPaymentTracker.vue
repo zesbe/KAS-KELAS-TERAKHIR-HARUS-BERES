@@ -322,8 +322,16 @@ const loadMonthlyData = () => {
     
     // Get transactions for this month
     const monthTransactions = store.transactions.filter(t => {
-      const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
-      return transactionMonth === monthCode && t.type === 'income' && t.status === 'completed'
+      // First, try to find the corresponding payment link to get the correct month
+      const paymentLink = store.paymentLinks.find(p => p.order_id === t.order_id)
+      if (paymentLink && paymentLink.month) {
+        // Use the month from payment link (this is the intended payment month)
+        return paymentLink.month === monthCode && t.type === 'income' && t.status === 'completed'
+      } else {
+        // Fallback to transaction created_at for transactions without payment links
+        const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
+        return transactionMonth === monthCode && t.type === 'income' && t.status === 'completed'
+      }
     })
     
     // Get paid student IDs for this month
@@ -474,10 +482,35 @@ const generateLinksForMonth = async (month) => {
   
   try {
     const description = `Kas Kelas ${month.monthName} ${month.year}`
-    const results = await store.generateBulkPaymentLinks(50000, description, false)
+    const results = []
+    
+    // Generate payment links for each unpaid student for this specific month
+    for (const student of month.unpaidStudents) {
+      try {
+        await store.generatePaymentLink(
+          student.id,
+          50000, // Default amount
+          description,
+          month.monthCode // Specify the target month
+        )
+        results.push({ student: student.name, success: true })
+      } catch (error) {
+        results.push({ student: student.name, success: false, error: error.message })
+      }
+    }
     
     const successful = results.filter(r => r.success).length
-    toast.success(`✅ Berhasil generate ${successful} link pembayaran untuk ${month.monthName}`)
+    const failed = results.filter(r => !r.success).length
+    
+    if (successful > 0) {
+      toast.success(`✅ Berhasil generate ${successful} link pembayaran untuk ${month.monthName}`)
+    }
+    if (failed > 0) {
+      toast.warning(`⚠️ ${failed} link gagal dibuat (mungkin siswa sudah bayar)`)
+    }
+    
+    // Refresh monthly data to update UI
+    loadMonthlyData()
     
   } catch (error) {
     console.error('Error generating links:', error)

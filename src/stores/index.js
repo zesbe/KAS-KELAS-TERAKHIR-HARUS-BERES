@@ -285,23 +285,29 @@ export const useAppStore = defineStore('app', {
       }
     },
 
-    async generatePaymentLink(studentId, amount, description) {
+    async generatePaymentLink(studentId, amount, description, targetMonth = null) {
       try {
         const student = this.students.find(s => s.id === studentId)
         if (!student) throw new Error('Student not found')
 
-        // Check if student already paid this month
-        const currentMonth = new Date().toISOString().slice(0, 7)
+        // Use specified month or current month
+        const paymentMonth = targetMonth || new Date().toISOString().slice(0, 7)
+        
+        // Check if student already paid for the target month
         const studentAlreadyPaid = this.transactions.some(t => {
-          const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
+          // Check both transaction month and payment link month
+          const paymentLink = this.paymentLinks.find(p => p.order_id === t.order_id)
+          const transactionMonth = paymentLink?.month || new Date(t.created_at).toISOString().slice(0, 7)
+          
           return t.student_id === studentId &&
                  t.type === 'income' &&
                  t.status === 'completed' &&
-                 transactionMonth === currentMonth
+                 transactionMonth === paymentMonth
         })
 
         if (studentAlreadyPaid) {
-          throw new Error(`${student.name} sudah membayar untuk bulan ini`)
+          const monthName = new Date(paymentMonth + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+          throw new Error(`${student.name} sudah membayar untuk ${monthName}`)
         }
 
         const paymentData = pakasirService.createPaymentLink(student, amount, description)
@@ -310,7 +316,7 @@ export const useAppStore = defineStore('app', {
           ...paymentData,
           student_id: studentId,
           status: 'pending',
-          month: currentMonth // Track which month this payment is for
+          month: paymentMonth // Track which month this payment is for
         })
 
         if (error) throw error

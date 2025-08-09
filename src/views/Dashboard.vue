@@ -332,6 +332,7 @@ import { useAppStore } from '@/stores'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { runDatabaseDiagnostics, generateSetupRecommendation } from '@/utils/databaseDiagnostics'
+import MonthlyPaymentTracker from '@/components/MonthlyPaymentTracker.vue'
 import {
   BanknotesIcon,
   ReceiptPercentIcon,

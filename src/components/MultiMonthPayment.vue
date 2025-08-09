@@ -587,6 +587,9 @@ const multiMonthPayments = ref([
     progress_percentage: 100,
     status: 'completed',
     payment_url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/600000?order_id=ARKAAN240101XYZ789',
+    payment_links: [
+      { id: '1', type: 'total', amount: 600000, order_id: 'ARKAAN240101TOTAL', url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/600000?order_id=ARKAAN240101TOTAL' }
+    ],
     month_details: []
   }
 ])

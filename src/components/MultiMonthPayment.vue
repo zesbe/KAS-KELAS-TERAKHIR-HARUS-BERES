@@ -284,7 +284,66 @@
             />
           </div>
 
+          <!-- Link Generation Options -->
+          <div class="border rounded-lg p-4 bg-blue-50">
+            <h4 class="font-medium text-blue-900 mb-3">💳 Opsi Generate Link Pembayaran</h4>
 
+            <div class="space-y-3">
+              <label class="flex items-start space-x-3">
+                <input
+                  v-model="form.linkType"
+                  type="radio"
+                  value="individual"
+                  class="mt-1"
+                />
+                <div>
+                  <div class="font-medium text-gray-900">Link Individual per Bulan</div>
+                  <div class="text-sm text-gray-600">
+                    Generate {{ form.months }} link terpisah ({{ formatCurrency(form.monthlyAmount) }} per link)
+                  </div>
+                  <div class="text-xs text-green-600 mt-1">
+                    ✅ Orang tua bisa bayar bertahap • ✅ Tracking per bulan lebih detail
+                  </div>
+                </div>
+              </label>
+
+              <label class="flex items-start space-x-3">
+                <input
+                  v-model="form.linkType"
+                  type="radio"
+                  value="single"
+                  class="mt-1"
+                />
+                <div>
+                  <div class="font-medium text-gray-900">Link Total Sekaligus</div>
+                  <div class="text-sm text-gray-600">
+                    Generate 1 link untuk total {{ formatCurrency(form.monthlyAmount * form.months) }}
+                  </div>
+                  <div class="text-xs text-blue-600 mt-1">
+                    ✅ Pembayaran sekaligus • ✅ Lebih praktis untuk orang tua
+                  </div>
+                </div>
+              </label>
+
+              <label class="flex items-start space-x-3">
+                <input
+                  v-model="form.linkType"
+                  type="radio"
+                  value="both"
+                  class="mt-1"
+                />
+                <div>
+                  <div class="font-medium text-gray-900">Kedua Opsi (Recommended)</div>
+                  <div class="text-sm text-gray-600">
+                    Generate link individual + link total (orang tua pilih sendiri)
+                  </div>
+                  <div class="text-xs text-purple-600 mt-1">
+                    ✅ Fleksibilitas maksimal • ✅ Cocok untuk semua preferensi
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
 
           <!-- Summary -->
           <div class="bg-gray-50 p-4 rounded-lg">

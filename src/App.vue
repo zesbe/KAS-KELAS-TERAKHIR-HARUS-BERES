@@ -391,6 +391,16 @@ const handleGlobalError = (errorInfo) => {
 const retryDataLoad = async () => {
   try {
     isLoading.value = true
+    
+    // Check if server is responsive
+    try {
+      await fetch(window.location.origin, { method: 'HEAD' })
+    } catch (error) {
+      toast.info('Server sedang bangun, mohon tunggu...')
+      // Wait a bit for server to wake up
+      await new Promise(resolve => setTimeout(resolve, 3000))
+    }
+    
     await store.retryLoadAll()
     toast.success('Data berhasil dimuat')
   } catch (error) {

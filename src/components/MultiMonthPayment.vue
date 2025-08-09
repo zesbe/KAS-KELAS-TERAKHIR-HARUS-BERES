@@ -407,19 +407,38 @@
           </div>
         </div>
         
-        <div class="flex justify-end space-x-3 pt-6 border-t">
-          <button 
-            @click="showDetailModal = false"
-            class="btn-secondary"
-          >
-            Tutup
-          </button>
-          <button 
-            @click="sendPaymentReminder(selectedPayment)"
-            class="btn-success"
-          >
-            Kirim Reminder
-          </button>
+        <div class="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-3 pt-6 border-t">
+          <div class="flex space-x-3">
+            <button
+              @click="editPayment(selectedPayment)"
+              class="btn-secondary text-blue-600 border-blue-300 hover:bg-blue-50"
+            >
+              <PencilIcon class="w-4 h-4 mr-2" />
+              Edit
+            </button>
+            <button
+              @click="deletePayment(selectedPayment)"
+              class="btn-secondary text-red-600 border-red-300 hover:bg-red-50"
+            >
+              <TrashIcon class="w-4 h-4 mr-2" />
+              Hapus
+            </button>
+          </div>
+          <div class="flex space-x-3">
+            <button
+              @click="showDetailModal = false"
+              class="btn-secondary"
+            >
+              Tutup
+            </button>
+            <button
+              @click="sendPaymentReminder(selectedPayment)"
+              class="btn-success"
+            >
+              <ChatBubbleLeftIcon class="w-4 h-4 mr-2" />
+              Kirim Reminder
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -547,14 +547,25 @@ class StarSender {
             method: result.method,
             timestamp: result.timestamp
           })
-          
+
           console.log(`✅ Success ${this.progress.sent}/${this.progress.total}`)
-          
+
+          // Play success sound
+          this.musicManager.playSuccessSound()
+
+          // Adaptive music based on progress
+          const progressPercentage = (this.progress.sent / this.progress.total) * 100
+          this.musicManager.adaptMusicToProgress(progressPercentage)
+
           // Beautiful celebrations for milestones
           if (this.progress.sent % 10 === 0) {
-            console.log('🎉 Milestone reached! Switching to celebration music...')
-            this.currentSongIndex = 2 // Success celebration song
-            this.nextSong()
+            console.log('🎉 Milestone reached! Epic celebration mode!')
+            this.musicManager.setMoodMusic('victory')
+
+            // Brief celebration, then back to normal
+            setTimeout(() => {
+              this.musicManager.adaptMusicToProgress(progressPercentage)
+            }, 5000)
           }
           
         } else {

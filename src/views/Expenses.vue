@@ -722,28 +722,219 @@ const downloadExcelFile = (data, filename) => {
   URL.revokeObjectURL(url)
 }
 
-// PDF Generation Functions
+// PDF Modal Handlers
+const handleExpensesPrint = () => {
+  showExpensesPdfModal.value = false
+  showExportMenu.value = false
+  printExpensesPDF()
+}
+
+const handleExpensesDownload = () => {
+  showExpensesPdfModal.value = false
+  showExportMenu.value = false
+  downloadExpensesPDF()
+}
+
+const handleExpensesPreview = () => {
+  showExpensesPdfModal.value = false
+  showExportMenu.value = false
+  previewExpensesPDF()
+}
+
+const handleExpensesSummaryPrint = () => {
+  showExpensesSummaryPdfModal.value = false
+  showExportMenu.value = false
+  printExpensesSummaryPDF()
+}
+
+const handleExpensesSummaryDownload = () => {
+  showExpensesSummaryPdfModal.value = false
+  showExportMenu.value = false
+  downloadExpensesSummaryPDF()
+}
+
+const handleExpensesSummaryPreview = () => {
+  showExpensesSummaryPdfModal.value = false
+  showExportMenu.value = false
+  previewExpensesSummaryPDF()
+}
+
+// Print functions
+const printExpensesPDF = () => {
+  try {
+    const pdfContent = generateExpensesPDFContent()
+    const printWindow = window.open('', '_blank', 'width=800,height=600')
+
+    if (printWindow) {
+      printWindow.document.write(createPrintHTML(pdfContent))
+      printWindow.document.close()
+
+      printWindow.onload = () => {
+        printWindow.focus()
+        printWindow.print()
+      }
+
+      toast.success('🖨️ Dialog printer dibuka!')
+    }
+  } catch (error) {
+    console.error('Print error:', error)
+    toast.error('Gagal membuka printer')
+  }
+}
+
+const printExpensesSummaryPDF = () => {
+  try {
+    const pdfContent = generateExpensesSummaryPDFContent()
+    const printWindow = window.open('', '_blank', 'width=800,height=600')
+
+    if (printWindow) {
+      printWindow.document.write(createPrintHTML(pdfContent))
+      printWindow.document.close()
+
+      printWindow.onload = () => {
+        printWindow.focus()
+        printWindow.print()
+      }
+
+      toast.success('🖨️ Dialog printer dibuka!')
+    }
+  } catch (error) {
+    console.error('Print error:', error)
+    toast.error('Gagal membuka printer')
+  }
+}
+
+// Download functions
 const downloadExpensesPDF = () => {
   try {
-    const htmlContent = generateExpensesPDFContent()
-    openPDFWindow(htmlContent, 'Lengkap')
-    showExportMenu.value = false
-    toast.success('PDF Laporan Pengeluaran berhasil di-generate!')
+    const pdfContent = generateExpensesPDFContent()
+    const timestamp = new Date().toLocaleDateString('id-ID').replace(/\//g, '_')
+    const fileName = `Laporan_Pengeluaran_${timestamp}.html`
+    const htmlContent = createDownloadHTML(pdfContent)
+
+    createDownloadLink(htmlContent, fileName)
+    toast.success('✅ File laporan pengeluaran berhasil di-download!')
   } catch (error) {
-    console.error('Error generating PDF:', error)
-    toast.error('Gagal generate PDF Laporan Pengeluaran')
+    console.error('Download error:', error)
+    toast.error('Gagal download laporan')
   }
 }
 
 const downloadExpensesSummaryPDF = () => {
   try {
-    const htmlContent = generateExpensesSummaryPDFContent()
-    openPDFWindow(htmlContent, 'Summary')
-    showExportMenu.value = false
-    toast.success('PDF Summary Pengeluaran berhasil di-generate!')
+    const pdfContent = generateExpensesSummaryPDFContent()
+    const timestamp = new Date().toLocaleDateString('id-ID').replace(/\//g, '_')
+    const fileName = `Summary_Pengeluaran_${timestamp}.html`
+    const htmlContent = createDownloadHTML(pdfContent)
+
+    createDownloadLink(htmlContent, fileName)
+    toast.success('✅ File summary pengeluaran berhasil di-download!')
   } catch (error) {
-    console.error('Error generating Summary PDF:', error)
-    toast.error('Gagal generate PDF Summary Pengeluaran')
+    console.error('Download error:', error)
+    toast.error('Gagal download summary')
+  }
+}
+
+// Preview functions
+const previewExpensesPDF = () => {
+  try {
+    const pdfContent = generateExpensesPDFContent()
+    const htmlContent = createPreviewHTML(pdfContent)
+
+    const previewWindow = window.open('', '_blank')
+    if (previewWindow) {
+      previewWindow.document.write(htmlContent)
+      previewWindow.document.close()
+      toast.success('👁️ Preview dibuka di tab baru!')
+    }
+  } catch (error) {
+    console.error('Preview error:', error)
+    toast.error('Gagal membuka preview')
+  }
+}
+
+const previewExpensesSummaryPDF = () => {
+  try {
+    const pdfContent = generateExpensesSummaryPDFContent()
+    const htmlContent = createPreviewHTML(pdfContent)
+
+    const previewWindow = window.open('', '_blank')
+    if (previewWindow) {
+      previewWindow.document.write(htmlContent)
+      previewWindow.document.close()
+      toast.success('👁️ Preview dibuka di tab baru!')
+    }
+  } catch (error) {
+    console.error('Preview error:', error)
+    toast.error('Gagal membuka preview')
+  }
+}
+
+// Helper functions for HTML creation
+const createPrintHTML = (content) => {
+  return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Laporan Pengeluaran</title>
+${generatePDFStyles()}
+</head><body>${content}</body></html>`
+}
+
+const createDownloadHTML = (content) => {
+  return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laporan Pengeluaran - ${new Date().toLocaleDateString('id-ID')}</title>
+${generatePDFStyles()}
+<style>.download-info { background-color: #ecfdf5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
+@media print { .download-info { display: none; } }</style>
+</head><body>
+<div class="download-info">
+<h3 style="color: #065f46;">💾 File Berhasil Didownload!</h3>
+<p style="color: #047857;">Gunakan Ctrl+P untuk print atau share via browser.</p>
+</div>
+${content}
+</body></html>`
+}
+
+const createPreviewHTML = (content) => {
+  return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview - Laporan Pengeluaran</title>
+${generatePDFStyles()}
+<style>
+.preview-info { background-color: #dbeafe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6; }
+.action-buttons { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
+.btn { padding: 10px 15px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
+.btn-print { background: #059669; color: white; }
+</style>
+</head><body>
+<div class="action-buttons">
+<button onclick="window.print()" class="btn btn-print">🖨️ Print</button>
+</div>
+<div class="preview-info">
+<h3 style="color: #1e40af;">👁️ Preview Mode</h3>
+<p style="color: #1d4ed8;">Ini adalah preview laporan. Gunakan tombol Print di atas atau Ctrl+P.</p>
+</div>
+${content}
+</body></html>`
+}
+
+const createDownloadLink = (content, fileName) => {
+  try {
+    const blob = new Blob([content], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    link.style.display = 'none'
+
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  } catch (error) {
+    console.error('Download error:', error)
+    toast.error('Gagal download file')
   }
 }
 

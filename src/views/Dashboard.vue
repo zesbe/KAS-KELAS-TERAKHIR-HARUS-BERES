@@ -336,7 +336,8 @@ import {
   UsersIcon,
   SpeakerWaveIcon,
   DocumentChartBarIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  DocumentArrowDownIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()

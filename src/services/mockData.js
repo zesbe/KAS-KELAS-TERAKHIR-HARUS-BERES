@@ -6,30 +6,7 @@ const mockTransactions = []
 
 const mockExpenses = []
 
-const mockPaymentLinks = [
-  {
-    id: '1',
-    student_id: '4',
-    order_id: 'AZMA240130ABC123',
-    payment_url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/50000?order_id=AZMA240130ABC123',
-    amount: 50000,
-    description: 'Kas Bulanan Februari',
-    status: 'pending',
-    created_at: '2024-01-30T08:00:00Z',
-    student: { name: 'Azma Raudhatul Jannah', nickname: 'Azma', phone: '+62 856-8500-062' }
-  },
-  {
-    id: '2',
-    student_id: '5',
-    order_id: 'DIZYA240130DEF456',
-    payment_url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/50000?order_id=DIZYA240130DEF456',
-    amount: 50000,
-    description: 'Kas Bulanan Februari',
-    status: 'pending',
-    created_at: '2024-01-30T08:30:00Z',
-    student: { name: 'Dizya Nayara Khanza Pujiarto', nickname: 'Dizya', phone: '+62 812-8147-6276' }
-  }
-]
+const mockPaymentLinks = []
 
 
 

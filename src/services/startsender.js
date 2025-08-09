@@ -56,9 +56,10 @@ class StarSender {
 
   // Stop music
   stopMusic() {
-    if (this.audio) {
-      this.audio.pause()
-      this.audio = null
+    try {
+      this.musicManager.stop()
+    } catch (error) {
+      console.log('🎵 Music stop (silent mode)')
     }
     this.isPlaying = false
   }

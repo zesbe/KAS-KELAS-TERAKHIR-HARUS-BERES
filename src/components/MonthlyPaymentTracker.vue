@@ -273,13 +273,15 @@ const availableYears = computed(() => {
 })
 
 const currentMonthName = computed(() => {
-  return new Date().toLocaleDateString('id-ID', { month: 'long' })
+  const now = new Date()
+  return now.toLocaleDateString('id-ID', { month: 'long' })
 })
 
 const currentMonthStats = computed(() => {
-  const currentMonthCode = new Date().toISOString().slice(0, 7)
+  const now = new Date()
+  const currentMonthCode = now.toISOString().slice(0, 7)
   const currentMonth = monthlyData.value.find(m => m.monthCode === currentMonthCode)
-  
+
   if (!currentMonth) {
     return {
       paid: 0,
@@ -288,7 +290,7 @@ const currentMonthStats = computed(() => {
       totalIncome: 0
     }
   }
-  
+
   return {
     paid: currentMonth.paidStudents.length,
     unpaid: currentMonth.unpaidStudents.length,
@@ -318,7 +320,8 @@ const loadMonthlyData = () => {
     const monthDate = new Date(year, i, 1)
     const monthCode = monthDate.toISOString().slice(0, 7) // YYYY-MM
     const monthName = monthDate.toLocaleDateString('id-ID', { month: 'long' })
-    const isCurrentMonth = monthCode === new Date().toISOString().slice(0, 7)
+    const now = new Date()
+    const isCurrentMonth = monthCode === now.toISOString().slice(0, 7)
     
     // Get transactions for this month
     const monthTransactions = store.transactions.filter(t => {

@@ -8,20 +8,20 @@
       </div>
       <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
         <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <!-- CSV Exports -->
-          <button @click="exportSummaryCSV" class="btn-secondary w-full sm:w-auto">
+          <!-- Excel Exports -->
+          <button @click="exportSummaryExcel" class="btn-secondary w-full sm:w-auto">
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">Export Summary CSV</span>
+            <span class="hidden sm:inline">Export Summary Excel</span>
             <span class="sm:hidden">Summary</span>
           </button>
-          <button @click="exportDetailedCSV" class="btn-secondary w-full sm:w-auto">
+          <button @click="exportDetailedExcel" class="btn-secondary w-full sm:w-auto">
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">Export Detail CSV</span>
+            <span class="hidden sm:inline">Export Detail Excel</span>
             <span class="sm:hidden">Detail</span>
           </button>
-          <button @click="exportCompleteReport" class="btn-primary w-full sm:w-auto">
+          <button @click="exportCompleteExcel" class="btn-primary w-full sm:w-auto">
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">Export Lengkap</span>
+            <span class="hidden sm:inline">Export Lengkap Excel</span>
             <span class="sm:hidden">Lengkap</span>
           </button>
         </div>
@@ -313,6 +313,8 @@ import { useAppStore } from '@/stores'
 import { useToast } from 'vue-toastification'
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from 'date-fns'
 import { id } from 'date-fns/locale'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
 import exportService from '@/services/export'
 import FinancialCharts from '@/components/FinancialCharts.vue'
 import AnalyticsInsights from '@/components/AnalyticsInsights.vue'
@@ -501,59 +503,241 @@ const filterData = () => {
   })
 }
 
-const exportSummaryCSV = () => {
-  const headers = ['Keterangan', 'Jumlah (IDR)', 'Detail']
-  const data = [
-    ['Total Pemasukan', exportService.formatCurrency(reportData.totalIncome), `${reportData.paidStudents.length} siswa`],
-    ['Total Pengeluaran', exportService.formatCurrency(reportData.totalExpenses), getExpensesByCategory()],
-    ['Saldo Akhir', exportService.formatCurrency(reportData.balance), reportData.balance >= 0 ? 'Surplus' : 'Defisit'],
-    ['Total Transaksi', reportData.transactionCount, 'Semua jenis'],
-    ['Siswa Sudah Bayar', reportData.paidStudents.length, `${Math.round((reportData.paidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`],
-    ['Siswa Belum Bayar', reportData.unpaidStudents.length, `${Math.round((reportData.unpaidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`],
-    ['Periode', `${dateFrom.value} s/d ${dateTo.value}`, 'Filter aktif']
-  ]
+const exportSummaryExcel = () => {
+  try {
+    // Create workbook
+    const wb = XLSX.utils.book_new()
+    
+    // Summary data
+    const summaryData = [
+      ['RINGKASAN KEUANGAN KAS KELAS 1B'],
+      ['SD Islam Al Husna - Tahun Ajaran 2025/2026'],
+      ['Periode: ' + dateFrom.value + ' s/d ' + dateTo.value],
+      ['Tanggal Export: ' + new Date().toLocaleDateString('id-ID')],
+      [],
+      ['Keterangan', 'Jumlah (IDR)', 'Detail'],
+      ['Total Pemasukan', reportData.totalIncome, `${reportData.paidStudents.length} siswa`],
+      ['Total Pengeluaran', reportData.totalExpenses, getExpensesByCategory()],
+      ['Saldo Akhir', reportData.balance, reportData.balance >= 0 ? 'Surplus' : 'Defisit'],
+      ['Total Transaksi', reportData.transactionCount, 'Semua jenis'],
+      ['Siswa Sudah Bayar', reportData.paidStudents.length, `${Math.round((reportData.paidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`],
+      ['Siswa Belum Bayar', reportData.unpaidStudents.length, `${Math.round((reportData.unpaidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`]
+    ]
 
-  exportService.downloadCSV(headers, data, `ringkasan_keuangan_${getPeriodString()}`)
-  toast.success('Ringkasan keuangan berhasil di-export')
-}
+    const ws = XLSX.utils.aoa_to_sheet(summaryData)
+    
+    // Set column widths
+    ws['!cols'] = [
+      { width: 25 },
+      { width: 20 },
+      { width: 30 }
+    ]
 
-const exportDetailedCSV = () => {
-  const headers = [
-    'Tanggal',
-    'Jenis',
-    'Keterangan',
-    'Siswa/Kategori',
-    'Pemasukan (IDR)',
-    'Pengeluaran (IDR)',
-    'Saldo (IDR)',
-    'Status',
-    'Metode Pembayaran'
-  ]
+    // Format currency cells
+    const currencyStyle = { numFmt: '#,##0' }
+    if (ws['B7']) ws['B7'].z = '#,##0'
+    if (ws['B8']) ws['B8'].z = '#,##0'
+    if (ws['B9']) ws['B9'].z = '#,##0'
 
-  const data = reportData.detailedTransactions.map(item => [
-    exportService.formatDate(item.date),
-    item.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
-    item.description,
-    item.student_name || item.category || '',
-    item.type === 'income' ? exportService.formatCurrency(item.amount) : '',
-    item.type === 'expense' ? exportService.formatCurrency(item.amount) : '',
-    exportService.formatCurrency(item.balance),
-    item.status || '',
-    item.payment_method || ''
-  ])
-
-  exportService.downloadCSV(headers, data, `detail_transaksi_${getPeriodString()}`)
-  toast.success('Detail transaksi berhasil di-export')
-}
-
-const exportCompleteReport = () => {
-  const period = {
-    from: dateFrom.value,
-    to: dateTo.value
+    XLSX.utils.book_append_sheet(wb, ws, 'Ringkasan')
+    
+    // Save file
+    const fileName = `Ringkasan_Keuangan_${getPeriodString()}.xlsx`
+    XLSX.writeFile(wb, fileName)
+    
+    toast.success('📊 Ringkasan keuangan Excel berhasil di-export!')
+  } catch (error) {
+    console.error('Error exporting summary Excel:', error)
+    toast.error('❌ Gagal export ringkasan Excel')
   }
+}
 
-  exportService.exportComprehensiveReport(reportData, period)
-  toast.success('Laporan lengkap berhasil di-export')
+const exportDetailedExcel = () => {
+  try {
+    const wb = XLSX.utils.book_new()
+    
+    // Header info
+    const headerData = [
+      ['DETAIL TRANSAKSI KAS KELAS 1B'],
+      ['SD Islam Al Husna - Tahun Ajaran 2025/2026'],
+      ['Periode: ' + dateFrom.value + ' s/d ' + dateTo.value],
+      ['Tanggal Export: ' + new Date().toLocaleDateString('id-ID')],
+      []
+    ]
+
+    // Transaction headers
+    const transactionHeaders = [
+      'Tanggal',
+      'Jenis',
+      'Keterangan',
+      'Siswa/Kategori',
+      'Pemasukan (IDR)',
+      'Pengeluaran (IDR)',
+      'Saldo (IDR)',
+      'Status',
+      'Metode Pembayaran'
+    ]
+
+    // Transaction data
+    const transactionData = reportData.detailedTransactions.map(item => [
+      formatDate(item.date),
+      item.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+      item.description,
+      item.student_name || item.category || '',
+      item.type === 'income' ? item.amount : '',
+      item.type === 'expense' ? item.amount : '',
+      item.balance,
+      item.status || '',
+      item.payment_method || ''
+    ])
+
+    // Combine all data
+    const allData = [
+      ...headerData,
+      transactionHeaders,
+      ...transactionData
+    ]
+
+    const ws = XLSX.utils.aoa_to_sheet(allData)
+    
+    // Set column widths
+    ws['!cols'] = [
+      { width: 12 }, // Tanggal
+      { width: 12 }, // Jenis
+      { width: 30 }, // Keterangan
+      { width: 20 }, // Siswa/Kategori
+      { width: 15 }, // Pemasukan
+      { width: 15 }, // Pengeluaran
+      { width: 15 }, // Saldo
+      { width: 12 }, // Status
+      { width: 15 }  // Metode
+    ]
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Detail Transaksi')
+    
+    const fileName = `Detail_Transaksi_${getPeriodString()}.xlsx`
+    XLSX.writeFile(wb, fileName)
+    
+    toast.success('📋 Detail transaksi Excel berhasil di-export!')
+  } catch (error) {
+    console.error('Error exporting detailed Excel:', error)
+    toast.error('❌ Gagal export detail Excel')
+  }
+}
+
+const exportCompleteExcel = () => {
+  try {
+    const wb = XLSX.utils.book_new()
+    
+    // Summary Sheet
+    const summaryData = [
+      ['LAPORAN LENGKAP KAS KELAS 1B'],
+      ['SD Islam Al Husna - Tahun Ajaran 2025/2026'],
+      ['Periode: ' + dateFrom.value + ' s/d ' + dateTo.value],
+      ['Tanggal Export: ' + new Date().toLocaleDateString('id-ID')],
+      [],
+      ['RINGKASAN KEUANGAN'],
+      ['Total Pemasukan', reportData.totalIncome],
+      ['Total Pengeluaran', reportData.totalExpenses],
+      ['Saldo Akhir', reportData.balance],
+      ['Total Transaksi', reportData.transactionCount],
+      ['Rate Pembayaran', `${paymentRate.value}%`],
+      [],
+      ['STATUS PEMBAYARAN'],
+      ['Siswa Sudah Bayar', reportData.paidStudents.length],
+      ['Siswa Belum Bayar', reportData.unpaidStudents.length],
+      ['Total Siswa', store.students.length]
+    ]
+
+    const summaryWs = XLSX.utils.aoa_to_sheet(summaryData)
+    summaryWs['!cols'] = [{ width: 25 }, { width: 20 }]
+    XLSX.utils.book_append_sheet(wb, summaryWs, 'Ringkasan')
+
+    // Students Paid Sheet
+    const paidData = [
+      ['SISWA SUDAH BAYAR'],
+      [],
+      ['Nama Siswa', 'Total Pembayaran'],
+      ...reportData.paidStudents.map(student => [
+        student.name,
+        student.totalPaid
+      ])
+    ]
+
+    const paidWs = XLSX.utils.aoa_to_sheet(paidData)
+    paidWs['!cols'] = [{ width: 30 }, { width: 20 }]
+    XLSX.utils.book_append_sheet(wb, paidWs, 'Sudah Bayar')
+
+    // Students Unpaid Sheet
+    const unpaidData = [
+      ['SISWA BELUM BAYAR'],
+      [],
+      ['Nama Siswa', 'No. HP Orang Tua'],
+      ...reportData.unpaidStudents.map(student => [
+        student.name,
+        student.phone
+      ])
+    ]
+
+    const unpaidWs = XLSX.utils.aoa_to_sheet(unpaidData)
+    unpaidWs['!cols'] = [{ width: 30 }, { width: 20 }]
+    XLSX.utils.book_append_sheet(wb, unpaidWs, 'Belum Bayar')
+
+    // Detailed Transactions Sheet
+    const transactionData = [
+      ['DETAIL TRANSAKSI LENGKAP'],
+      [],
+      ['Tanggal', 'Jenis', 'Keterangan', 'Pemasukan', 'Pengeluaran', 'Saldo'],
+      ...reportData.detailedTransactions.map(item => [
+        formatDate(item.date),
+        item.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+        item.description,
+        item.type === 'income' ? item.amount : '',
+        item.type === 'expense' ? item.amount : '',
+        item.balance
+      ])
+    ]
+
+    const transactionWs = XLSX.utils.aoa_to_sheet(transactionData)
+    transactionWs['!cols'] = [
+      { width: 12 },
+      { width: 12 },
+      { width: 35 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 }
+    ]
+    XLSX.utils.book_append_sheet(wb, transactionWs, 'Detail Transaksi')
+
+    // Expense Categories Sheet if there are expenses
+    if (topExpenseCategories.value.length > 0) {
+      const expenseData = [
+        ['KATEGORI PENGELUARAN'],
+        [],
+        ['Kategori', 'Total Pengeluaran', 'Persentase'],
+        ...topExpenseCategories.value.map(category => {
+          const percentage = reportData.totalExpenses > 0 ? ((category.amount / reportData.totalExpenses) * 100).toFixed(1) : 0
+          return [
+            category.name,
+            category.amount,
+            percentage + '%'
+          ]
+        })
+      ]
+
+      const expenseWs = XLSX.utils.aoa_to_sheet(expenseData)
+      expenseWs['!cols'] = [{ width: 25 }, { width: 20 }, { width: 15 }]
+      XLSX.utils.book_append_sheet(wb, expenseWs, 'Kategori Pengeluaran')
+    }
+
+    const fileName = `Laporan_Lengkap_Kas_${getPeriodString()}.xlsx`
+    XLSX.writeFile(wb, fileName)
+    
+    toast.success('📈 Laporan lengkap Excel berhasil di-export!')
+  } catch (error) {
+    console.error('Error exporting complete Excel:', error)
+    toast.error('❌ Gagal export laporan lengkap Excel')
+  }
 }
 
 const getExpensesByCategory = () => {

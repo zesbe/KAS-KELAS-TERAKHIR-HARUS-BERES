@@ -228,7 +228,9 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
       <div class="bg-white rounded-lg max-w-lg w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Buat Pembayaran Multi-Bulan</h3>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          {{ selectedPayment ? 'Edit Pembayaran Multi-Bulan' : 'Buat Pembayaran Multi-Bulan' }}
+        </h3>
         
         <form @submit.prevent="createMultiMonthPayment" class="space-y-4">
           <div>

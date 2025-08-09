@@ -387,4 +387,119 @@ const formatCurrency = (amount) => {
 const formatDate = (dateString) => {
   return format(new Date(dateString), 'dd MMM yyyy', { locale: id })
 }
+
+const downloadDashboardPDF = async () => {
+  try {
+    const pdfContent = generateDashboardPDFContent()
+
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Dashboard Report - ${new Date().toLocaleDateString('id-ID')}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
+            h2 { color: #374151; margin-top: 20px; }
+            .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
+            .stat-card { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; }
+            .stat-value { font-size: 24px; font-weight: bold; color: #1f2937; }
+            .stat-label { color: #6b7280; font-size: 14px; margin-bottom: 5px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
+            th { background-color: #f3f4f6; font-weight: bold; }
+            .income { color: #059669; }
+            .expense { color: #dc2626; }
+            .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          ${pdfContent}
+          <div class="footer">
+            Generated on ${new Date().toLocaleString('id-ID')} | Dashboard Kas Kelas
+          </div>
+        </body>
+        </html>
+      `)
+      printWindow.document.close()
+
+      setTimeout(() => {
+        printWindow.print()
+      }, 500)
+    }
+
+    console.log('✅ Dashboard PDF Report generated successfully')
+
+  } catch (error) {
+    console.error('Error generating Dashboard PDF:', error)
+    alert('Gagal membuat PDF report dashboard')
+  }
+}
+
+const generateDashboardPDFContent = () => {
+  const recentTransactions = store.recentTransactions.slice(0, 10) // Latest 10 transactions
+
+  let transactionRows = ''
+  recentTransactions.forEach(transaction => {
+    const amountClass = transaction.type === 'income' ? 'income' : 'expense'
+    const amountSign = transaction.type === 'income' ? '+' : '-'
+    transactionRows += `
+      <tr>
+        <td>${transaction.student?.name || '-'}</td>
+        <td>${transaction.description}</td>
+        <td class="${amountClass}">${amountSign}${formatCurrency(transaction.amount)}</td>
+        <td>${transaction.status === 'completed' ? 'Selesai' : 'Pending'}</td>
+        <td>${formatDate(transaction.created_at)}</td>
+      </tr>
+    `
+  })
+
+  return `
+    <h1>📊 Dashboard Report Kas Kelas</h1>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">💰 Total Pemasukan</div>
+        <div class="stat-value income">${formatCurrency(store.totalIncome)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">📄 Total Pengeluaran</div>
+        <div class="stat-value expense">${formatCurrency(store.totalExpenses)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">💳 Saldo Kas</div>
+        <div class="stat-value">${formatCurrency(store.totalIncome - store.totalExpenses)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">👥 Total Siswa</div>
+        <div class="stat-value">${store.students.length}</div>
+      </div>
+    </div>
+
+    <h2>📋 Transaksi Terbaru</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Siswa</th>
+          <th>Keterangan</th>
+          <th>Jumlah</th>
+          <th>Status</th>
+          <th>Tanggal</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${transactionRows || '<tr><td colspan="5" style="text-align: center; color: #6b7280;">Tidak ada transaksi terbaru</td></tr>'}
+      </tbody>
+    </table>
+
+    <h2>📈 Ringkasan</h2>
+    <p><strong>Total Pemasukan:</strong> ${formatCurrency(store.totalIncome)}</p>
+    <p><strong>Total Pengeluaran:</strong> ${formatCurrency(store.totalExpenses)}</p>
+    <p><strong>Saldo Kas:</strong> ${formatCurrency(store.totalIncome - store.totalExpenses)}</p>
+    <p><strong>Jumlah Siswa:</strong> ${store.students.length}</p>
+    <p><strong>Jumlah Transaksi:</strong> ${store.transactions.length}</p>
+  `
+}
 </script>

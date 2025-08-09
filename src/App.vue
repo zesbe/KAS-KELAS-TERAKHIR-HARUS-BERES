@@ -101,22 +101,22 @@
             >
               <Bars3Icon class="w-6 h-6" />
             </button>
-            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 truncate">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900 truncate tracking-tight">
               {{ $route.meta.title || 'Dashboard' }}
             </h2>
           </div>
 
           <div class="flex items-center space-x-2 sm:space-x-4">
             <!-- Database status indicator -->
-            <div v-if="store.isUsingMockData" class="flex items-center space-x-1 px-2 py-1 bg-yellow-50 rounded-lg">
-              <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
-              <span class="text-xs text-yellow-700 font-medium">Demo Mode</span>
+            <div v-if="store.isUsingMockData" class="flex items-center space-x-2 px-3 py-2 bg-amber-50 rounded-lg border border-amber-200">
+              <div class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+              <span class="text-xs text-amber-700 font-semibold tracking-tight">DEMO MODE</span>
             </div>
 
             <!-- Balance indicator -->
-            <div class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 bg-success-50 rounded-lg">
-              <span class="text-xs sm:text-sm text-success-600 font-medium">Saldo:</span>
-              <span class="text-xs sm:text-sm font-semibold text-success-700">
+            <div class="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 bg-slate-50 rounded-lg border border-slate-200" style="box-shadow: var(--shadow-enterprise)">
+              <span class="text-xs sm:text-sm text-slate-600 font-semibold tracking-wide">BALANCE:</span>
+              <span class="text-xs sm:text-sm font-bold text-slate-900 tracking-tight">
                 {{ formatCurrency(store.currentBalance) }}
               </span>
             </div>
@@ -125,7 +125,7 @@
       </header>
 
       <!-- Page content -->
-      <main class="flex-1 p-4 sm:p-6 pt-6">
+      <main class="flex-1 p-6 sm:p-8 pt-8 bg-slate-50">
         <router-view />
       </main>
 
@@ -141,11 +141,10 @@
         <button
           v-if="showFloatingMenuButton"
           @click="store.toggleSidebar()"
-          class="lg:hidden fixed bottom-20 right-4 z-50 w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border-2 border-white/20 active:scale-95"
+          class="lg:hidden fixed bottom-20 right-6 z-50 w-14 h-14 bg-slate-900 hover:bg-slate-800 text-white rounded-xl flex items-center justify-center transition-all duration-300 transform hover:scale-105 active:scale-95 border border-slate-700"
+          style="box-shadow: var(--shadow-enterprise-xl)"
         >
-          <Bars3Icon class="w-5 h-5" />
-          <!-- Small pulse animation -->
-          <div class="absolute inset-0 rounded-full bg-blue-400 gentle-pulse"></div>
+          <Bars3Icon class="w-6 h-6" />
         </button>
       </Transition>
     </div>

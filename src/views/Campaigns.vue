@@ -17,24 +17,33 @@
       </button>
     </div>
 
-    <!-- StarSender Control Panel -->
-    <div v-if="startsenderLoaded">
-      <StarSenderPanel />
-
-      <!-- StarSender Test Console -->
-      <StarSenderTest />
-    </div>
-
-    <!-- Fallback if StarSender not loaded -->
-    <div v-else class="startsender-fallback">
-      <div class="card p-6 text-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <h3 class="font-semibold text-gray-900">Loading StarSender...</h3>
-        <p class="text-sm text-gray-500 mt-2">Initializing advanced broadcasting system</p>
-        <button @click="retryStarSender" class="btn-primary mt-4">
-          Retry
+    <!-- StarSender Control Panel (Temporarily Disabled for Debug) -->
+    <div class="startsender-info card p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">🌟 StarSender System</h3>
+          <p class="text-sm text-gray-600">Advanced WhatsApp Broadcasting with CORS Bypass</p>
+        </div>
+        <button @click="enableStarSender" class="btn-primary">
+          🚀 Enable StarSender
         </button>
       </div>
+    </div>
+
+    <!-- StarSender Components (Loaded dynamically) -->
+    <div v-if="startsenderEnabled">
+      <Suspense>
+        <template #default>
+          <StarSenderPanel />
+          <StarSenderTest />
+        </template>
+        <template #fallback>
+          <div class="card p-6 text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-sm text-gray-500">Loading StarSender...</p>
+          </div>
+        </template>
+      </Suspense>
     </div>
 
     <!-- Campaign Stats -->

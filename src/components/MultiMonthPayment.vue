@@ -321,7 +321,7 @@
               :disabled="creating"
               class="btn-primary"
             >
-              {{ creating ? 'Membuat...' : 'Buat Pembayaran' }}
+              {{ creating ? 'Menyimpan...' : (selectedPayment ? 'Update Pembayaran' : 'Buat Pembayaran') }}
             </button>
           </div>
         </form>

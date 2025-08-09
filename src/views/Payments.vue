@@ -465,6 +465,13 @@
                     <CheckCircleIcon class="w-4 h-4" />
                   </button>
                   <button
+                    @click="viewInvoice(payment)"
+                    class="text-purple-600 hover:text-purple-900"
+                    title="Lihat Invoice"
+                  >
+                    <DocumentTextIcon class="w-4 h-4" />
+                  </button>
+                  <button
                     @click="checkPaymentStatus(payment)"
                     class="text-warning-600 hover:text-warning-900"
                     title="Cek Status"

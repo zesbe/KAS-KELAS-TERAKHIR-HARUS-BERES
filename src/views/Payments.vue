@@ -304,12 +304,12 @@
             <option value="expired">Expired</option>
           </select>
           <button
-            @click="downloadPaymentsPDF"
+            @click="showPaymentsPdfModal = true"
             class="btn-secondary flex items-center"
-            title="Download PDF Report"
+            title="Laporan PDF Options"
           >
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">Download PDF</span>
+            <span class="hidden sm:inline">Laporan PDF</span>
             <span class="sm:hidden">PDF</span>
           </button>
         </div>
@@ -537,7 +537,7 @@
 
         <form @submit.prevent="createSingleLink" class="space-y-4">
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">�� Siswa</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">👤 Siswa</label>
             <select v-model="singleLink.studentId" required class="input-field">
               <option value="">Pilih Siswa</option>
               <option v-for="student in store.students" :key="student.id" :value="student.id">

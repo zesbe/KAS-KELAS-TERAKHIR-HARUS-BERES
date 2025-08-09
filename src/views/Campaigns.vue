@@ -17,6 +17,9 @@
       </button>
     </div>
 
+    <!-- StarSender Control Panel -->
+    <StarSenderPanel />
+
     <!-- Campaign Stats -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div class="card p-6">

@@ -728,6 +728,7 @@ import {
 
 const store = useAppStore()
 const toast = useToast()
+const router = useRouter()
 
 const showCreateModal = ref(false)
 const showPreviewModal = ref(false)

@@ -17,8 +17,9 @@ export default defineConfig({
       }
     },
     commonjsOptions: {
-      include: [/xlsx/, /node_modules/]
-    }
+      include: [/xlsx/, /file-saver/, /node_modules/]
+    },
+    assetsInclude: ['**/*.xlsx']
   },
   optimizeDeps: {
     include: ['xlsx', 'file-saver']

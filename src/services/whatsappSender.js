@@ -15,62 +15,102 @@ class WhatsAppSender {
   // Method utama untuk bypass CORS dan kirim WhatsApp
   async sendMessage(phone, message, options = {}) {
     console.log(`🚀 Sending WhatsApp to ${phone}`)
-    
+
+    // Validate inputs
+    if (!phone || !message) {
+      this.stats.failed++
+      return {
+        success: false,
+        method: 'validation-error',
+        error: 'Phone number and message are required',
+        timestamp: new Date().toISOString()
+      }
+    }
+
     // Clean phone number
     const cleanPhone = this.cleanPhoneNumber(phone)
-    
-    // Encode message
+
+    // Encode message for URL
     const encodedMessage = encodeURIComponent(message)
-    
+
     // Create WhatsApp URL
     const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`
-    
+
     try {
-      // Method 1: Direct window.open (paling reliable)
+      // Method 1: Direct window.open (paling reliable untuk first message)
       if (options.openInNewTab !== false) {
-        const newWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
-        
+        const newWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer,width=800,height=600')
+
         if (newWindow) {
           console.log('✅ WhatsApp opened in new tab')
           this.stats.sent++
+
+          // Try to focus the new window
+          setTimeout(() => {
+            try {
+              newWindow.focus()
+            } catch (e) {
+              // Ignore focus errors
+            }
+          }, 100)
+
           return {
             success: true,
             method: 'window-open',
             url: whatsappUrl,
+            phone: cleanPhone,
             timestamp: new Date().toISOString()
           }
         }
       }
-      
-      // Method 2: Create invisible link and click
+
+      // Method 2: Create invisible link and click (untuk bulk messages)
       const link = document.createElement('a')
       link.href = whatsappUrl
       link.target = '_blank'
       link.rel = 'noopener noreferrer'
       link.style.display = 'none'
-      
+      link.style.position = 'absolute'
+      link.style.left = '-9999px'
+
       document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      
+
+      // Simulate user click
+      const clickEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      })
+
+      link.dispatchEvent(clickEvent)
+
+      // Clean up
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link)
+        }
+      }, 1000)
+
       console.log('✅ WhatsApp link clicked')
       this.stats.sent++
-      
+
       return {
         success: true,
         method: 'link-click',
         url: whatsappUrl,
+        phone: cleanPhone,
         timestamp: new Date().toISOString()
       }
-      
+
     } catch (error) {
       console.error('❌ Error sending WhatsApp:', error)
       this.stats.failed++
-      
+
       return {
         success: false,
         method: 'error',
         error: error.message,
+        phone: cleanPhone,
         timestamp: new Date().toISOString()
       }
     }

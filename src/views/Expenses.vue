@@ -395,6 +395,8 @@ const showAddModal = ref(false)
 const editingExpense = ref(null)
 const saving = ref(false)
 const showExportMenu = ref(false)
+const showExpensesPdfModal = ref(false)
+const showExpensesSummaryPdfModal = ref(false)
 
 const filters = reactive({
   status: '',

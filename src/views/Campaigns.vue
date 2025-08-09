@@ -632,6 +632,7 @@ const showCreateModal = ref(false)
 const showDetailModal = ref(false)
 const editingCampaign = ref(null)
 const selectedCampaign = ref(null)
+const startsenderLoaded = ref(true) // Start with true, fallback if needed
 
 // Form state
 const campaignForm = reactive({

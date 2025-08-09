@@ -697,9 +697,49 @@ const copyToClipboard = async (text) => {
   }
 }
 
-const sendPaymentReminder = (payment) => {
-  toast.success(`Reminder pembayaran dikirim ke ${payment.student.name}`)
+const sendPaymentReminder = async (payment) => {
+  // Use the same comprehensive reminder as sendReminder
+  await sendReminder(payment)
   showDetailModal.value = false
+}
+
+const editPayment = (payment) => {
+  // Populate form with payment data for editing
+  const student = payment.student
+  form.studentId = student.id
+  form.months = payment.months
+  form.monthlyAmount = payment.monthly_amount
+
+  // Set start month and year from period
+  const currentDate = new Date()
+  form.startMonth = currentDate.getMonth() + 1
+  form.year = currentDate.getFullYear()
+
+  // Store the payment being edited
+  selectedPayment.value = payment
+  showCreateModal.value = true
+
+  toast.info(`Editing pembayaran untuk ${student.name}`)
+}
+
+const deletePayment = (payment) => {
+  if (!confirm(`Yakin ingin menghapus pembayaran multi-bulan untuk ${payment.student.name}?\n\nPeriode: ${payment.period_label}\nTotal: ${formatCurrency(payment.total_amount)}`)) {
+    return
+  }
+
+  try {
+    // Find and remove payment from array
+    const index = multiMonthPayments.value.findIndex(p => p.id === payment.id)
+    if (index !== -1) {
+      multiMonthPayments.value.splice(index, 1)
+      toast.success(`✅ Pembayaran ${payment.student.name} berhasil dihapus`)
+    } else {
+      toast.warning('Pembayaran tidak ditemukan')
+    }
+  } catch (error) {
+    console.error('Error deleting payment:', error)
+    toast.error('Gagal menghapus pembayaran')
+  }
 }
 
 onMounted(() => {

@@ -954,7 +954,7 @@ _Pesan ini dikirim secara otomatis_`
     // Open WhatsApp in new tab
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
 
-    toast.success(`��� Reminder lengkap dikirim ke ${student.name}`, {
+    toast.success(`📤 Reminder lengkap dikirim ke ${student.name}`, {
       timeout: 4000
     })
 
@@ -1032,6 +1032,7 @@ Wassalamu'alaikum Wr. Wb.
 
 ---
 *Order ID: ${link.order_id}*
+*Dikirim: ${greeting} (${getIndonesianTime()})*
 *Sistem Kas Kelas Otomatis*`
 
     // Clean phone number for WhatsApp (Indonesian format)

@@ -1298,6 +1298,7 @@ Terima kasih atas perhatian dan kerjasamanya.
 Wassalamu'alaikum Wr. Wb.
 
 ---
+*Dikirim: ${greeting} (${getIndonesianTime()})*
 *Sistem Kas Kelas Otomatis*`
 
     // Clean phone number for WhatsApp (Indonesian format)

@@ -224,8 +224,8 @@
         <div>
           <h4 class="text-md font-medium text-success-600 mb-3">Sudah Bayar ({{ reportData.paidStudents.length }})</h4>
           <div class="space-y-2 max-h-64 overflow-y-auto">
-            <div 
-              v-for="student in reportData.paidStudents" 
+            <div
+              v-for="student in reportData.paidStudents"
               :key="student.id"
               class="flex items-center justify-between p-3 bg-success-50 rounded-lg"
             >
@@ -239,8 +239,8 @@
         <div>
           <h4 class="text-md font-medium text-red-600 mb-3">Belum Bayar ({{ reportData.unpaidStudents.length }})</h4>
           <div class="space-y-2 max-h-64 overflow-y-auto">
-            <div 
-              v-for="student in reportData.unpaidStudents" 
+            <div
+              v-for="student in reportData.unpaidStudents"
               :key="student.id"
               class="flex items-center justify-between p-3 bg-red-50 rounded-lg"
             >
@@ -507,7 +507,7 @@ const exportSummaryExcel = () => {
   try {
     // Create workbook
     const wb = XLSX.utils.book_new()
-    
+
     // Summary data
     const summaryData = [
       ['RINGKASAN KEUANGAN KAS KELAS 1B'],
@@ -525,7 +525,7 @@ const exportSummaryExcel = () => {
     ]
 
     const ws = XLSX.utils.aoa_to_sheet(summaryData)
-    
+
     // Set column widths
     ws['!cols'] = [
       { width: 25 },
@@ -540,11 +540,11 @@ const exportSummaryExcel = () => {
     if (ws['B9']) ws['B9'].z = '#,##0'
 
     XLSX.utils.book_append_sheet(wb, ws, 'Ringkasan')
-    
+
     // Save file
     const fileName = `Ringkasan_Keuangan_${getPeriodString()}.xlsx`
     XLSX.writeFile(wb, fileName)
-    
+
     toast.success('📊 Ringkasan keuangan Excel berhasil di-export!')
   } catch (error) {
     console.error('Error exporting summary Excel:', error)
@@ -555,7 +555,7 @@ const exportSummaryExcel = () => {
 const exportDetailedExcel = () => {
   try {
     const wb = XLSX.utils.book_new()
-    
+
     // Header info
     const headerData = [
       ['DETAIL TRANSAKSI KAS KELAS 1B'],
@@ -599,7 +599,7 @@ const exportDetailedExcel = () => {
     ]
 
     const ws = XLSX.utils.aoa_to_sheet(allData)
-    
+
     // Set column widths
     ws['!cols'] = [
       { width: 12 }, // Tanggal
@@ -614,10 +614,10 @@ const exportDetailedExcel = () => {
     ]
 
     XLSX.utils.book_append_sheet(wb, ws, 'Detail Transaksi')
-    
+
     const fileName = `Detail_Transaksi_${getPeriodString()}.xlsx`
     XLSX.writeFile(wb, fileName)
-    
+
     toast.success('📋 Detail transaksi Excel berhasil di-export!')
   } catch (error) {
     console.error('Error exporting detailed Excel:', error)
@@ -628,7 +628,7 @@ const exportDetailedExcel = () => {
 const exportCompleteExcel = () => {
   try {
     const wb = XLSX.utils.book_new()
-    
+
     // Summary Sheet
     const summaryData = [
       ['LAPORAN LENGKAP KAS KELAS 1B'],
@@ -732,7 +732,7 @@ const exportCompleteExcel = () => {
 
     const fileName = `Laporan_Lengkap_Kas_${getPeriodString()}.xlsx`
     XLSX.writeFile(wb, fileName)
-    
+
     toast.success('📈 Laporan lengkap Excel berhasil di-export!')
   } catch (error) {
     console.error('Error exporting complete Excel:', error)

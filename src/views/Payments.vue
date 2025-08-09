@@ -859,35 +859,54 @@ const sendPaymentLink = (payment) => {
 
 const sendWhatsAppMessage = async (payment) => {
   try {
-    const paymentData = {
-      studentName: payment.student?.name,
-      amount: payment.amount,
-      description: payment.description,
-      orderId: payment.order_id,
-      paymentUrl: payment.payment_url,
-      dueDate: new Date(payment.expires_at).toLocaleDateString('id-ID')
-    }
+    const student = payment.student
+    const studentName = student?.name || 'Siswa'
+    const studentNickname = student?.nickname || studentName
+    const phone = student?.phone || ''
 
-    const message = // TODO: Implement WhatsApp service - generatePaymentMessage(paymentData)
+    // Create professional message template
+    const message = `Assalamu'alaikum Wr. Wb.
 
-    await // TODO: Implement WhatsApp service - sendMessage(payment.student?.phone, message)
+Selamat pagi orang tua dari ${studentName}
 
-    toast.success('Pesan berhasil dikirim')
+Dengan hormat, kami ingin mengingatkan mengenai pembayaran uang kas kelas untuk bulan ini sebesar ${formatCurrency(payment.amount)}
+
+Untuk kemudahan pembayaran, Bapak/Ibu dapat menggunakan link pembayaran berikut:
+
+${payment.payment_url}
+
+Pembayaran dapat dilakukan melalui QRIS dengan berbagai metode:
+
+✅ Scan QR Code
+✅ E-Wallet (GoPay, OVO, DANA, ShopeePay)
+
+Terima kasih atas perhatian dan kerjasamanya.
+
+Wassalamu'alaikum Wr. Wb.
+
+---
+*Order ID: ${payment.order_id}*
+*Sistem Kas Kelas Otomatis*`
+
+    // Clean phone number for WhatsApp (Indonesian format)
+    const cleanPhone = phone.replace(/\D/g, '').replace(/^0/, '62')
+
+    // Create WhatsApp URL
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
+
+    // Open WhatsApp directly
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+
+    toast.success(`📱 WhatsApp terbuka untuk ${studentName}`, {
+      timeout: 3000
+    })
+
+    // Close preview modal if open
     showPreviewModal.value = false
+
   } catch (error) {
-    if (error.message.includes('CORS Error')) {
-      toast.error('CORS Error: Tidak dapat mengirim pesan langsung dari browser. Gunakan backend server untuk production.')
-      // Show alternative action
-      showCorsErrorModal.value = true
-      corsErrorData.value = {
-        phone: payment.student?.phone,
-        message: message,
-        studentName: payment.student?.name
-      }
-    } else {
-      toast.error('Gagal mengirim pesan: ' + error.message)
-    }
-    console.error('Error sending WhatsApp message:', error)
+    console.error('Error opening WhatsApp:', error)
+    toast.error('Gagal membuka WhatsApp')
   }
 }
 

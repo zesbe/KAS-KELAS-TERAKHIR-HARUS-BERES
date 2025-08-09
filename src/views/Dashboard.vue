@@ -66,14 +66,87 @@
           Overview keuangan dan statistik pembayaran
         </p>
       </div>
-      <button
-        @click="downloadDashboardPDF"
-        class="btn-primary mt-4 sm:mt-0 flex items-center"
-        title="Download Dashboard Report"
-      >
-        <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-        Download PDF Report
-      </button>
+      <!-- Download Options Dropdown -->
+      <div class="relative mt-4 sm:mt-0">
+        <button
+          @click="showDownloadOptions = !showDownloadOptions"
+          class="btn-primary flex items-center w-full sm:w-auto"
+          :class="{ 'rounded-b-none': showDownloadOptions }"
+        >
+          <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+          <span class="hidden sm:inline">Download PDF Report</span>
+          <span class="sm:hidden">Download PDF</span>
+          <ChevronDownIcon class="w-4 h-4 ml-2 transition-transform duration-200" :class="{ 'rotate-180': showDownloadOptions }" />
+        </button>
+        
+        <!-- Dropdown Options -->
+        <div 
+          v-if="showDownloadOptions"
+          class="absolute right-0 top-full z-50 w-full sm:w-64 bg-white border border-gray-200 rounded-b-lg shadow-lg"
+          @click.stop
+        >
+          <!-- Mobile-friendly options -->
+          <div class="p-2 space-y-1">
+            <!-- Quick Print Option -->
+            <button
+              @click="quickPrintDashboard"
+              class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              <PrinterIcon class="w-4 h-4 mr-3 text-blue-600" />
+              <div class="text-left">
+                <div class="font-medium">📱 Print Langsung</div>
+                <div class="text-xs text-gray-500">Buka dialog print browser</div>
+              </div>
+            </button>
+            
+            <!-- View PDF Option -->
+            <button
+              @click="viewDashboardPDF"
+              class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              <EyeIcon class="w-4 h-4 mr-3 text-green-600" />
+              <div class="text-left">
+                <div class="font-medium">👁️ Lihat PDF</div>
+                <div class="text-xs text-gray-500">Buka di tab baru untuk save/share</div>
+              </div>
+            </button>
+            
+            <!-- Download HTML Option -->
+            <button
+              @click="downloadDashboardHTML"
+              class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              <ArrowDownTrayIcon class="w-4 h-4 mr-3 text-purple-600" />
+              <div class="text-left">
+                <div class="font-medium">💾 Download HTML</div>
+                <div class="text-xs text-gray-500">File HTML yang bisa dibuka offline</div>
+              </div>
+            </button>
+            
+            <!-- Share Option -->
+            <button
+              @click="shareDashboard"
+              class="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              <ShareIcon class="w-4 h-4 mr-3 text-orange-600" />
+              <div class="text-left">
+                <div class="font-medium">📤 Share</div>
+                <div class="text-xs text-gray-500">Bagikan via WhatsApp/apps lain</div>
+              </div>
+            </button>
+          </div>
+          
+          <!-- Close button for mobile -->
+          <div class="border-t border-gray-200 p-2">
+            <button
+              @click="showDownloadOptions = false"
+              class="w-full px-3 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Statistics Cards -->
@@ -327,7 +400,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
@@ -341,7 +414,12 @@ import {
   SpeakerWaveIcon,
   DocumentChartBarIcon,
   ExclamationTriangleIcon,
-  DocumentArrowDownIcon
+  DocumentArrowDownIcon,
+  ChevronDownIcon,
+  PrinterIcon,
+  EyeIcon,
+  ArrowDownTrayIcon,
+  ShareIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
@@ -355,6 +433,9 @@ const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL &&
 // Database diagnostics
 const diagnostics = ref(null)
 const setupRecommendation = ref(null)
+
+// Download options dropdown
+const showDownloadOptions = ref(false)
 
 // Check if database setup is needed (no data loaded despite being configured)
 const needsDatabaseSetup = computed(() => {
@@ -440,6 +521,238 @@ const downloadDashboardPDF = async () => {
     console.error('Error generating Dashboard PDF:', error)
     alert('Gagal membuat PDF report dashboard')
   }
+}
+
+// Close dropdown when clicking outside
+const handleClickOutside = (event) => {
+  if (!event.target.closest('.relative')) {
+    showDownloadOptions.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+// Quick Print - langsung buka dialog print browser
+const quickPrintDashboard = () => {
+  showDownloadOptions.value = false
+  
+  try {
+    const pdfContent = generateDashboardPDFContent()
+    const printContent = generatePrintableHTML(pdfContent)
+    
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(printContent)
+      printWindow.document.close()
+      
+      printWindow.onload = () => {
+        printWindow.focus()
+        printWindow.print()
+      }
+    }
+  } catch (error) {
+    console.error('Error in quick print:', error)
+  }
+}
+
+// View PDF - buka di tab baru untuk save/share
+const viewDashboardPDF = () => {
+  showDownloadOptions.value = false
+  
+  try {
+    const pdfContent = generateDashboardPDFContent()
+    const printContent = generatePrintableHTML(pdfContent)
+    
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(printContent)
+      printWindow.document.close()
+      printWindow.document.title = `Dashboard Report - ${new Date().toLocaleDateString('id-ID')}`
+    }
+  } catch (error) {
+    console.error('Error viewing PDF:', error)
+  }
+}
+
+// Download HTML file
+const downloadDashboardHTML = () => {
+  showDownloadOptions.value = false
+  
+  try {
+    const pdfContent = generateDashboardPDFContent()
+    const htmlContent = generatePrintableHTML(pdfContent)
+    
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `Dashboard-Report-${new Date().toISOString().split('T')[0]}.html`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    console.log('Dashboard HTML downloaded successfully')
+  } catch (error) {
+    console.error('Error downloading HTML:', error)
+  }
+}
+
+// Share dashboard report
+const shareDashboard = async () => {
+  showDownloadOptions.value = false
+  
+  const shareData = {
+    title: `Dashboard Report Kas Kelas 1B - ${new Date().toLocaleDateString('id-ID')}`,
+    text: `Dashboard Report Kas Kelas 1B
+    
+📊 Total Pemasukan: ${formatCurrency(store.totalIncome)}
+💸 Total Pengeluaran: ${formatCurrency(store.totalExpenses)}
+💰 Saldo Saat Ini: ${formatCurrency(store.currentBalance)}
+👥 Total Siswa: ${store.students.length}
+
+Generated: ${new Date().toLocaleString('id-ID')}`,
+    url: window.location.href
+  }
+  
+  if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+    try {
+      await navigator.share(shareData)
+    } catch (error) {
+      console.log('Share canceled or failed:', error)
+      fallbackCopyToClipboard(shareData.text)
+    }
+  } else {
+    fallbackCopyToClipboard(shareData.text)
+  }
+}
+
+// Fallback copy to clipboard
+const fallbackCopyToClipboard = async (text) => {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+      console.log('Report data copied to clipboard')
+    } else {
+      // Fallback for non-secure contexts
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      console.log('Report data copied to clipboard (fallback)')
+    }
+  } catch (error) {
+    console.error('Failed to copy to clipboard:', error)
+  }
+}
+
+// Generate printable HTML with better mobile styling
+const generatePrintableHTML = (content) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Dashboard Report - ${new Date().toLocaleDateString('id-ID')}</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.4;
+          color: #333;
+          background: white;
+          margin: 20px;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        h1 { 
+          color: #1f2937; 
+          border-bottom: 2px solid #3b82f6; 
+          padding-bottom: 10px;
+          margin-bottom: 20px;
+        }
+        h2 { 
+          color: #374151; 
+          margin-top: 20px;
+          margin-bottom: 10px;
+        }
+        .stats-grid { 
+          display: grid; 
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+          gap: 15px; 
+          margin: 20px 0; 
+        }
+        .stat-card { 
+          border: 1px solid #d1d5db; 
+          padding: 15px; 
+          border-radius: 8px;
+          background: #f9fafb;
+        }
+        .stat-value { 
+          font-size: 18px; 
+          font-weight: bold; 
+          color: #1f2937; 
+          margin-top: 5px;
+        }
+        .stat-label { 
+          color: #6b7280; 
+          font-size: 12px; 
+          margin-bottom: 5px; 
+        }
+        table { 
+          width: 100%; 
+          border-collapse: collapse; 
+          margin: 20px 0; 
+          font-size: 12px;
+        }
+        th, td { 
+          border: 1px solid #d1d5db; 
+          padding: 6px; 
+          text-align: left; 
+        }
+        th { 
+          background-color: #f3f4f6; 
+          font-weight: bold; 
+        }
+        .income { color: #059669; font-weight: bold; }
+        .expense { color: #dc2626; font-weight: bold; }
+        .footer { 
+          margin-top: 30px; 
+          text-align: center; 
+          color: #6b7280; 
+          font-size: 10px;
+          border-top: 1px solid #e5e7eb;
+          padding-top: 20px;
+        }
+        
+        @media print {
+          body { margin: 10px; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr); }
+          table { font-size: 10px; }
+          th, td { padding: 4px; }
+        }
+        
+        @media (max-width: 600px) {
+          .stats-grid { grid-template-columns: 1fr; }
+          table { font-size: 10px; }
+          th, td { padding: 4px; }
+        }
+      </style>
+    </head>
+    <body>
+      ${content}
+      <div class="footer">
+        Generated on ${new Date().toLocaleString('id-ID')} | Dashboard Report Kas Kelas 1B SD Islam Al Husna
+      </div>
+    </body>
+    </html>
+  `
 }
 
 const generateDashboardPDFContent = () => {

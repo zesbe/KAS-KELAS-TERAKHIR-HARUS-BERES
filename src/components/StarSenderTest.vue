@@ -407,6 +407,12 @@ const musicDemo = () => {
 onMounted(() => {
   addLog('🌟 StarSender Test Console initialized', 'info')
   updateMusicStatus()
+
+  // Auto-setup demo environment
+  setTimeout(() => {
+    addLog('🚀 Auto-setting up demo environment...', 'info')
+    setupDemo()
+  }, 1000)
 })
 </script>
 

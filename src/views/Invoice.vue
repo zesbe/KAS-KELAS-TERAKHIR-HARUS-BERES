@@ -538,17 +538,36 @@ function loadFromStorage() {
 }
 
 function loadDemoData() {
+  // Try to get a random demo student for more realistic examples
+  let demoStudent = {
+    name: 'Aqilnafi Segara',
+    nickname: 'Nafi',
+    phone: '+62 856-2468-7313'
+  }
+
+  // Check if demo students are available
+  const demoData = localStorage.getItem('demo_students')
+  if (demoData) {
+    const demoStudents = JSON.parse(demoData)
+    if (demoStudents.length > 0) {
+      // Get a random demo student for variety
+      const randomIndex = Math.floor(Math.random() * demoStudents.length)
+      const selectedStudent = demoStudents[randomIndex]
+      demoStudent = {
+        name: selectedStudent.name,
+        nickname: selectedStudent.nickname || '',
+        phone: selectedStudent.phone || selectedStudent.parent_phone || ''
+      }
+    }
+  }
+
   const orderId = `KAS${Date.now()}`
   invoice.value = {
     id: `inv_${Date.now()}`,
     invoiceNumber: `INV-${orderId.slice(-8)}`,
     orderId: orderId,
-    student: {
-      name: 'Aqilnafi Segara',
-      nickname: 'Nafi',
-      phone: '+62 856-2468-7313'
-    },
-    description: 'Kas Kelas Bulan ' + getCurrentMonth(),
+    student: demoStudent,
+    description: `Kas Kelas Bulan ${getCurrentMonth()}`,
     amount: 50000,
     period: getCurrentMonth(),
     paymentMethod: 'qris',

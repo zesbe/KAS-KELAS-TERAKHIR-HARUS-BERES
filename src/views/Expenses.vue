@@ -19,29 +19,29 @@
           </button>
 
           <!-- Export dropdown menu -->
-          <div v-if="showExportMenu" class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-10">
-            <div class="py-1">
-              <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                CSV Export
+          <div v-if="showExportMenu" class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 z-10">
+            <div class="py-2">
+              <div class="px-4 py-3 text-xs font-bold text-green-600 uppercase tracking-wider border-b border-gray-100 bg-green-50">
+                📊 Excel Export
               </div>
-              <button @click="exportExpenses" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                📊 Export Pengeluaran
+              <button @click="exportExpensesToExcel" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-green-50 flex items-center">
+                📋 Export Pengeluaran Excel
               </button>
-              <button @click="exportByCategory" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                📈 Export per Kategori
+              <button @click="exportByCategoryToExcel" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-green-50 flex items-center">
+                📈 Export per Kategori Excel
               </button>
-              <button @click="exportFiltered" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                🔍 Export Data Terfilter
+              <button @click="exportFilteredToExcel" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-green-50 flex items-center">
+                🔍 Export Data Terfilter Excel
               </button>
               <div class="border-t border-gray-100 mt-1">
-                <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  PDF Download
+                <div class="px-4 py-3 text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50">
+                  📄 PDF Laporan
                 </div>
-                <button @click="downloadExpensesPDF" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                  📄 Download PDF Lengkap
+                <button @click="showExpensesPdfModal = true" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 flex items-center">
+                  📄 Laporan PDF Lengkap
                 </button>
-                <button @click="downloadExpensesSummaryPDF" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                  📋 Download PDF Summary
+                <button @click="showExpensesSummaryPdfModal = true" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 flex items-center">
+                  📋 Summary PDF
                 </button>
               </div>
             </div>

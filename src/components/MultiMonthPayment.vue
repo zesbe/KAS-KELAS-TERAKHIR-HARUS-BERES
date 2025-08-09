@@ -445,7 +445,16 @@
 
           <!-- Month Details -->
           <div>
-            <h5 class="font-medium text-gray-900 mb-3">Detail per Bulan</h5>
+            <div class="flex items-center justify-between mb-3">
+              <h5 class="font-medium text-gray-900">Detail per Bulan</h5>
+              <button
+                v-if="selectedPayment.month_details && selectedPayment.month_details.some(m => !m.paid)"
+                @click="markAllMonthsAsPaid(selectedPayment)"
+                class="text-green-600 hover:text-green-800 text-xs px-3 py-1 border border-green-300 rounded-full hover:bg-green-50"
+              >
+                ✓ Tandai Semua Lunas
+              </button>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div
                 v-for="month in selectedPayment.month_details"

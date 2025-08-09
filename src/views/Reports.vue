@@ -8,41 +8,57 @@
       </div>
       <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
         <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <!-- CSV Exports -->
-          <button @click="exportSummaryCSV" class="btn-secondary w-full sm:w-auto">
+          <!-- Excel Exports -->
+          <button @click="exportSummaryExcel" class="btn-secondary w-full sm:w-auto">
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">Export Summary CSV</span>
+            <span class="hidden sm:inline">Export Summary Excel</span>
             <span class="sm:hidden">Summary</span>
           </button>
-          <button @click="exportDetailedCSV" class="btn-secondary w-full sm:w-auto">
+          <button @click="exportDetailedExcel" class="btn-secondary w-full sm:w-auto">
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">Export Detail CSV</span>
+            <span class="hidden sm:inline">Export Detail Excel</span>
             <span class="sm:hidden">Detail</span>
           </button>
-          <button @click="exportCompleteReport" class="btn-primary w-full sm:w-auto">
+          <button @click="exportCompleteExcel" class="btn-primary w-full sm:w-auto">
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">Export Lengkap</span>
+            <span class="hidden sm:inline">Export Lengkap Excel</span>
             <span class="sm:hidden">Lengkap</span>
           </button>
         </div>
 
         <!-- PDF Downloads -->
         <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <button @click="downloadDetailPDF" class="btn-outline w-full sm:w-auto">
-            <PrinterIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">PDF Detail</span>
-            <span class="sm:hidden">Detail PDF</span>
-          </button>
-          <button @click="downloadSummaryPDF" class="btn-outline w-full sm:w-auto">
-            <PrinterIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">PDF Summary</span>
-            <span class="sm:hidden">Summary PDF</span>
-          </button>
-          <button @click="downloadCompletePDF" class="btn-primary w-full sm:w-auto">
-            <PrinterIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">PDF Lengkap</span>
-            <span class="sm:hidden">Lengkap PDF</span>
-          </button>
+          <div class="relative group">
+            <button @click="downloadDetailPDF" class="btn-outline w-full sm:w-auto">
+              <PrinterIcon class="w-4 h-4 mr-2" />
+              <span class="hidden sm:inline">PDF Detail</span>
+              <span class="sm:hidden">Detail PDF</span>
+            </button>
+            <!-- Tooltip -->
+            <div class="absolute invisible group-hover:visible bg-gray-800 text-white text-xs rounded py-1 px-2 bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-10">
+              Buka di window baru untuk print/save
+            </div>
+          </div>
+          <div class="relative group">
+            <button @click="downloadSummaryPDF" class="btn-outline w-full sm:w-auto">
+              <PrinterIcon class="w-4 h-4 mr-2" />
+              <span class="hidden sm:inline">PDF Summary</span>
+              <span class="sm:hidden">Summary PDF</span>
+            </button>
+            <div class="absolute invisible group-hover:visible bg-gray-800 text-white text-xs rounded py-1 px-2 bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-10">
+              Ringkasan keuangan dalam PDF
+            </div>
+          </div>
+          <div class="relative group">
+            <button @click="downloadCompletePDF" class="btn-primary w-full sm:w-auto">
+              <PrinterIcon class="w-4 h-4 mr-2" />
+              <span class="hidden sm:inline">PDF Lengkap</span>
+              <span class="sm:hidden">Lengkap PDF</span>
+            </button>
+            <div class="absolute invisible group-hover:visible bg-gray-800 text-white text-xs rounded py-1 px-2 bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-10">
+              Laporan lengkap dengan semua detail
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -59,12 +75,12 @@
             <option value="custom">Kustom</option>
           </select>
         </div>
-        
+
         <div v-if="selectedPeriod === 'custom'">
           <label class="block text-sm font-medium text-gray-700 mb-2">Dari Tanggal</label>
           <input v-model="dateFrom" type="date" class="input-field" @change="filterData" />
         </div>
-        
+
         <div v-if="selectedPeriod === 'custom'">
           <label class="block text-sm font-medium text-gray-700 mb-2">Sampai Tanggal</label>
           <input v-model="dateTo" type="date" class="input-field" @change="filterData" />
@@ -208,8 +224,8 @@
         <div>
           <h4 class="text-md font-medium text-success-600 mb-3">Sudah Bayar ({{ reportData.paidStudents.length }})</h4>
           <div class="space-y-2 max-h-64 overflow-y-auto">
-            <div 
-              v-for="student in reportData.paidStudents" 
+            <div
+              v-for="student in reportData.paidStudents"
               :key="student.id"
               class="flex items-center justify-between p-3 bg-success-50 rounded-lg"
             >
@@ -223,8 +239,8 @@
         <div>
           <h4 class="text-md font-medium text-red-600 mb-3">Belum Bayar ({{ reportData.unpaidStudents.length }})</h4>
           <div class="space-y-2 max-h-64 overflow-y-auto">
-            <div 
-              v-for="student in reportData.unpaidStudents" 
+            <div
+              v-for="student in reportData.unpaidStudents"
               :key="student.id"
               class="flex items-center justify-between p-3 bg-red-50 rounded-lg"
             >
@@ -297,6 +313,8 @@ import { useAppStore } from '@/stores'
 import { useToast } from 'vue-toastification'
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from 'date-fns'
 import { id } from 'date-fns/locale'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
 import exportService from '@/services/export'
 import FinancialCharts from '@/components/FinancialCharts.vue'
 import AnalyticsInsights from '@/components/AnalyticsInsights.vue'
@@ -393,7 +411,7 @@ const formatDate = (dateString) => {
 
 const updatePeriod = () => {
   const now = new Date()
-  
+
   switch (selectedPeriod.value) {
     case 'thisMonth':
       dateFrom.value = format(startOfMonth(now), 'yyyy-MM-dd')
@@ -409,7 +427,7 @@ const updatePeriod = () => {
       dateTo.value = format(endOfYear(now), 'yyyy-MM-dd')
       break
   }
-  
+
   if (selectedPeriod.value !== 'custom') {
     filterData()
   }
@@ -485,59 +503,241 @@ const filterData = () => {
   })
 }
 
-const exportSummaryCSV = () => {
-  const headers = ['Keterangan', 'Jumlah (IDR)', 'Detail']
-  const data = [
-    ['Total Pemasukan', exportService.formatCurrency(reportData.totalIncome), `${reportData.paidStudents.length} siswa`],
-    ['Total Pengeluaran', exportService.formatCurrency(reportData.totalExpenses), getExpensesByCategory()],
-    ['Saldo Akhir', exportService.formatCurrency(reportData.balance), reportData.balance >= 0 ? 'Surplus' : 'Defisit'],
-    ['Total Transaksi', reportData.transactionCount, 'Semua jenis'],
-    ['Siswa Sudah Bayar', reportData.paidStudents.length, `${Math.round((reportData.paidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`],
-    ['Siswa Belum Bayar', reportData.unpaidStudents.length, `${Math.round((reportData.unpaidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`],
-    ['Periode', `${dateFrom.value} s/d ${dateTo.value}`, 'Filter aktif']
-  ]
+const exportSummaryExcel = () => {
+  try {
+    // Create workbook
+    const wb = XLSX.utils.book_new()
 
-  exportService.downloadCSV(headers, data, `ringkasan_keuangan_${getPeriodString()}`)
-  toast.success('Ringkasan keuangan berhasil di-export')
-}
+    // Summary data
+    const summaryData = [
+      ['RINGKASAN KEUANGAN KAS KELAS 1B'],
+      ['SD Islam Al Husna - Tahun Ajaran 2025/2026'],
+      ['Periode: ' + dateFrom.value + ' s/d ' + dateTo.value],
+      ['Tanggal Export: ' + new Date().toLocaleDateString('id-ID')],
+      [],
+      ['Keterangan', 'Jumlah (IDR)', 'Detail'],
+      ['Total Pemasukan', reportData.totalIncome, `${reportData.paidStudents.length} siswa`],
+      ['Total Pengeluaran', reportData.totalExpenses, getExpensesByCategory()],
+      ['Saldo Akhir', reportData.balance, reportData.balance >= 0 ? 'Surplus' : 'Defisit'],
+      ['Total Transaksi', reportData.transactionCount, 'Semua jenis'],
+      ['Siswa Sudah Bayar', reportData.paidStudents.length, `${Math.round((reportData.paidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`],
+      ['Siswa Belum Bayar', reportData.unpaidStudents.length, `${Math.round((reportData.unpaidStudents.length / (reportData.paidStudents.length + reportData.unpaidStudents.length)) * 100)}%`]
+    ]
 
-const exportDetailedCSV = () => {
-  const headers = [
-    'Tanggal',
-    'Jenis',
-    'Keterangan',
-    'Siswa/Kategori',
-    'Pemasukan (IDR)',
-    'Pengeluaran (IDR)',
-    'Saldo (IDR)',
-    'Status',
-    'Metode Pembayaran'
-  ]
+    const ws = XLSX.utils.aoa_to_sheet(summaryData)
 
-  const data = reportData.detailedTransactions.map(item => [
-    exportService.formatDate(item.date),
-    item.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
-    item.description,
-    item.student_name || item.category || '',
-    item.type === 'income' ? exportService.formatCurrency(item.amount) : '',
-    item.type === 'expense' ? exportService.formatCurrency(item.amount) : '',
-    exportService.formatCurrency(item.balance),
-    item.status || '',
-    item.payment_method || ''
-  ])
+    // Set column widths
+    ws['!cols'] = [
+      { width: 25 },
+      { width: 20 },
+      { width: 30 }
+    ]
 
-  exportService.downloadCSV(headers, data, `detail_transaksi_${getPeriodString()}`)
-  toast.success('Detail transaksi berhasil di-export')
-}
+    // Format currency cells
+    const currencyStyle = { numFmt: '#,##0' }
+    if (ws['B7']) ws['B7'].z = '#,##0'
+    if (ws['B8']) ws['B8'].z = '#,##0'
+    if (ws['B9']) ws['B9'].z = '#,##0'
 
-const exportCompleteReport = () => {
-  const period = {
-    from: dateFrom.value,
-    to: dateTo.value
+    XLSX.utils.book_append_sheet(wb, ws, 'Ringkasan')
+
+    // Save file
+    const fileName = `Ringkasan_Keuangan_${getPeriodString()}.xlsx`
+    XLSX.writeFile(wb, fileName)
+
+    toast.success('📊 Ringkasan keuangan Excel berhasil di-export!')
+  } catch (error) {
+    console.error('Error exporting summary Excel:', error)
+    toast.error('❌ Gagal export ringkasan Excel')
   }
+}
 
-  exportService.exportComprehensiveReport(reportData, period)
-  toast.success('Laporan lengkap berhasil di-export')
+const exportDetailedExcel = () => {
+  try {
+    const wb = XLSX.utils.book_new()
+
+    // Header info
+    const headerData = [
+      ['DETAIL TRANSAKSI KAS KELAS 1B'],
+      ['SD Islam Al Husna - Tahun Ajaran 2025/2026'],
+      ['Periode: ' + dateFrom.value + ' s/d ' + dateTo.value],
+      ['Tanggal Export: ' + new Date().toLocaleDateString('id-ID')],
+      []
+    ]
+
+    // Transaction headers
+    const transactionHeaders = [
+      'Tanggal',
+      'Jenis',
+      'Keterangan',
+      'Siswa/Kategori',
+      'Pemasukan (IDR)',
+      'Pengeluaran (IDR)',
+      'Saldo (IDR)',
+      'Status',
+      'Metode Pembayaran'
+    ]
+
+    // Transaction data
+    const transactionData = reportData.detailedTransactions.map(item => [
+      formatDate(item.date),
+      item.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+      item.description,
+      item.student_name || item.category || '',
+      item.type === 'income' ? item.amount : '',
+      item.type === 'expense' ? item.amount : '',
+      item.balance,
+      item.status || '',
+      item.payment_method || ''
+    ])
+
+    // Combine all data
+    const allData = [
+      ...headerData,
+      transactionHeaders,
+      ...transactionData
+    ]
+
+    const ws = XLSX.utils.aoa_to_sheet(allData)
+
+    // Set column widths
+    ws['!cols'] = [
+      { width: 12 }, // Tanggal
+      { width: 12 }, // Jenis
+      { width: 30 }, // Keterangan
+      { width: 20 }, // Siswa/Kategori
+      { width: 15 }, // Pemasukan
+      { width: 15 }, // Pengeluaran
+      { width: 15 }, // Saldo
+      { width: 12 }, // Status
+      { width: 15 }  // Metode
+    ]
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Detail Transaksi')
+
+    const fileName = `Detail_Transaksi_${getPeriodString()}.xlsx`
+    XLSX.writeFile(wb, fileName)
+
+    toast.success('📋 Detail transaksi Excel berhasil di-export!')
+  } catch (error) {
+    console.error('Error exporting detailed Excel:', error)
+    toast.error('❌ Gagal export detail Excel')
+  }
+}
+
+const exportCompleteExcel = () => {
+  try {
+    const wb = XLSX.utils.book_new()
+
+    // Summary Sheet
+    const summaryData = [
+      ['LAPORAN LENGKAP KAS KELAS 1B'],
+      ['SD Islam Al Husna - Tahun Ajaran 2025/2026'],
+      ['Periode: ' + dateFrom.value + ' s/d ' + dateTo.value],
+      ['Tanggal Export: ' + new Date().toLocaleDateString('id-ID')],
+      [],
+      ['RINGKASAN KEUANGAN'],
+      ['Total Pemasukan', reportData.totalIncome],
+      ['Total Pengeluaran', reportData.totalExpenses],
+      ['Saldo Akhir', reportData.balance],
+      ['Total Transaksi', reportData.transactionCount],
+      ['Rate Pembayaran', `${paymentRate.value}%`],
+      [],
+      ['STATUS PEMBAYARAN'],
+      ['Siswa Sudah Bayar', reportData.paidStudents.length],
+      ['Siswa Belum Bayar', reportData.unpaidStudents.length],
+      ['Total Siswa', store.students.length]
+    ]
+
+    const summaryWs = XLSX.utils.aoa_to_sheet(summaryData)
+    summaryWs['!cols'] = [{ width: 25 }, { width: 20 }]
+    XLSX.utils.book_append_sheet(wb, summaryWs, 'Ringkasan')
+
+    // Students Paid Sheet
+    const paidData = [
+      ['SISWA SUDAH BAYAR'],
+      [],
+      ['Nama Siswa', 'Total Pembayaran'],
+      ...reportData.paidStudents.map(student => [
+        student.name,
+        student.totalPaid
+      ])
+    ]
+
+    const paidWs = XLSX.utils.aoa_to_sheet(paidData)
+    paidWs['!cols'] = [{ width: 30 }, { width: 20 }]
+    XLSX.utils.book_append_sheet(wb, paidWs, 'Sudah Bayar')
+
+    // Students Unpaid Sheet
+    const unpaidData = [
+      ['SISWA BELUM BAYAR'],
+      [],
+      ['Nama Siswa', 'No. HP Orang Tua'],
+      ...reportData.unpaidStudents.map(student => [
+        student.name,
+        student.phone
+      ])
+    ]
+
+    const unpaidWs = XLSX.utils.aoa_to_sheet(unpaidData)
+    unpaidWs['!cols'] = [{ width: 30 }, { width: 20 }]
+    XLSX.utils.book_append_sheet(wb, unpaidWs, 'Belum Bayar')
+
+    // Detailed Transactions Sheet
+    const transactionData = [
+      ['DETAIL TRANSAKSI LENGKAP'],
+      [],
+      ['Tanggal', 'Jenis', 'Keterangan', 'Pemasukan', 'Pengeluaran', 'Saldo'],
+      ...reportData.detailedTransactions.map(item => [
+        formatDate(item.date),
+        item.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+        item.description,
+        item.type === 'income' ? item.amount : '',
+        item.type === 'expense' ? item.amount : '',
+        item.balance
+      ])
+    ]
+
+    const transactionWs = XLSX.utils.aoa_to_sheet(transactionData)
+    transactionWs['!cols'] = [
+      { width: 12 },
+      { width: 12 },
+      { width: 35 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 }
+    ]
+    XLSX.utils.book_append_sheet(wb, transactionWs, 'Detail Transaksi')
+
+    // Expense Categories Sheet if there are expenses
+    if (topExpenseCategories.value.length > 0) {
+      const expenseData = [
+        ['KATEGORI PENGELUARAN'],
+        [],
+        ['Kategori', 'Total Pengeluaran', 'Persentase'],
+        ...topExpenseCategories.value.map(category => {
+          const percentage = reportData.totalExpenses > 0 ? ((category.amount / reportData.totalExpenses) * 100).toFixed(1) : 0
+          return [
+            category.name,
+            category.amount,
+            percentage + '%'
+          ]
+        })
+      ]
+
+      const expenseWs = XLSX.utils.aoa_to_sheet(expenseData)
+      expenseWs['!cols'] = [{ width: 25 }, { width: 20 }, { width: 15 }]
+      XLSX.utils.book_append_sheet(wb, expenseWs, 'Kategori Pengeluaran')
+    }
+
+    const fileName = `Laporan_Lengkap_Kas_${getPeriodString()}.xlsx`
+    XLSX.writeFile(wb, fileName)
+
+    toast.success('📈 Laporan lengkap Excel berhasil di-export!')
+  } catch (error) {
+    console.error('Error exporting complete Excel:', error)
+    toast.error('❌ Gagal export laporan lengkap Excel')
+  }
 }
 
 const getExpensesByCategory = () => {
@@ -575,8 +775,14 @@ const getPeriodString = () => {
 const downloadDetailPDF = () => {
   try {
     const htmlContent = generateDetailPDFContent()
+
+    // Opsi 1: Buka di window baru (lebih stabil)
     openPDFWindow(htmlContent, 'Detail')
-    toast.success('PDF Detail berhasil di-generate!')
+
+    // Opsi 2: Download sebagai HTML yang bisa di-print
+    // downloadAsHTML(htmlContent, 'Detail')
+
+    toast.success('PDF Detail berhasil di-generate! Window baru terbuka.')
   } catch (error) {
     console.error('Error generating Detail PDF:', error)
     toast.error('Gagal generate PDF Detail')
@@ -587,7 +793,7 @@ const downloadSummaryPDF = () => {
   try {
     const htmlContent = generateSummaryPDFContent()
     openPDFWindow(htmlContent, 'Summary')
-    toast.success('PDF Summary berhasil di-generate!')
+    toast.success('PDF Summary berhasil di-generate! Window baru terbuka.')
   } catch (error) {
     console.error('Error generating Summary PDF:', error)
     toast.error('Gagal generate PDF Summary')
@@ -598,7 +804,7 @@ const downloadCompletePDF = () => {
   try {
     const htmlContent = generateCompletePDFContent()
     openPDFWindow(htmlContent, 'Lengkap')
-    toast.success('PDF Lengkap berhasil di-generate!')
+    toast.success('PDF Lengkap berhasil di-generate! Window baru terbuka.')
   } catch (error) {
     console.error('Error generating Complete PDF:', error)
     toast.error('Gagal generate PDF Lengkap')
@@ -614,6 +820,15 @@ const generatePDFStyles = () => `
       color: #333;
       background: white;
       margin: 20px;
+      min-height: 100vh;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Improved print styles */
+    @page {
+      size: A4;
+      margin: 1.5cm;
     }
     .header {
       text-align: center;
@@ -1032,15 +1247,81 @@ const openPDFWindow = (htmlContent, reportType) => {
   printWindow.document.write(htmlContent)
   printWindow.document.close()
 
+  // Beri nama window yang lebih deskriptif
+  printWindow.document.title = `Laporan ${reportType} - Kas Kelas 1B`
+
+  // Tunggu hingga window benar-benar loaded
   printWindow.addEventListener('load', () => {
+    // Beri waktu lebih untuk render content
     setTimeout(() => {
-      printWindow.print()
-      // Close window after printing
+      // Focus ke window baru
+      printWindow.focus()
+
+      // Tidak auto-print, biarkan user yang memutuskan
+      // printWindow.print()
+
+      // Tampilkan instruksi di console window baru
+      printWindow.console.log('PDF siap! Gunakan Ctrl+P untuk print atau Ctrl+S untuk save as PDF')
+
+      // Tambahkan tombol download di window
+      const downloadBtn = printWindow.document.createElement('div')
+      downloadBtn.innerHTML = `
+        <div style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: #2563eb; color: white; padding: 10px 15px; border-radius: 8px; font-family: Arial; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="window.print()">
+          🖨️ Print / Save PDF
+        </div>
+        <div style="position: fixed; top: 60px; right: 10px; z-index: 9999; background: #059669; color: white; padding: 8px 12px; border-radius: 6px; font-family: Arial; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 12px;" onclick="window.close()">
+          ✕ Tutup
+        </div>
+      `
+      printWindow.document.body.appendChild(downloadBtn)
+
+    }, 1000) // Beri waktu lebih lama untuk render
+  })
+
+  // Jangan auto-close window
+  // User bisa close sendiri setelah selesai
+}
+
+// Fungsi alternatif: Download sebagai HTML file
+const downloadAsHTML = (htmlContent, reportType) => {
+  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `Laporan_${reportType}_${getPeriodString()}.html`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+// Fungsi untuk download PDF menggunakan browser print
+const downloadPDFViaBrowser = (htmlContent, reportType) => {
+  // Buat iframe tersembunyi
+  const iframe = document.createElement('iframe')
+  iframe.style.position = 'absolute'
+  iframe.style.top = '-10000px'
+  iframe.style.left = '-10000px'
+  iframe.style.width = '1px'
+  iframe.style.height = '1px'
+  document.body.appendChild(iframe)
+
+  // Tulis content ke iframe
+  iframe.contentDocument.write(htmlContent)
+  iframe.contentDocument.close()
+
+  // Tunggu load kemudian print
+  iframe.onload = () => {
+    setTimeout(() => {
+      iframe.contentWindow.focus()
+      iframe.contentWindow.print()
+
+      // Cleanup setelah print
       setTimeout(() => {
-        printWindow.close()
+        document.body.removeChild(iframe)
       }, 1000)
     }, 500)
-  })
+  }
 }
 
 onMounted(() => {

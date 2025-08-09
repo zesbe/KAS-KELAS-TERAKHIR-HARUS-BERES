@@ -2,8 +2,6 @@
 // Bypasses CORS and provides beautiful music experience
 // Made with ❤️ for smooth broadcasting
 
-import musicManager from './musicManager.js'
-
 class StarSender {
   constructor() {
     this.isPlaying = false

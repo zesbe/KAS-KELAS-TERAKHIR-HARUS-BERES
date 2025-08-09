@@ -227,6 +227,19 @@ const toast = useToast()
 // Global loading state
 const isLoading = ref(false)
 
+// Floating menu button state
+const showFloatingMenuButton = ref(false)
+
+// Scroll detection for floating button
+const handleScroll = () => {
+  // Show floating button if scrolled down more than 100px on mobile
+  if (window.innerWidth < 1024) {
+    showFloatingMenuButton.value = window.scrollY > 100
+  } else {
+    showFloatingMenuButton.value = false
+  }
+}
+
 const navigation = [
   { name: 'Dashboard', label: 'Dashboard', href: '/', icon: HomeIcon, requiresPermission: 'dashboard' },
   { name: 'Students', label: 'Data Siswa', href: '/students', icon: UsersIcon, requiresPermission: 'students' },

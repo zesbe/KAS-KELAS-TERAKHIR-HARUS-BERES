@@ -1130,6 +1130,119 @@ const markAllMonthsAsPaid = async (payment) => {
   }
 }
 
+const downloadMultiMonthPDF = async () => {
+  try {
+    const pdfContent = generateMultiMonthPDFContent()
+
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Laporan Multi-Month Payment - ${new Date().toLocaleDateString('id-ID')}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
+            h2 { color: #374151; margin-top: 20px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
+            th { background-color: #f3f4f6; font-weight: bold; }
+            .status-pending { color: #d97706; }
+            .status-partial { color: #2563eb; }
+            .status-completed { color: #059669; }
+            .summary { background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0; }
+            .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 12px; }
+            .progress-bar { width: 100%; height: 20px; background-color: #e5e7eb; border-radius: 10px; }
+            .progress-fill { height: 100%; background-color: #3b82f6; border-radius: 10px; }
+          </style>
+        </head>
+        <body>
+          ${pdfContent}
+          <div class="footer">
+            Generated on ${new Date().toLocaleString('id-ID')} | Sistem Kas Kelas Multi-Month
+          </div>
+        </body>
+        </html>
+      `)
+      printWindow.document.close()
+
+      setTimeout(() => {
+        printWindow.print()
+      }, 500)
+    }
+
+    toast.success('PDF Report Multi-Month siap untuk di-print/save')
+
+  } catch (error) {
+    console.error('Error generating Multi-Month PDF:', error)
+    toast.error('Gagal membuat PDF report')
+  }
+}
+
+const generateMultiMonthPDFContent = () => {
+  const payments = filteredPayments.value
+  const totalStudents = payments.length
+  const completedPayments = payments.filter(p => p.status === 'completed').length
+  const partialPayments = payments.filter(p => p.status === 'partial').length
+  const pendingPayments = payments.filter(p => p.status === 'pending').length
+  const totalAmount = payments.reduce((sum, p) => sum + p.total_amount, 0)
+  const totalPaidAmount = payments.reduce((sum, p) => sum + p.paid_amount, 0)
+
+  let tableRows = ''
+  payments.forEach(payment => {
+    const statusClass = `status-${payment.status}`
+    tableRows += `
+      <tr>
+        <td>${payment.student?.name || '-'}</td>
+        <td>${payment.period_label}</td>
+        <td>${payment.months} bulan</td>
+        <td>${formatCurrency(payment.total_amount)}</td>
+        <td>${formatCurrency(payment.paid_amount)}</td>
+        <td>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${payment.progress_percentage}%"></div>
+          </div>
+          ${payment.progress_percentage}%
+        </td>
+        <td class="${statusClass}">${getStatusLabel(payment.status)}</td>
+      </tr>
+    `
+  })
+
+  return `
+    <h1>📊 Laporan Pembayaran Multi-Bulan</h1>
+
+    <div class="summary">
+      <h2>📈 Ringkasan</h2>
+      <p><strong>Total Siswa:</strong> ${totalStudents}</p>
+      <p><strong>Lunas:</strong> ${completedPayments} | <strong>Sebagian:</strong> ${partialPayments} | <strong>Pending:</strong> ${pendingPayments}</p>
+      <p><strong>Total Amount:</strong> ${formatCurrency(totalAmount)}</p>
+      <p><strong>Total Terbayar:</strong> ${formatCurrency(totalPaidAmount)}</p>
+      <p><strong>Progress Keseluruhan:</strong> ${Math.round((totalPaidAmount / totalAmount) * 100) || 0}%</p>
+      <p><strong>Filter Status:</strong> ${filterStatus.value || 'Semua Status'}</p>
+    </div>
+
+    <h2>📋 Detail Pembayaran Multi-Bulan</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Siswa</th>
+          <th>Periode</th>
+          <th>Durasi</th>
+          <th>Total Amount</th>
+          <th>Terbayar</th>
+          <th>Progress</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows || '<tr><td colspan="7" style="text-align: center; color: #6b7280;">Tidak ada data pembayaran multi-bulan</td></tr>'}
+      </tbody>
+    </table>
+  `
+}
+
 const sendAllPaymentLinks = async (payment) => {
   if (!payment.payment_links || payment.payment_links.length === 0) {
     toast.warning('Tidak ada link pembayaran untuk dikirim')

@@ -43,6 +43,23 @@
                 <button @click="downloadExpensesSummaryPDF" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   📋 Download PDF Summary
                 </button>
+                <div class="border-t border-gray-100 mt-1">
+                  <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Alternative Format
+                  </div>
+                  <button @click="downloadHTMLReport('lengkap')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    🌐 Download HTML Lengkap
+                  </button>
+                  <button @click="downloadHTMLReport('summary')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    🌐 Download HTML Summary
+                  </button>
+                  <button @click="openReportInNewTab('lengkap')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    🗂️ Buka di Tab Baru (Lengkap)
+                  </button>
+                  <button @click="openReportInNewTab('summary')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    🗂️ Buka di Tab Baru (Summary)
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -630,9 +647,18 @@ const exportFiltered = () => {
 const downloadExpensesPDF = () => {
   try {
     const htmlContent = generateExpensesPDFContent()
-    openPDFWindow(htmlContent, 'Lengkap')
+    
+    // Try to open in new window for printing
+    try {
+      openPDFWindow(htmlContent, 'Lengkap')
+      toast.success('PDF Laporan Pengeluaran berhasil di-generate!')
+    } catch (popupError) {
+      // If popup is blocked, offer alternative download
+      downloadHTMLFile(htmlContent, 'laporan_lengkap_pengeluaran')
+      toast.success('PDF dibuka sebagai file HTML karena popup diblokir')
+    }
+    
     showExportMenu.value = false
-    toast.success('PDF Laporan Pengeluaran berhasil di-generate!')
   } catch (error) {
     console.error('Error generating PDF:', error)
     toast.error('Gagal generate PDF Laporan Pengeluaran')
@@ -642,12 +668,46 @@ const downloadExpensesPDF = () => {
 const downloadExpensesSummaryPDF = () => {
   try {
     const htmlContent = generateExpensesSummaryPDFContent()
-    openPDFWindow(htmlContent, 'Summary')
+    
+    // Try to open in new window for printing
+    try {
+      openPDFWindow(htmlContent, 'Summary')
+      toast.success('PDF Summary Pengeluaran berhasil di-generate!')
+    } catch (popupError) {
+      // If popup is blocked, offer alternative download
+      downloadHTMLFile(htmlContent, 'summary_pengeluaran')
+      toast.success('PDF dibuka sebagai file HTML karena popup diblokir')
+    }
+    
     showExportMenu.value = false
-    toast.success('PDF Summary Pengeluaran berhasil di-generate!')
   } catch (error) {
     console.error('Error generating Summary PDF:', error)
     toast.error('Gagal generate PDF Summary Pengeluaran')
+  }
+}
+
+// Alternative download method as HTML file
+const downloadHTMLFile = (htmlContent, filename) => {
+  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${filename}_${new Date().toISOString().slice(0, 10)}.html`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+// Option to open in new tab instead of popup
+const openInNewTab = (htmlContent, reportType) => {
+  const newTab = window.open('about:blank', '_blank')
+  if (newTab) {
+    newTab.document.write(htmlContent)
+    newTab.document.close()
+    newTab.document.title = `Laporan Pengeluaran ${reportType} - ${new Date().toLocaleDateString('id-ID')}`
+  } else {
+    throw new Error('Unable to open new tab')
   }
 }
 
@@ -740,8 +800,40 @@ const generatePDFStyles = () => `
       color: #374151;
     }
     @media print {
-      body { margin: 0; }
-      .header { background: #dc2626 !important; -webkit-print-color-adjust: exact; }
+      body { 
+        margin: 0; 
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+      }
+      .header { 
+        background: #dc2626 !important; 
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+        break-inside: avoid;
+      }
+      .section {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      .table {
+        page-break-inside: auto;
+      }
+      .table tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .summary-box {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      * {
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+      }
+    }
+    @page {
+      margin: 1in;
+      size: A4;
     }
   </style>
 `
@@ -1062,15 +1154,94 @@ const openPDFWindow = (htmlContent, reportType) => {
   printWindow.document.write(htmlContent)
   printWindow.document.close()
 
-  printWindow.addEventListener('load', () => {
+  // Better handling for PDF window
+  const handleWindowReady = () => {
+    // Wait for content to fully load
     setTimeout(() => {
+      // Focus the window first
+      printWindow.focus()
+      
+      // Add print event listeners
+      const afterPrint = () => {
+        // Give user time to see the result before closing
+        setTimeout(() => {
+          if (!printWindow.closed) {
+            printWindow.close()
+          }
+        }, 2000)
+      }
+
+      // Handle different browsers
+      if (printWindow.matchMedia) {
+        const mediaQueryList = printWindow.matchMedia('print')
+        mediaQueryList.addEventListener('change', (mql) => {
+          if (!mql.matches) {
+            afterPrint()
+          }
+        })
+      }
+
+      // Fallback for older browsers
+      printWindow.addEventListener('afterprint', afterPrint)
+
+      // Trigger print
       printWindow.print()
-      // Close window after printing
+
+      // Safety fallback - close after 30 seconds if still open
       setTimeout(() => {
-        printWindow.close()
-      }, 1000)
-    }, 500)
-  })
+        if (!printWindow.closed) {
+          printWindow.close()
+        }
+      }, 30000)
+
+    }, 1000) // Increased timeout for better content loading
+  }
+
+  // Wait for window to be ready
+  if (printWindow.document.readyState === 'complete') {
+    handleWindowReady()
+  } else {
+    printWindow.addEventListener('load', handleWindowReady)
+    // Fallback timeout in case load event doesn't fire
+    setTimeout(handleWindowReady, 2000)
+  }
+}
+
+// Helper functions for alternative download methods
+const downloadHTMLReport = (type) => {
+  try {
+    const htmlContent = type === 'lengkap' ? 
+      generateExpensesPDFContent() : 
+      generateExpensesSummaryPDFContent()
+    
+    const filename = type === 'lengkap' ? 
+      'laporan_lengkap_pengeluaran' : 
+      'summary_pengeluaran'
+    
+    downloadHTMLFile(htmlContent, filename)
+    showExportMenu.value = false
+    toast.success(`Laporan ${type} berhasil didownload sebagai HTML!`)
+  } catch (error) {
+    console.error('Error downloading HTML report:', error)
+    toast.error('Gagal download laporan HTML')
+  }
+}
+
+const openReportInNewTab = (type) => {
+  try {
+    const htmlContent = type === 'lengkap' ? 
+      generateExpensesPDFContent() : 
+      generateExpensesSummaryPDFContent()
+    
+    openInNewTab(htmlContent, type)
+    showExportMenu.value = false
+    toast.success(`Laporan ${type} berhasil dibuka di tab baru!`)
+  } catch (error) {
+    console.error('Error opening report in new tab:', error)
+    // Fallback to HTML download
+    downloadHTMLReport(type)
+    toast.info('Dibuka sebagai download HTML karena tab baru diblokir')
+  }
 }
 
 // Close export menu when clicking outside

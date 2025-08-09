@@ -744,36 +744,34 @@ const loadData = async () => {
       toast.warning('Data campaign tidak dapat dimuat, menggunakan data kosong')
     }
 
-    // If no campaigns exist, create demo data
+    // If no campaigns exist, create simple demo data
     if (campaigns.value.length === 0) {
-      const demoCampaign = {
-        id: campaignService.generateCampaignId(),
-        title: 'Reminder Pembayaran Kas Januari',
-        message: `🏫 *Reminder Kas Kelas 1B*
-SD Islam Al Husna
+      try {
+        const demoCampaign = {
+          id: 'demo_' + Date.now(),
+          title: 'Demo Campaign WhatsApp',
+          message: `Halo [[NAME]]! Ini adalah demo campaign WhatsApp.`,
+          target: 'all',
+          recipients: [],
+          delay_minutes: 10,
+          status: 'draft',
+          scheduled_at: null,
+          created_at: new Date().toISOString(),
+          results: null
+        }
 
-Halo [[NAME]] ([[NICKNAME]]),
+        // Try to create campaign, but don't fail if it doesn't work
+        try {
+          await campaignService.createCampaign(demoCampaign)
+        } catch (createError) {
+          console.warn('Could not save demo campaign:', createError)
+        }
 
-Silakan melakukan pembayaran kas kelas untuk bulan Januari 2024.
-
-💰 Jumlah: Rp 50.000
-📅 Jatuh Tempo: 31 Januari 2024
-📱 WhatsApp: [[PHONE]]
-
-Terima kasih atas perhatiannya! 🙏
-
-_Pesan otomatis dari Sistem Kas Kelas_`,
-        target: 'unpaid',
-        recipients: [],
-        delay_minutes: 10,
-        status: 'draft',
-        scheduled_at: null,
-        created_at: new Date().toISOString(),
-        results: null
+        campaigns.value = [demoCampaign]
+      } catch (demoError) {
+        console.warn('Could not create demo campaign:', demoError)
+        campaigns.value = []
       }
-
-      await campaignService.createCampaign(demoCampaign)
-      campaigns.value = [demoCampaign]
     }
 
   } catch (error) {

@@ -6,6 +6,21 @@
     </div>
 
     <div class="test-section">
+      <h4>🚀 Quick Setup</h4>
+      <div class="quick-setup">
+        <button @click="setupDemo" class="test-btn primary">
+          🌟 Setup Demo Environment
+        </button>
+        <button @click="quickTest" class="test-btn secondary">
+          ⚡ Instant Force Test
+        </button>
+        <button @click="musicDemo" class="test-btn music">
+          🎵 Music System Demo
+        </button>
+      </div>
+    </div>
+
+    <div class="test-section">
       <h4>📱 Quick WhatsApp Test</h4>
       <div class="test-form">
         <div class="form-group">

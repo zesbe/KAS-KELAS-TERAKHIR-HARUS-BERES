@@ -58,14 +58,20 @@ class MusicManager {
 
   async initializeAudio() {
     try {
-      this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
-      this.gainNode = this.audioContext.createGain()
-      this.gainNode.connect(this.audioContext.destination)
-      this.gainNode.gain.value = this.volume
-      
-      console.log('🎵 StarSender Music Manager initialized')
+      if (typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+        this.gainNode = this.audioContext.createGain()
+        this.gainNode.connect(this.audioContext.destination)
+        this.gainNode.gain.value = this.volume
+
+        console.log('🎵 StarSender Music Manager initialized')
+      } else {
+        throw new Error('AudioContext not supported')
+      }
     } catch (error) {
       console.log('🎵 Audio context not available, using fallback mode')
+      this.audioContext = null
+      this.gainNode = null
     }
   }
 

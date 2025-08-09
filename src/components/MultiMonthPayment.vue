@@ -115,26 +115,40 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center space-x-2">
-                  <button 
+                  <button
                     @click="viewDetails(payment)"
                     class="text-primary-600 hover:text-primary-900"
                     title="Lihat Detail"
                   >
                     <EyeIcon class="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     @click="sendReminder(payment)"
                     class="text-success-600 hover:text-success-900"
                     title="Kirim Reminder"
                   >
                     <ChatBubbleLeftIcon class="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     @click="copyPaymentLink(payment)"
                     class="text-warning-600 hover:text-warning-900"
                     title="Copy Link"
                   >
                     <LinkIcon class="w-4 h-4" />
+                  </button>
+                  <button
+                    @click="editPayment(payment)"
+                    class="text-blue-600 hover:text-blue-900"
+                    title="Edit Pembayaran"
+                  >
+                    <PencilIcon class="w-4 h-4" />
+                  </button>
+                  <button
+                    @click="deletePayment(payment)"
+                    class="text-red-600 hover:text-red-900"
+                    title="Hapus Pembayaran"
+                  >
+                    <TrashIcon class="w-4 h-4" />
                   </button>
                 </div>
               </td>

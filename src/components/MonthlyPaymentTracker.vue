@@ -314,20 +314,20 @@ const loadMonthlyData = () => {
   const year = selectedYear.value
 
 
-  // Generate 12 months for the selected year
-  for (let i = 0; i < 12; i++) {
-    const monthDate = new Date(year, i, 1)
-    const monthCode = monthDate.toISOString().slice(0, 7) // YYYY-MM
-    const monthName = monthDate.toLocaleDateString('id-ID', { month: 'long' })
+  // Generate 12 months for academic year (August to July)
+  const academicMonths = []
 
-    // Debug logging for 2025
-    if (year === 2025 && (i === 7 || i === 8)) { // August (7) and September (8)
-      console.log(`📅 Month ${i} (${monthName}):`, {
-        monthDate: monthDate.toISOString(),
-        monthCode,
-        monthName
-      })
-    }
+  // Generate August to December of selected year
+  for (let i = 7; i < 12; i++) { // August (7) to December (11)
+    academicMonths.push({ year: year, month: i })
+  }
+
+  // Generate January to July of next year
+  for (let i = 0; i < 7; i++) { // January (0) to July (6)
+    academicMonths.push({ year: year + 1, month: i })
+  }
+
+  for (const { year: monthYear, month: monthIndex } of academicMonths) {
     const currentDate = new Date()
     const currentYear = currentDate.getFullYear()
     const currentMonthCode = currentDate.toISOString().slice(0, 7)

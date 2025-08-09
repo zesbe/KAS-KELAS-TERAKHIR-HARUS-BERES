@@ -261,7 +261,7 @@ import {
 const store = useAppStore()
 const toast = useToast()
 
-const selectedYear = ref(new Date().getFullYear())
+const selectedYear = ref(2024)
 const monthlyData = ref([])
 const showDetailsModal = ref(false)
 const selectedMonth = ref(null)

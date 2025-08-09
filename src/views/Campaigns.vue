@@ -20,6 +20,9 @@
     <!-- StarSender Control Panel -->
     <StarSenderPanel />
 
+    <!-- StarSender Test Console -->
+    <StarSenderTest />
+
     <!-- Campaign Stats -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div class="card p-6">
@@ -717,7 +720,7 @@ Silakan melakukan pembayaran kas kelas untuk bulan Januari 2024.
 
 💰 Jumlah: Rp 50.000
 📅 Jatuh Tempo: 31 Januari 2024
-📱 WhatsApp: [[PHONE]]
+���� WhatsApp: [[PHONE]]
 
 Terima kasih atas perhatiannya! 🙏
 

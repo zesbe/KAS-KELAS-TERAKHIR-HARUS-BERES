@@ -372,6 +372,7 @@ import {
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
+const toast = useToast()
 
 // Check if Supabase is configured
 const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL &&

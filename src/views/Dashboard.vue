@@ -302,39 +302,50 @@
     <MonthlyPaymentTracker />
 
     <!-- Quick Actions -->
-    <div class="card p-4 sm:p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+    <div class="card p-6 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+      <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+        <span class="text-2xl mr-2">⚡</span>
+        Aksi Cepat
+      </h3>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <router-link
           to="/payments"
-          class="flex flex-col items-center p-3 sm:p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
+          class="group flex flex-col items-center p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl hover:from-blue-200 hover:to-indigo-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl border border-blue-200"
         >
-          <CreditCardIcon class="w-6 h-6 sm:w-8 sm:h-8 text-primary-600 mb-2" />
-          <span class="text-xs sm:text-sm font-medium text-primary-900 text-center">Buat Link Bayar</span>
+          <div class="p-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
+            <CreditCardIcon class="w-8 h-8 text-white" />
+          </div>
+          <span class="text-sm font-semibold text-blue-800 text-center mt-3">💳 Buat Link Bayar</span>
         </router-link>
-        
+
         <router-link
           to="/campaigns"
-          class="flex flex-col items-center p-3 sm:p-4 bg-success-50 rounded-lg hover:bg-success-100 transition-colors"
+          class="group flex flex-col items-center p-6 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl hover:from-green-200 hover:to-emerald-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl border border-green-200"
         >
-          <SpeakerWaveIcon class="w-6 h-6 sm:w-8 sm:h-8 text-success-600 mb-2" />
-          <span class="text-xs sm:text-sm font-medium text-success-900 text-center">Kirim Pesan</span>
+          <div class="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
+            <SpeakerWaveIcon class="w-8 h-8 text-white" />
+          </div>
+          <span class="text-sm font-semibold text-green-800 text-center mt-3">📢 Kirim Pesan</span>
         </router-link>
-        
+
         <router-link
           to="/expenses"
-          class="flex flex-col items-center p-3 sm:p-4 bg-warning-50 rounded-lg hover:bg-warning-100 transition-colors"
+          class="group flex flex-col items-center p-6 bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl hover:from-orange-200 hover:to-amber-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl border border-orange-200"
         >
-          <ReceiptPercentIcon class="w-6 h-6 sm:w-8 sm:h-8 text-warning-600 mb-2" />
-          <span class="text-xs sm:text-sm font-medium text-warning-900 text-center">Catat Pengeluaran</span>
+          <div class="p-3 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
+            <ReceiptPercentIcon class="w-8 h-8 text-white" />
+          </div>
+          <span class="text-sm font-semibold text-orange-800 text-center mt-3">💰 Catat Pengeluaran</span>
         </router-link>
-        
+
         <router-link
           to="/reports"
-          class="flex flex-col items-center p-3 sm:p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+          class="group flex flex-col items-center p-6 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl hover:from-purple-200 hover:to-pink-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl border border-purple-200"
         >
-          <DocumentChartBarIcon class="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 mb-2" />
-          <span class="text-xs sm:text-sm font-medium text-purple-900 text-center">Lihat Laporan</span>
+          <div class="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
+            <DocumentChartBarIcon class="w-8 h-8 text-white" />
+          </div>
+          <span class="text-sm font-semibold text-purple-800 text-center mt-3">📊 Lihat Laporan</span>
         </router-link>
       </div>
     </div>
@@ -515,7 +526,7 @@ const generateDashboardPDFContent = () => {
 
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">�� Total Pemasukan</div>
+        <div class="stat-label">💰 Total Pemasukan</div>
         <div class="stat-value income">${formatCurrency(store.totalIncome)}</div>
       </div>
       <div class="stat-card">

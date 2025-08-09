@@ -1120,6 +1120,11 @@ const closeModal = () => {
   })
 }
 
+const retryStarSender = () => {
+  startsenderLoaded.value = true
+  toast.info('Retrying StarSender initialization...')
+}
+
 // Lifecycle
 onMounted(() => {
   loadData()

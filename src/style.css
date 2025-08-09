@@ -7,10 +7,15 @@
     box-sizing: border-box;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     font-family: 'Inter', sans-serif;
     @apply bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-gray-900 min-h-screen;
     background-attachment: fixed;
+    overflow-x: hidden; /* Prevent horizontal scroll */
   }
 }
 

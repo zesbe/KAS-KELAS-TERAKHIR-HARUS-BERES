@@ -963,6 +963,47 @@ const checkPaymentStatus = async (payment) => {
   }
 }
 
+const markAsPaid = async (payment) => {
+  if (!confirm(`Tandai pembayaran ${payment.student?.name} sebagai LUNAS?\n\nJumlah: ${formatCurrency(payment.amount)}\nKeterangan: ${payment.description}`)) {
+    return
+  }
+
+  try {
+    // Update payment status to completed
+    await store.db.updatePaymentLink(payment.id, {
+      status: 'completed',
+      payment_method: 'manual', // Manual marking
+      completed_at: new Date().toISOString(),
+      notes: 'Ditandai lunas secara manual oleh admin'
+    })
+
+    // Create transaction record
+    await store.addTransaction({
+      type: 'income',
+      amount: payment.amount,
+      description: payment.description + ' (Manual)',
+      student_id: payment.student_id,
+      payment_method: 'manual',
+      order_id: payment.order_id,
+      status: 'completed',
+      created_at: new Date().toISOString(),
+      notes: 'Pembayaran ditandai lunas secara manual'
+    })
+
+    // Refresh data
+    await store.fetchPaymentLinks()
+    await store.fetchTransactions()
+
+    toast.success(`✅ ${payment.student?.name} berhasil ditandai LUNAS!`, {
+      timeout: 4000
+    })
+
+  } catch (error) {
+    console.error('Error marking payment as paid:', error)
+    toast.error('Gagal menandai pembayaran sebagai lunas')
+  }
+}
+
 const deletePaymentLink = async (payment) => {
   if (confirm('Apakah Anda yakin ingin menghapus link pembayaran ini?')) {
     try {

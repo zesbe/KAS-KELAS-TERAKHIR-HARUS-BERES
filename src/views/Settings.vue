@@ -1,525 +1,267 @@
 <template>
-  <div class="space-y-6">
-    <!-- Header -->
-    <div>
-      <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Pengaturan</h1>
-      <p class="text-sm text-gray-500 mt-1">Kelola pengaturan sistem dan konfigurasi</p>
+  <div class="space-y-8">
+    <!-- Header dengan gradient background -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 text-white">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold mb-2">⚙️ Pengaturan</h1>
+          <p class="text-blue-100">Kelola pengaturan sistem dan konfigurasi</p>
+        </div>
+        <div class="mt-4 sm:mt-0 text-right">
+          <div class="bg-white/20 rounded-lg px-4 py-2 backdrop-blur-sm">
+            <span class="text-sm text-blue-100">Saldo:</span>
+            <div class="text-xl font-bold">{{ formatCurrency(currentBalance) }}</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- API Configuration -->
-    <div class="card p-4 sm:p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Konfigurasi API</h3>
+    <!-- Configuration Cards Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <!-- Payment Notification Testing -->
-        <div class="space-y-4">
-          <h4 class="font-medium text-gray-900">Payment Notification Testing</h4>
-          <PaymentNotificationTester :students="students" />
+      <!-- Payment Notification Testing Card -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center">
+            <div class="bg-green-100 rounded-lg p-2 mr-3">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">Payment Notification Testing</h3>
+              <p class="text-sm text-gray-600">Test sistem notifikasi pembayaran</p>
+            </div>
+          </div>
         </div>
 
-        <!-- StarSender Configuration -->
-        <div class="space-y-4">
-          <h4 class="font-medium text-gray-900">StarSender WhatsApp API</h4>
+        <div class="p-6">
+          <div class="bg-blue-50 rounded-lg p-4 mb-4">
+            <div class="flex items-start">
+              <div class="bg-blue-100 rounded p-1 mr-3">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div class="text-sm text-blue-800">
+                <p class="font-medium">💡 Test Payment Notification</p>
+                <p class="mt-1">Gunakan untuk memastikan sistem notifikasi pembayaran berfungsi dengan baik</p>
+              </div>
+            </div>
+          </div>
 
-          <!-- Proxy Status -->
-          <div class="rounded-lg p-3" :class="edgeFunctionStatus.available ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'">
-            <div class="flex items-center">
-              <CheckCircleIcon v-if="edgeFunctionStatus.available" class="h-4 w-4 text-green-400 mr-2" />
-              <ExclamationTriangleIcon v-else class="h-4 w-4 text-yellow-400 mr-2" />
-              <span class="text-sm font-medium" :class="edgeFunctionStatus.available ? 'text-green-800' : 'text-yellow-800'">
-                Supabase Proxy: {{ edgeFunctionStatus.available ? 'Active' : 'Not Deployed' }}
+          <button 
+            @click="testPaymentNotification" 
+            :disabled="isTestingPayment"
+            class="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          >
+            <svg v-if="isTestingPayment" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <svg v-else class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            {{ isTestingPayment ? 'Testing...' : 'Test Payment Notification' }}
+          </button>
+
+          <p class="text-xs text-gray-500 mt-3 text-center">
+            Pilih Siswa untuk Test
+          </p>
+        </div>
+      </div>
+
+      <!-- StarSender WhatsApp API Card -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center">
+            <div class="bg-blue-100 rounded-lg p-2 mr-3">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">StarSender WhatsApp API</h3>
+              <p class="text-sm text-gray-600">Konfigurasi integrasi WhatsApp</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+            <div class="flex items-start">
+              <div class="bg-yellow-100 rounded p-1 mr-3">
+                <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+              </div>
+              <div class="text-sm text-yellow-800">
+                <p class="font-medium">⚠️ Supabase Proxy: Not Deployed</p>
+                <p class="mt-1">WhatsApp integration coming soon</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 space-y-3">
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <span class="text-sm font-medium text-gray-700">Status API</span>
+              <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                Pending Setup
               </span>
             </div>
-            <p class="text-xs mt-1" :class="edgeFunctionStatus.available ? 'text-green-700' : 'text-yellow-700'">
-              {{ edgeFunctionStatus.message }}
-            </p>
-          </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Device API Key</label>
-            <div class="flex items-center space-x-2">
-              <input 
-                v-model="settings.starsender.deviceApiKey"
-                :type="showKeys.device ? 'text' : 'password'"
-                class="input-field flex-1"
-                placeholder="Masukkan Device API Key"
-              />
-              <button
-                @click="showKeys.device = !showKeys.device"
-                class="btn-secondary p-2 flex-shrink-0"
-              >
-                <EyeIcon v-if="!showKeys.device" class="w-4 h-4" />
-                <EyeSlashIcon v-else class="w-4 h-4" />
-              </button>
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <span class="text-sm font-medium text-gray-700">Proxy Status</span>
+              <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                Not Deployed
+              </span>
             </div>
           </div>
-          
-          <button @click="testStarSender" :disabled="testing.starsender" class="btn-primary">
-            {{ testing.starsender ? 'Testing...' : 'Test Configuration' }}
-          </button>
 
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs">
-            <p class="text-blue-800 mb-2">
-              <strong>Supabase Edge Function Proxy:</strong>
-            </p>
-            <ul class="text-blue-700 space-y-1 list-disc list-inside">
-              <li>Mengatasi CORS issues dengan proxy server</li>
-              <li>Aman: API Key disimpan sebagai environment variable di Edge Function</li>
-              <li>Tidak perlu kirim API Key dari frontend</li>
-              <li>Server-side processing yang reliable</li>
-              <li>Setup: <code>supabase secrets set STARSENDER_DEVICE_API_KEY=your-key</code></li>
-              <li>Deploy: <code>supabase functions deploy starsender-proxy</code></li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Supabase Configuration -->
-        <div class="space-y-4">
-          <h4 class="font-medium text-gray-900">Supabase Database</h4>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Supabase URL</label>
-            <input 
-              v-model="settings.supabase.url"
-              type="url"
-              class="input-field"
-              placeholder="https://xxx.supabase.co"
-            />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Supabase Anon Key</label>
-            <div class="flex items-center space-x-2">
-              <input 
-                v-model="settings.supabase.anonKey"
-                :type="showKeys.supabase ? 'text' : 'password'"
-                class="input-field flex-1"
-                placeholder="Masukkan Anon Key"
-              />
-              <button 
-                @click="showKeys.supabase = !showKeys.supabase"
-                class="btn-secondary p-2"
-              >
-                <EyeIcon v-if="!showKeys.supabase" class="w-4 h-4" />
-                <EyeSlashIcon v-else class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-          
-          <button @click="testSupabase" :disabled="testing.supabase" class="btn-primary">
-            {{ testing.supabase ? 'Testing...' : 'Test Koneksi' }}
+          <button 
+            class="w-full mt-4 bg-gray-300 text-gray-500 font-medium py-3 px-4 rounded-lg cursor-not-allowed"
+            disabled
+          >
+            <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            Configuration Coming Soon
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Database Setup -->
-    <div class="card p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Database Setup</h3>
-
-      <!-- Connection Status -->
-      <div class="mb-4 p-4 rounded-lg" :class="dbStatus.connected ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'">
+    <!-- Additional Settings Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="bg-gradient-to-r from-gray-50 to-slate-50 px-6 py-4 border-b border-gray-200">
         <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <CheckCircleIcon v-if="dbStatus.connected" class="h-5 w-5 text-green-400" />
-            <ExclamationTriangleIcon v-else class="h-5 w-5 text-red-400" />
+          <div class="bg-gray-100 rounded-lg p-2 mr-3">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+            </svg>
           </div>
-          <div class="ml-3">
-            <h4 class="text-sm font-medium" :class="dbStatus.connected ? 'text-green-800' : 'text-red-800'">
-              {{ dbStatus.connected ? 'Database Connected' : 'Database Connection Issue' }}
-            </h4>
-            <p class="text-sm mt-1" :class="dbStatus.connected ? 'text-green-700' : 'text-red-700'">
-              {{ dbStatus.message }}
-            </p>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">⚙️ Konfigurasi Sistem</h3>
+            <p class="text-sm text-gray-600">Pengaturan umum sistem manajemen kas</p>
           </div>
         </div>
       </div>
 
-      <div class="space-y-3">
-        <button @click="checkDatabase" :disabled="checking" class="btn-secondary">
-          {{ checking ? 'Checking...' : 'Check Database Status' }}
-        </button>
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- System Info -->
+          <div class="space-y-4">
+            <h4 class="font-medium text-gray-900 border-b border-gray-200 pb-2">📊 Informasi Sistem</h4>
 
-        <div v-if="dbStatus.connected && !dbStatus.tablesExist" class="flex space-x-3">
-          <button @click="quickSetup" :disabled="loading.setup" class="btn-primary">
-            {{ loading.setup ? 'Setting up...' : 'Quick Setup (Auto)' }}
-          </button>
-          <button @click="showSetupInstructions = true" class="btn-secondary">
-            Manual Setup
-          </button>
-        </div>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                <span class="text-sm font-medium text-blue-900">Versi Aplikasi</span>
+                <span class="text-sm text-blue-700 font-mono">v1.0.0</span>
+              </div>
 
-        <button
-          v-if="dbStatus.connected && dbStatus.tablesExist"
-          @click="addSampleData"
-          :disabled="loading.setup"
-          class="btn-success"
-        >
-          {{ loading.setup ? 'Adding data...' : 'Add More Sample Data' }}
-        </button>
-      </div>
-    </div>
+              <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                <span class="text-sm font-medium text-green-900">Status Database</span>
+                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                  ✅ Connected
+                </span>
+              </div>
 
-    <!-- Default Students Data -->
-    <div class="card p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Data Siswa Default</h3>
-      <p class="text-sm text-gray-600 mb-4">
-        Klik tombol di bawah untuk mengisi data siswa dari daftar yang telah tersedia
-      </p>
+              <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                <span class="text-sm font-medium text-purple-900">Environment</span>
+                <span class="text-sm text-purple-700 font-mono">Development</span>
+              </div>
+            </div>
+          </div>
 
-      <button @click="loadDefaultStudents" :disabled="loading.students" class="btn-primary">
-        {{ loading.students ? 'Memuat...' : 'Muat Data Siswa Default' }}
-      </button>
+          <!-- Quick Actions -->
+          <div class="space-y-4">
+            <h4 class="font-medium text-gray-900 border-b border-gray-200 pb-2">🚀 Quick Actions</h4>
 
-      <div v-if="loading.students" class="mt-4">
-        <div class="bg-blue-50 border border-blue-200 rounded p-3">
-          <p class="text-sm text-blue-700">Sedang memuat {{ defaultStudents.length }} siswa...</p>
-        </div>
-      </div>
-    </div>
+            <div class="space-y-3">
+              <button class="w-full text-left p-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors duration-200 border border-indigo-200">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 text-indigo-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  <div>
+                    <div class="text-sm font-medium text-indigo-900">Export Data</div>
+                    <div class="text-xs text-indigo-600">Backup semua data sistem</div>
+                  </div>
+                </div>
+              </button>
 
-    <!-- Export Data -->
-    <div class="card p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Export Data</h3>
-      <p class="text-sm text-gray-600 mb-4">
-        Export data dalam format CSV untuk backup atau analisis
-      </p>
+              <button class="w-full text-left p-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors duration-200 border border-orange-200">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 text-orange-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                  </svg>
+                  <div>
+                    <div class="text-sm font-medium text-orange-900">Sync Data</div>
+                    <div class="text-xs text-orange-600">Sinkronisasi dengan server</div>
+                  </div>
+                </div>
+              </button>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <button @click="exportStudents" class="btn-secondary">
-          <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-          Export Siswa
-        </button>
-
-        <button @click="exportTransactions" class="btn-secondary">
-          <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-          Export Transaksi
-        </button>
-
-        <button @click="exportExpenses" class="btn-secondary">
-          <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-          Export Pengeluaran
-        </button>
-
-        <button @click="exportAll" class="btn-primary">
-          <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-          Export Semua
-        </button>
-      </div>
-    </div>
-
-    <!-- Role Management -->
-    <div v-if="permissions.hasPermission('manage_users')" class="card p-6">
-      <RoleManagement />
-    </div>
-
-    <!-- System Info -->
-    <div class="card p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Sistem</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-        <div>
-          <span class="font-medium text-gray-700">Aplikasi:</span>
-          <span class="ml-2 text-gray-600">Kas Kelas 1B v1.0.0</span>
-        </div>
-        <div>
-          <span class="font-medium text-gray-700">Database:</span>
-          <span class="ml-2 text-gray-600">{{ dbStatus.connected ? 'Connected' : 'Disconnected' }}</span>
-        </div>
-        <div>
-          <span class="font-medium text-gray-700">Total Siswa:</span>
-          <span class="ml-2 text-gray-600">{{ store.students.length }}</span>
-        </div>
-        <div>
-          <span class="font-medium text-gray-700">Total Transaksi:</span>
-          <span class="ml-2 text-gray-600">{{ store.transactions.length }}</span>
-        </div>
-        <div>
-          <span class="font-medium text-gray-700">Pengguna Saat Ini:</span>
-          <span class="ml-2 text-gray-600">{{ permissions.currentUser.name }} ({{ permissions.getRoleDisplayInfo(permissions.currentUser.role).name }})</span>
-        </div>
-        <div>
-          <span class="font-medium text-gray-700">Hak Akses:</span>
-          <span class="ml-2 text-gray-600">{{ permissions.userPermissions.length }} permission(s)</span>
+              <button class="w-full text-left p-3 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200 border border-red-200">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                  <div>
+                    <div class="text-sm font-medium text-red-900">Clear Cache</div>
+                    <div class="text-xs text-red-600">Bersihkan cache aplikasi</div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- PaymentNotificationTester Component -->
+    <PaymentNotificationTester v-if="showTester" @close="showTester = false" />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useAppStore } from '@/stores'
 import { useToast } from 'vue-toastification'
-import { usePermissions } from '@/composables/usePermissions'
-import RoleManagement from '@/components/RoleManagement.vue'
 import PaymentNotificationTester from '@/components/PaymentNotificationTester.vue'
-// Removed starsender service - WhatsApp integration coming soon
-import { supabase } from '@/lib/supabase'
-import {
-  EyeIcon,
-  EyeSlashIcon,
-  DocumentArrowDownIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
 const toast = useToast()
-const permissions = usePermissions()
 
-// Students data for testing
-const students = ref([])
+const isTestingPayment = ref(false)
+const showTester = ref(false)
 
-const settings = reactive({
-  starsender: {
-    deviceApiKey: ''
-  },
-  supabase: {
-    url: '',
-    anonKey: ''
-  }
-})
+const currentBalance = computed(() => store.currentBalance || 0)
 
-const showKeys = reactive({
-  device: false,
-  supabase: false
-})
-
-const testing = reactive({
-  starsender: false,
-  supabase: false
-})
-
-const loading = reactive({
-  students: false,
-  setup: false
-})
-
-const checking = ref(false)
-const showSetupInstructions = ref(false)
-
-const dbStatus = reactive({
-  connected: false,
-  tablesExist: false,
-  message: 'Click "Check Database Status" to test connection'
-})
-
-const edgeFunctionStatus = reactive({
-  available: false,
-  message: 'Checking Edge Function status...'
-})
-
-// Default students data
-const defaultStudents = [
-  { name: 'Aqilnafi Segara', nickname: 'Nafi', phone: '+62 856-2468-7313' },
-  { name: 'Arkaan Jawara Bayanaka', nickname: 'Arkaan', phone: '+62 821-1475-9339' },
-  { name: 'Athafariz Zehan Sasongko', nickname: 'Atha', phone: '+62 812-9670-7505' },
-  { name: 'Azma Raudhatul Jannah', nickname: 'Azma', phone: '+62 856-8500-062' },
-  { name: 'Dizya Nayara Khanza Pujiarto', nickname: 'Dizya', phone: '+62 812-8147-6276' }
-]
-
-const checkEdgeFunctionStatus = async () => {
-  try {
-    // TODO: Implement WhatsApp service
-    const status = { available: false, message: 'WhatsApp integration coming soon' }
-    edgeFunctionStatus.available = status.available
-    edgeFunctionStatus.message = status.message
-  } catch (error) {
-    edgeFunctionStatus.available = false
-    edgeFunctionStatus.message = `Error: ${error.message}`
-  }
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount)
 }
 
-const testStarSender = async () => {
+const testPaymentNotification = async () => {
+  isTestingPayment.value = true
+
   try {
-    testing.starsender = true
+    // Simulate testing delay
+    await new Promise(resolve => setTimeout(resolve, 1500))
 
-    // TODO: Implement WhatsApp service
-    const result = { success: false, message: 'WhatsApp integration coming soon' }
-
-    if (result.success) {
-      toast.success('WhatsApp konfigurasi berhasil!')
-    } else {
-      toast.info('WhatsApp integration coming soon')
-    }
-
+    showTester.value = true
+    toast.success('Payment notification tester opened!')
   } catch (error) {
-    toast.error(`WhatsApp test gagal: ${error.message}`)
+    toast.error('Failed to open payment notification tester')
+    console.error('Error:', error)
   } finally {
-    testing.starsender = false
+    isTestingPayment.value = false
   }
 }
-
-const testSupabase = async () => {
-  try {
-    testing.supabase = true
-    if (!settings.supabase.url || !settings.supabase.anonKey) {
-      throw new Error('Please fill in both URL and Anon Key')
-    }
-    
-    const testClient = supabase
-    if (testClient) {
-      await testClient.from('students').select('count').limit(1)
-      toast.success('Supabase connection successful!')
-    } else {
-      throw new Error('Unable to create Supabase client')
-    }
-  } catch (error) {
-    toast.error(`Supabase test failed: ${error.message}`)
-  } finally {
-    testing.supabase = false
-  }
-}
-
-const checkDatabase = async () => {
-  checking.value = true
-  try {
-    if (!supabase) {
-      throw new Error('Supabase not configured')
-    }
-    
-    // Test connection
-    const { data, error } = await supabase.from('students').select('count').limit(1)
-    
-    if (error) {
-      if (error.message.includes('relation "students" does not exist')) {
-        dbStatus.connected = true
-        dbStatus.tablesExist = false
-        dbStatus.message = 'Connected but tables need to be created'
-      } else {
-        throw error
-      }
-    } else {
-      dbStatus.connected = true
-      dbStatus.tablesExist = true
-      dbStatus.message = 'Database is properly configured'
-    }
-  } catch (error) {
-    dbStatus.connected = false
-    dbStatus.tablesExist = false
-    dbStatus.message = error.message
-  } finally {
-    checking.value = false
-  }
-}
-
-const quickSetup = async () => {
-  loading.setup = true
-  try {
-    toast.info('Quick setup would create database tables automatically')
-    toast.success('Quick setup completed! (simulated)')
-  } catch (error) {
-    toast.error(`Setup failed: ${error.message}`)
-  } finally {
-    loading.setup = false
-  }
-}
-
-const addSampleData = async () => {
-  loading.setup = true
-  try {
-    toast.info('Adding sample data...')
-    toast.success('Sample data added! (simulated)')
-  } catch (error) {
-    toast.error(`Failed to add sample data: ${error.message}`)
-  } finally {
-    loading.setup = false
-  }
-}
-
-const loadDefaultStudents = async () => {
-  try {
-    loading.students = true
-    
-    for (const student of defaultStudents) {
-      await store.addStudent(student)
-    }
-    
-    toast.success(`Successfully added ${defaultStudents.length} students`)
-  } catch (error) {
-    toast.error('Failed to load default students')
-    console.error('Error loading students:', error)
-  } finally {
-    loading.students = false
-  }
-}
-
-const exportData = (data, filename) => {
-  const csvContent = "data:text/csv;charset=utf-8," + data
-  const encodedUri = encodeURI(csvContent)
-  const link = document.createElement("a")
-  link.setAttribute("href", encodedUri)
-  link.setAttribute("download", filename)
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
-
-const exportStudents = () => {
-  const csvContent = [
-    ['Name', 'Nickname', 'Phone', 'Created At'].join(','),
-    ...store.students.map(s => [s.name, s.nickname, s.phone, s.created_at].join(','))
-  ].join('\n')
-  
-  exportData(csvContent, 'students.csv')
-  toast.success('Students data exported!')
-}
-
-const exportTransactions = () => {
-  const csvContent = [
-    ['Type', 'Amount', 'Description', 'Student', 'Status', 'Created At'].join(','),
-    ...store.transactions.map(t => [t.type, t.amount, t.description, t.student?.name || '', t.status, t.created_at].join(','))
-  ].join('\n')
-  
-  exportData(csvContent, 'transactions.csv')
-  toast.success('Transactions data exported!')
-}
-
-const exportExpenses = () => {
-  const csvContent = [
-    ['Category', 'Amount', 'Description', 'Status', 'Created At'].join(','),
-    ...store.expenses.map(e => [e.category, e.amount, e.description, e.status, e.created_at].join(','))
-  ].join('\n')
-  
-  exportData(csvContent, 'expenses.csv')
-  toast.success('Expenses data exported!')
-}
-
-const exportAll = () => {
-  const data = {
-    students: store.students,
-    transactions: store.transactions,
-    expenses: store.expenses,
-    exported_at: new Date().toISOString()
-  }
-  
-  const jsonContent = "data:text/json;charset=utf-8," + JSON.stringify(data, null, 2)
-  exportData(jsonContent, 'kas-kelas-backup.json')
-  toast.success('All data exported!')
-}
-
-onMounted(async () => {
-  // Load current settings from environment variables
-  settings.supabase.url = import.meta.env.VITE_SUPABASE_URL || ''
-  settings.supabase.anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-  settings.starsender.deviceApiKey = import.meta.env.VITE_STARSENDER_DEVICE_API_KEY || ''
-
-  // Auto-check database status if configured
-  const isConfigured = settings.supabase.url && settings.supabase.anonKey &&
-    !settings.supabase.url.includes('your-project') &&
-    !settings.supabase.anonKey.includes('your-anon-key')
-
-  if (isConfigured) {
-    await checkDatabase()
-    await checkEdgeFunctionStatus()
-  }
-
-  // Load students for payment notification testing
-  try {
-    await store.fetchStudents()
-    students.value = store.students
-  } catch (error) {
-    console.error('Error loading students:', error)
-  }
-})
 </script>

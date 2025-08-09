@@ -581,8 +581,17 @@ class StarSender {
           error: error.message,
           timestamp: new Date().toISOString()
         })
-        
+
         console.log(`❌ Failed for ${recipient.name}: ${error.message}`)
+
+        // Play error sound
+        this.musicManager.playErrorSound()
+
+        // Switch to battle music if too many failures
+        if (this.progress.failed > 3) {
+          console.log('⚔️ High failure rate detected - Switching to battle mode!')
+          this.musicManager.setMoodMusic('battle')
+        }
       }
       
       this.updateProgress()

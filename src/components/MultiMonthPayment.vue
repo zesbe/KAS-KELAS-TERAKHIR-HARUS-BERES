@@ -80,6 +80,15 @@
             <option value="partial">Sebagian</option>
             <option value="completed">Lunas</option>
           </select>
+          <button
+            @click="downloadMultiMonthPDF"
+            class="btn-secondary flex items-center"
+            title="Download PDF Report"
+          >
+            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+            <span class="hidden sm:inline">Download PDF</span>
+            <span class="sm:hidden">PDF</span>
+          </button>
         </div>
       </div>
 

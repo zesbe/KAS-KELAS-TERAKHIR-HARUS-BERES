@@ -123,58 +123,62 @@
 
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="card p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-        <div class="flex items-center">
-          <div class="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl shadow-lg">
-            <BanknotesIcon class="w-7 h-7 text-white" />
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-green-700">💰 Total Pemasukan</p>
-            <p class="text-2xl font-bold text-green-800">
+      <div class="stat-card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="stat-label">Total Income</p>
+            <p class="stat-value text-emerald-600">
               {{ formatCurrency(store.totalIncome) }}
             </p>
+            <p class="stat-change positive text-xs mt-1">+12.5% from last month</p>
+          </div>
+          <div class="p-3 bg-emerald-100 rounded-lg">
+            <BanknotesIcon class="w-6 h-6 text-emerald-600" />
           </div>
         </div>
       </div>
 
-      <div class="card p-6 bg-gradient-to-br from-red-50 to-rose-50 border-red-200">
-        <div class="flex items-center">
-          <div class="p-3 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl shadow-lg">
-            <ReceiptPercentIcon class="w-7 h-7 text-white" />
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-red-700">📄 Total Pengeluaran</p>
-            <p class="text-2xl font-bold text-red-800">
+      <div class="stat-card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="stat-label">Total Expenses</p>
+            <p class="stat-value text-red-600">
               {{ formatCurrency(store.totalExpenses) }}
             </p>
+            <p class="stat-change negative text-xs mt-1">+8.2% from last month</p>
+          </div>
+          <div class="p-3 bg-red-100 rounded-lg">
+            <ReceiptPercentIcon class="w-6 h-6 text-red-600" />
           </div>
         </div>
       </div>
 
-      <div class="card p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-        <div class="flex items-center">
-          <div class="p-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl shadow-lg">
-            <CreditCardIcon class="w-7 h-7 text-white" />
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-blue-700">💳 Saldo Saat Ini</p>
-            <p class="text-2xl font-bold text-blue-800">
+      <div class="stat-card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="stat-label">Current Balance</p>
+            <p class="stat-value text-slate-900">
               {{ formatCurrency(store.currentBalance) }}
             </p>
+            <p class="stat-change positive text-xs mt-1">Available funds</p>
+          </div>
+          <div class="p-3 bg-blue-100 rounded-lg">
+            <CreditCardIcon class="w-6 h-6 text-blue-600" />
           </div>
         </div>
       </div>
 
-      <div class="card p-6 bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200">
-        <div class="flex items-center">
-          <div class="p-3 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-lg">
-            <UsersIcon class="w-7 h-7 text-white" />
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-orange-700">👥 Total Siswa</p>
-            <p class="text-2xl font-bold text-orange-800">
+      <div class="stat-card">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="stat-label">Total Students</p>
+            <p class="stat-value text-slate-900">
               {{ store.students.length }}
             </p>
+            <p class="stat-change text-xs mt-1 text-slate-500">Active members</p>
+          </div>
+          <div class="p-3 bg-slate-100 rounded-lg">
+            <UsersIcon class="w-6 h-6 text-slate-600" />
           </div>
         </div>
       </div>

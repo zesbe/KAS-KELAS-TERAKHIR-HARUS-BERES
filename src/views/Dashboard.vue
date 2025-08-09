@@ -59,21 +59,29 @@
     </div>
 
     <!-- Dashboard Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Dashboard Kas Kelas</h1>
-        <p class="mt-1 text-sm text-gray-500">
-          Overview keuangan dan statistik pembayaran
-        </p>
+    <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-8 shadow-2xl">
+      <div class="absolute inset-0 bg-black opacity-10"></div>
+      <div class="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-10 rounded-full"></div>
+      <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+
+      <div class="relative flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-white mb-2">
+            ✨ Dashboard Kas Kelas
+          </h1>
+          <p class="text-blue-100 text-lg">
+            Overview keuangan dan statistik pembayaran
+          </p>
+        </div>
+        <button
+          @click="downloadDashboardPDF"
+          class="mt-6 sm:mt-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center border border-white/30 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          title="Download Dashboard Report"
+        >
+          <DocumentArrowDownIcon class="w-5 h-5 mr-2" />
+          Download PDF Report
+        </button>
       </div>
-      <button
-        @click="downloadDashboardPDF"
-        class="btn-primary mt-4 sm:mt-0 flex items-center"
-        title="Download Dashboard Report"
-      >
-        <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-        Download PDF Report
-      </button>
     </div>
 
     <!-- Statistics Cards -->

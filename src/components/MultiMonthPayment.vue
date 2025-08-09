@@ -954,7 +954,7 @@ _Pesan ini dikirim secara otomatis_`
     // Open WhatsApp in new tab
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
 
-    toast.success(`📤 Reminder lengkap dikirim ke ${student.name}`, {
+    toast.success(`��� Reminder lengkap dikirim ke ${student.name}`, {
       timeout: 4000
     })
 
@@ -993,10 +993,11 @@ const sendPaymentLinkWhatsApp = async (link, student) => {
     const studentName = student?.name || 'Siswa'
     const phone = student?.phone || ''
 
-    // Create message based on link type
+    // Create message based on link type with dynamic greeting
+    const greeting = getIndonesianTimeGreeting()
     let message = `Assalamu'alaikum Wr. Wb.
 
-Selamat pagi orang tua dari ${studentName}
+${greeting} orang tua dari ${studentName}
 
 Dengan hormat, kami ingin mengingatkan mengenai pembayaran uang kas kelas.
 

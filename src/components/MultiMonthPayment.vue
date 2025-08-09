@@ -681,61 +681,8 @@ const form = reactive({
   linkType: 'both' // 'individual', 'single', or 'both'
 })
 
-// Sample data for demo
-const multiMonthPayments = ref([
-  {
-    id: '1',
-    student: { id: '1', name: 'Aqilnafi Segara', nickname: 'Nafi' },
-    period_label: 'Feb - Jul 2024',
-    months: 6,
-    monthly_amount: 50000,
-    total_amount: 300000,
-    paid_amount: 150000,
-    progress_percentage: 50,
-    status: 'partial',
-    payment_url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/140000?order_id=NAFI240201ABC123',
-    payment_links: [
-      { id: '1', type: 'total', amount: 300000, order_id: 'NAFI240201TOTAL', url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/300000?order_id=NAFI240201TOTAL' }
-    ],
-    month_details: [
-      { month: 2, label: 'Februari 2024', amount: 50000, paid: true, paid_at: '2024-02-15T10:30:00Z' },
-      { month: 3, label: 'Maret 2024', amount: 50000, paid: true, paid_at: '2024-03-10T09:15:00Z' },
-      { month: 4, label: 'April 2024', amount: 50000, paid: true, paid_at: '2024-04-05T14:20:00Z' },
-      { month: 5, label: 'Mei 2024', amount: 50000, paid: false },
-      { month: 6, label: 'Juni 2024', amount: 50000, paid: false },
-      { month: 7, label: 'Juli 2024', amount: 50000, paid: false }
-    ]
-  },
-  {
-    id: '2',
-    student: { id: '2', name: 'Arkaan Jawara Bayanaka', nickname: 'Arkaan' },
-    period_label: 'Jan - Des 2024',
-    months: 12,
-    monthly_amount: 50000,
-    total_amount: 600000,
-    paid_amount: 600000,
-    progress_percentage: 100,
-    status: 'completed',
-    payment_url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/600000?order_id=ARKAAN240101XYZ789',
-    payment_links: [
-      { id: '1', type: 'total', amount: 600000, order_id: 'ARKAAN240101TOTAL', url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/600000?order_id=ARKAAN240101TOTAL' }
-    ],
-    month_details: [
-      { month: 1, label: 'Januari 2024', amount: 50000, paid: true, paid_at: '2024-01-10T08:00:00Z' },
-      { month: 2, label: 'Februari 2024', amount: 50000, paid: true, paid_at: '2024-02-12T09:30:00Z' },
-      { month: 3, label: 'Maret 2024', amount: 50000, paid: true, paid_at: '2024-03-08T11:45:00Z' },
-      { month: 4, label: 'April 2024', amount: 50000, paid: true, paid_at: '2024-04-15T13:20:00Z' },
-      { month: 5, label: 'Mei 2024', amount: 50000, paid: true, paid_at: '2024-05-20T10:10:00Z' },
-      { month: 6, label: 'Juni 2024', amount: 50000, paid: true, paid_at: '2024-06-18T16:30:00Z' },
-      { month: 7, label: 'Juli 2024', amount: 50000, paid: true, paid_at: '2024-07-22T14:15:00Z' },
-      { month: 8, label: 'Agustus 2024', amount: 50000, paid: true, paid_at: '2024-08-25T09:50:00Z' },
-      { month: 9, label: 'September 2024', amount: 50000, paid: true, paid_at: '2024-09-10T12:25:00Z' },
-      { month: 10, label: 'Oktober 2024', amount: 50000, paid: true, paid_at: '2024-10-15T15:40:00Z' },
-      { month: 11, label: 'November 2024', amount: 50000, paid: true, paid_at: '2024-11-20T11:05:00Z' },
-      { month: 12, label: 'Desember 2024', amount: 50000, paid: true, paid_at: '2024-12-18T13:55:00Z' }
-    ]
-  }
-])
+// Multi-month payments data (empty by default)
+const multiMonthPayments = ref([])
 
 const students = computed(() => store.students)
 

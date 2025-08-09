@@ -618,8 +618,9 @@ import { useToast } from 'vue-toastification'
 import { useAppStore } from '@/stores'
 import campaignService from '@/services/campaignService'
 import enhancedCampaignService from '@/services/enhancedCampaignService'
-import StarSenderPanel from '@/components/StarSenderPanel.vue'
-import StarSenderTest from '@/components/StarSenderTest.vue'
+// Async import StarSender components to avoid blocking
+const StarSenderPanel = defineAsyncComponent(() => import('@/components/StarSenderPanel.vue'))
+const StarSenderTest = defineAsyncComponent(() => import('@/components/StarSenderTest.vue'))
 import {
   PlusIcon,
   CalendarDaysIcon,

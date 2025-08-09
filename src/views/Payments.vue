@@ -853,8 +853,8 @@ const copyPaymentLink = async (payment) => {
 }
 
 const sendPaymentLink = (payment) => {
-  previewPayment.value = payment
-  showPreviewModal.value = true
+  // Send directly to WhatsApp without modal
+  sendWhatsAppMessage(payment)
 }
 
 const sendWhatsAppMessage = async (payment) => {

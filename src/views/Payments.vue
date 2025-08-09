@@ -537,7 +537,7 @@
 
         <form @submit.prevent="createSingleLink" class="space-y-4">
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">�� Siswa</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">👤 Siswa</label>
             <select v-model="singleLink.studentId" required class="input-field">
               <option value="">Pilih Siswa</option>
               <option v-for="student in store.students" :key="student.id" :value="student.id">
@@ -1017,20 +1017,25 @@ const createSingleLink = async () => {
     creating.value = true
 
     const student = store.students.find(s => s.id === singleLink.studentId)
-    const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+    const selectedMonth = availableMonths.value.find(m => m.value === singleLink.paymentMonth)
+    const monthDisplay = selectedMonth ? `${selectedMonth.name} ${selectedMonth.year}` : 'Bulan terpilih'
+
+    // Use description or auto-generated description
+    const finalDescription = singleLink.description || singleAutoDescription.value
 
     await store.generatePaymentLink(
       singleLink.studentId,
       singleLink.amount,
-      singleLink.description
+      finalDescription
     )
 
-    toast.success(`✅ Link pembayaran berhasil dibuat untuk ${student?.name} - ${currentMonth}`)
+    toast.success(`✅ Link pembayaran berhasil dibuat untuk ${student?.name} - ${monthDisplay}`)
     showCreateModal.value = false
 
     // Reset form
     singleLink.studentId = ''
-    singleLink.amount = 0
+    singleLink.amount = 50000
+    singleLink.paymentMonth = getCurrentMonth()
     singleLink.description = ''
   } catch (error) {
     if (error.message.includes('sudah membayar')) {

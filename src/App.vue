@@ -262,9 +262,11 @@ const handleLogout = () => {
 // Watch for route changes to show loading
 watch(() => route.path, (newPath, oldPath) => {
   if (newPath !== oldPath) {
+    console.log('Route changed:', oldPath, '->', newPath)
     isLoading.value = true
     // Hide loading after a short delay to allow component to mount
     const timer = setTimeout(() => {
+      console.log('Loading finished for:', newPath)
       isLoading.value = false
     }, 300)
 

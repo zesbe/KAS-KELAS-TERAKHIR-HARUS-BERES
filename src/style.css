@@ -117,5 +117,23 @@
     .mobile-modal {
       @apply max-h-screen overflow-y-auto;
     }
+
+    /* Prevent content from being hidden behind floating elements */
+    main {
+      padding-bottom: 100px !important;
+    }
+
+    /* Improve scroll behavior */
+    body {
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+
+  /* Desktop improvements */
+  @media (min-width: 1024px) {
+    /* Ensure content is visible on desktop */
+    main {
+      min-height: calc(100vh - 140px);
+    }
   }
 }

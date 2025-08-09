@@ -19,10 +19,15 @@ export default defineConfig({
     commonjsOptions: {
       include: [/xlsx/, /file-saver/, /node_modules/]
     },
-    assetsInclude: ['**/*.xlsx']
+    assetsInclude: ['**/*.xlsx'],
+    target: 'esnext'
   },
   optimizeDeps: {
-    include: ['xlsx', 'file-saver']
+    include: ['xlsx', 'file-saver'],
+    force: true
+  },
+  define: {
+    global: 'globalThis'
   },
   server: {
     port: 3000,

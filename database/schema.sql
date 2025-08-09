@@ -83,8 +83,10 @@ CREATE TABLE payment_links (
     description TEXT NOT NULL,
     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'expired', 'cancelled')),
     payment_method VARCHAR(50),
+    month VARCHAR(7), -- YYYY-MM format for tracking monthly payments
+    notes TEXT, -- Additional notes for manual payments or special instructions
     completed_at TIMESTAMP WITH TIME ZONE,
-    expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '7 days'),
+    expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '30 days'), -- Extended to 30 days
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -94,6 +96,8 @@ CREATE INDEX idx_payment_links_student_id ON payment_links(student_id);
 CREATE INDEX idx_payment_links_order_id ON payment_links(order_id);
 CREATE INDEX idx_payment_links_status ON payment_links(status);
 CREATE INDEX idx_payment_links_created_at ON payment_links(created_at);
+CREATE INDEX idx_payment_links_month ON payment_links(month);
+CREATE INDEX idx_payment_links_expires_at ON payment_links(expires_at);
 
 -- =========================================
 -- TABLE: campaigns

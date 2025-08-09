@@ -124,11 +124,10 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
-          <input 
+          <input
             v-model.number="quickGenerate.amount"
-            type="number" 
-            min="1000"
-            step="1000"
+            type="number"
+            min="1"
             class="input-field"
             placeholder="Contoh: 50000"
           />
@@ -485,11 +484,10 @@
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
-            <input 
+            <input
               v-model.number="singleLink.amount"
-              type="number" 
-              min="1000"
-              step="1000"
+              type="number"
+              min="1"
               required
               class="input-field"
               placeholder="Masukkan jumlah"

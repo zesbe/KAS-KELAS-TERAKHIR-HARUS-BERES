@@ -263,8 +263,8 @@ import {
 const store = useAppStore()
 const toast = useToast()
 
-// Academic year 2024/2025 starts from August 2024
-const selectedYear = ref(2024)
+// Academic year starts from 2025/2026
+const selectedYear = ref(2025)
 const monthlyData = ref([])
 const showDetailsModal = ref(false)
 const selectedMonth = ref(null)

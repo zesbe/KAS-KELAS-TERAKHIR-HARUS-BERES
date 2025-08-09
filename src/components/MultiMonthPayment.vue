@@ -228,6 +228,13 @@
                     <LinkIcon class="w-4 h-4" />
                   </button>
                   <button
+                    @click="viewInvoice(payment)"
+                    class="text-purple-600 hover:text-purple-900"
+                    title="Lihat Invoice"
+                  >
+                    <DocumentTextIcon class="w-4 h-4" />
+                  </button>
+                  <button
                     @click="editPayment(payment)"
                     class="text-blue-600 hover:text-blue-900"
                     title="Edit Pembayaran"
@@ -611,6 +618,13 @@
                     >
                       <ChatBubbleLeftIcon class="w-4 h-4" />
                     </button>
+                    <button
+                      @click="viewInvoiceForLink(link)"
+                      class="p-1 text-purple-500 hover:text-purple-700"
+                      title="Lihat Invoice"
+                    >
+                      <DocumentTextIcon class="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
@@ -706,6 +720,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useToast } from 'vue-toastification'
+import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores'
 import { getIndonesianTimeGreeting, getIndonesianTime } from '@/utils/timeGreeting'
 import {
@@ -714,6 +729,7 @@ import {
   ChatBubbleLeftIcon,
   LinkIcon,
   DocumentDuplicateIcon,
+  DocumentTextIcon,
   PencilIcon,
   TrashIcon,
   DocumentArrowDownIcon
@@ -721,6 +737,7 @@ import {
 
 const store = useAppStore()
 const toast = useToast()
+const router = useRouter()
 
 const showCreateModal = ref(false)
 const showDetailModal = ref(false)
@@ -1496,6 +1513,28 @@ const deletePayment = (payment) => {
   } catch (error) {
     console.error('Error deleting payment:', error)
     toast.error('Gagal menghapus pembayaran')
+  }
+}
+
+// Function to view invoice for specific payment link
+const viewInvoiceForLink = (link) => {
+  if (link.order_id) {
+    router.push({ path: '/invoice', query: { orderId: link.order_id } })
+  } else {
+    toast.warning('Order ID tidak tersedia untuk link ini')
+  }
+}
+
+// Function to view invoice for multi-month payment
+const viewInvoice = (payment) => {
+  // Try to use the first available payment link
+  if (payment.payment_links && payment.payment_links.length > 0) {
+    const link = payment.payment_links[0]
+    viewInvoiceForLink(link)
+  } else if (payment.student?.id) {
+    router.push({ path: '/invoice', query: { studentId: payment.student.id } })
+  } else {
+    toast.warning('Data tidak lengkap untuk membuat invoice')
   }
 }
 

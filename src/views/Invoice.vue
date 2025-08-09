@@ -288,6 +288,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAppStore } from '@/stores'
 import {
   UserIcon,
   DocumentTextIcon,
@@ -303,6 +304,7 @@ import {
 
 const route = useRoute()
 const router = useRouter()
+const store = useAppStore()
 
 // Invoice data
 const invoice = ref({
@@ -331,9 +333,44 @@ onMounted(async () => {
   await loadInvoiceData()
 })
 
+// Function to generate invoice for a specific student and payment
+function generateInvoiceForPayment(student, payment) {
+  const orderId = payment.order_id || `KAS${Date.now()}`
+  return {
+    id: payment.id || `inv_${Date.now()}`,
+    invoiceNumber: `INV-${orderId.slice(-8).toUpperCase()}`,
+    orderId: orderId,
+    student: {
+      name: student.name,
+      nickname: student.nickname || '',
+      phone: student.phone || student.parent_phone || ''
+    },
+    description: payment.description || `Kas Kelas Bulan ${getCurrentMonth()}`,
+    amount: payment.amount,
+    period: payment.period || getCurrentMonth(),
+    paymentMethod: payment.payment_method || 'qris',
+    paidAt: payment.completed_at || payment.paid_at || new Date().toISOString(),
+    createdAt: payment.created_at || new Date().toISOString(),
+    reference: payment.reference || orderId.slice(-8).toUpperCase(),
+    status: payment.status || 'completed'
+  }
+}
+
+// Function to save invoice to localStorage for future reference
+function saveInvoiceToStorage() {
+  if (invoice.value && invoice.value.id) {
+    localStorage.setItem('lastInvoice', JSON.stringify(invoice.value))
+  }
+}
+
 // Load invoice data from URL params or localStorage
 async function loadInvoiceData() {
   try {
+    // First, ensure store is loaded
+    await store.loadStudents()
+    await store.loadPaymentLinks()
+    await store.loadTransactions()
+    
     const { orderId, studentId } = route.query
     
     if (orderId) {
@@ -343,7 +380,7 @@ async function loadInvoiceData() {
       // Load from student ID
       await loadFromStudentId(studentId)
     } else {
-      // Try to load from localStorage (last payment)
+      // Try to load from localStorage (last payment) or use store data
       loadFromStorage()
     }
   } catch (error) {
@@ -445,6 +482,7 @@ async function loadFromOrderId(orderId) {
           reference: transaction.reference || orderId.slice(-8).toUpperCase(),
           status: 'completed'
         }
+        saveInvoiceToStorage()
         return
       }
     }
@@ -452,6 +490,7 @@ async function loadFromOrderId(orderId) {
 
   // If not found, load demo data
   loadDemoData()
+  saveInvoiceToStorage()
 }
 
 async function loadFromStudentId(studentId) {
@@ -521,43 +560,139 @@ async function loadFromStudentId(studentId) {
       createdAt: latestPayment?.created_at || new Date().toISOString(),
       reference: latestPayment?.reference || orderId.slice(-8).toUpperCase(),
       status: 'completed'
+          }
+      saveInvoiceToStorage()
+      return
     }
-    return
-  }
 
-  loadDemoData()
-}
+    loadDemoData()
+    saveInvoiceToStorage()
+  }
 
 function loadFromStorage() {
-  const stored = localStorage.getItem('lastInvoice')
-  if (stored) {
-    invoice.value = JSON.parse(stored)
-  } else {
-    loadDemoData()
+  // Try to load the most recent payment/transaction
+  let latestPayment = null
+  
+  // Check for latest payment link
+  if (store.paymentLinks && store.paymentLinks.length > 0) {
+    const completedPayments = store.paymentLinks.filter(p => p.status === 'completed')
+    if (completedPayments.length > 0) {
+      latestPayment = completedPayments.sort((a, b) => 
+        new Date(b.completed_at || b.created_at) - new Date(a.completed_at || a.created_at)
+      )[0]
+    }
   }
-}
+  
+  // If no completed payments, check transactions
+  if (!latestPayment && store.transactions && store.transactions.length > 0) {
+    const completedTransactions = store.transactions.filter(t => t.status === 'completed')
+    if (completedTransactions.length > 0) {
+      latestPayment = completedTransactions.sort((a, b) => 
+        new Date(b.created_at) - new Date(a.created_at)
+      )[0]
+    }
+  }
+  
+  if (latestPayment) {
+    // Find the student for this payment
+    let student = null
+    if (store.students) {
+      student = store.students.find(s => s.id === latestPayment.student_id)
+    }
+    
+    if (student) {
+      const orderId = latestPayment.order_id || `KAS${Date.now()}`
+      invoice.value = {
+        id: latestPayment.id,
+        invoiceNumber: `INV-${orderId.slice(-8).toUpperCase()}`,
+        orderId: orderId,
+        student: {
+          name: student.name,
+          nickname: student.nickname || '',
+          phone: student.phone || student.parent_phone || ''
+        },
+        description: latestPayment.description || `Kas Kelas Bulan ${getCurrentMonth()}`,
+        amount: latestPayment.amount,
+        period: latestPayment.period || getCurrentMonth(),
+        paymentMethod: latestPayment.payment_method || 'qris',
+        paidAt: latestPayment.completed_at || latestPayment.paid_at || new Date().toISOString(),
+        createdAt: latestPayment.created_at || new Date().toISOString(),
+        reference: latestPayment.reference || orderId.slice(-8).toUpperCase(),
+        status: 'completed'
+              }
+        saveInvoiceToStorage()
+        return
+      }
+    }
+
+    // Fallback to localStorage
+    const stored = localStorage.getItem('lastInvoice')
+    if (stored) {
+      invoice.value = JSON.parse(stored)
+    } else {
+      loadDemoData()
+    }
+    saveInvoiceToStorage()
+  }
 
 function loadDemoData() {
-  // Try to get a random demo student for more realistic examples
-  let demoStudent = {
-    name: 'Aqilnafi Segara',
-    nickname: 'Nafi',
-    phone: '+62 856-2468-7313'
+  // Try to get actual students from store first
+  let demoStudent = null
+  
+  // Check if students are available from store
+  if (store.students && store.students.length > 0) {
+    // Get a random student from actual data for variety
+    const randomIndex = Math.floor(Math.random() * store.students.length)
+    const selectedStudent = store.students[randomIndex]
+    demoStudent = {
+      name: selectedStudent.name,
+      nickname: selectedStudent.nickname || '',
+      phone: selectedStudent.phone || selectedStudent.parent_phone || ''
+    }
   }
-
-  // Check if demo students are available
-  const demoData = localStorage.getItem('demo_students')
-  if (demoData) {
-    const demoStudents = JSON.parse(demoData)
-    if (demoStudents.length > 0) {
-      // Get a random demo student for variety
-      const randomIndex = Math.floor(Math.random() * demoStudents.length)
-      const selectedStudent = demoStudents[randomIndex]
-      demoStudent = {
-        name: selectedStudent.name,
-        nickname: selectedStudent.nickname || '',
-        phone: selectedStudent.phone || selectedStudent.parent_phone || ''
+  
+  // If no students in store, try localStorage
+  if (!demoStudent) {
+    const studentsData = localStorage.getItem('students')
+    if (studentsData) {
+      const students = JSON.parse(studentsData)
+      if (students.length > 0) {
+        // Get a random student from actual data for variety
+        const randomIndex = Math.floor(Math.random() * students.length)
+        const selectedStudent = students[randomIndex]
+        demoStudent = {
+          name: selectedStudent.name,
+          nickname: selectedStudent.nickname || '',
+          phone: selectedStudent.phone || selectedStudent.parent_phone || ''
+        }
       }
+    }
+  }
+  
+  // If no actual students, try demo students
+  if (!demoStudent) {
+    const demoData = localStorage.getItem('demo_students')
+    if (demoData) {
+      const demoStudents = JSON.parse(demoData)
+      if (demoStudents.length > 0) {
+        // Get a random demo student for variety
+        const randomIndex = Math.floor(Math.random() * demoStudents.length)
+        const selectedStudent = demoStudents[randomIndex]
+        demoStudent = {
+          name: selectedStudent.name,
+          nickname: selectedStudent.nickname || '',
+          phone: selectedStudent.phone || selectedStudent.parent_phone || ''
+        }
+      }
+    }
+  }
+  
+  // Final fallback to default data
+  if (!demoStudent) {
+    demoStudent = {
+      name: 'Contoh Siswa',
+      nickname: 'Contoh',
+      phone: '+62 812-3456-7890'
     }
   }
 
@@ -576,6 +711,7 @@ function loadDemoData() {
     reference: orderId.slice(-8),
     status: 'completed'
   }
+  saveInvoiceToStorage()
 }
 
 // Utility functions

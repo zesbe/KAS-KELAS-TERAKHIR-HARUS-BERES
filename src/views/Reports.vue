@@ -535,20 +535,7 @@ const exportSummaryToExcel = () => {
     ['Periode', `${dateFrom.value} s/d ${dateTo.value}`, 'Filter aktif']
   ]
 
-  // Convert to Excel format with UTF-8 BOM
-  const csvContent = [headers, ...data]
-    .map(row => row.map(cell => `"${cell}"`).join(','))
-    .join('\n')
-
-  const BOM = '\uFEFF'
-  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `ringkasan_keuangan_${getPeriodString()}.csv`
-  link.click()
-  URL.revokeObjectURL(url)
-
+  exportService.downloadExcel(headers, data, `ringkasan_keuangan_${getPeriodString()}`)
   toast.success('📊 Ringkasan Excel berhasil di-export!')
 }
 
@@ -578,20 +565,7 @@ const exportDetailToExcel = () => {
     item.payment_method || ''
   ])
 
-  // Convert to Excel format with UTF-8 BOM
-  const csvContent = [headers, ...data]
-    .map(row => row.map(cell => `"${cell}"`).join(','))
-    .join('\n')
-
-  const BOM = '\uFEFF'
-  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `detail_transaksi_${getPeriodString()}.csv`
-  link.click()
-  URL.revokeObjectURL(url)
-
+  exportService.downloadExcel(headers, data, `detail_transaksi_${getPeriodString()}`)
   toast.success('📈 Detail Excel berhasil di-export!')
 }
 
@@ -626,20 +600,7 @@ const exportCompleteToExcel = () => {
 
   const allData = [...summaryData, ...transactionData]
 
-  // Convert to Excel format with UTF-8 BOM
-  const csvContent = [headers, ...allData]
-    .map(row => row.map(cell => `"${cell}"`).join(','))
-    .join('\n')
-
-  const BOM = '\uFEFF'
-  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `laporan_lengkap_${getPeriodString()}.csv`
-  link.click()
-  URL.revokeObjectURL(url)
-
+  exportService.downloadExcel(headers, allData, `laporan_lengkap_${getPeriodString()}`)
   toast.success('🔍 Laporan Lengkap Excel berhasil di-export!')
 }
 

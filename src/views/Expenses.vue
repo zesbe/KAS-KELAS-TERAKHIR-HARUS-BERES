@@ -146,7 +146,7 @@
             <option value="rejected">Ditolak</option>
           </select>
         </div>
-        
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Filter Kategori</label>
           <select v-model="filters.category" class="input-field">
@@ -158,12 +158,12 @@
             <option value="lainnya">Lainnya</option>
           </select>
         </div>
-        
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Dari Tanggal</label>
           <input v-model="filters.dateFrom" type="date" class="input-field" />
         </div>
-        
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Sampai Tanggal</label>
           <input v-model="filters.dateTo" type="date" class="input-field" />
@@ -235,27 +235,27 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center space-x-2">
-                  <button 
+                  <button
                     v-if="expense.status === 'pending'"
                     @click="approveExpense(expense)"
                     class="text-success-600 hover:text-success-900"
                   >
                     Setujui
                   </button>
-                  <button 
+                  <button
                     v-if="expense.status === 'pending'"
                     @click="rejectExpense(expense)"
                     class="text-red-600 hover:text-red-900"
                   >
                     Tolak
                   </button>
-                  <button 
+                  <button
                     @click="editExpense(expense)"
                     class="text-primary-600 hover:text-primary-900"
                   >
                     Edit
                   </button>
-                  <button 
+                  <button
                     @click="deleteExpense(expense)"
                     class="text-red-600 hover:text-red-900"
                   >
@@ -266,7 +266,7 @@
             </tr>
           </tbody>
         </table>
-        
+
         <div v-if="filteredExpenses.length === 0" class="text-center py-8">
           <p class="text-sm text-gray-500">Tidak ada pengeluaran yang ditemukan</p>
         </div>
@@ -274,7 +274,7 @@
     </div>
 
     <!-- Add/Edit Modal -->
-    <div 
+    <div
       v-if="showAddModal || editingExpense"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
@@ -282,7 +282,7 @@
         <h3 class="text-lg font-semibold text-gray-900 mb-4">
           {{ editingExpense ? 'Edit Pengeluaran' : 'Tambah Pengeluaran Baru' }}
         </h3>
-        
+
         <form @submit.prevent="saveExpense" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
@@ -295,7 +295,7 @@
               <option value="lainnya">Lainnya</option>
             </select>
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
             <input
@@ -307,28 +307,28 @@
               placeholder="Masukkan jumlah"
             />
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
-            <input 
+            <input
               v-model="expenseForm.description"
-              type="text" 
+              type="text"
               required
               class="input-field"
               placeholder="Contoh: Pembelian alat tulis"
             />
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Catatan (Opsional)</label>
-            <textarea 
+            <textarea
               v-model="expenseForm.notes"
               rows="3"
               class="input-field"
               placeholder="Catatan tambahan"
             ></textarea>
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <select v-model="expenseForm.status" class="input-field">
@@ -347,16 +347,16 @@
               placeholder="Nama yang menyetujui"
             />
           </div>
-          
+
           <div class="flex justify-end space-x-3 pt-4">
-            <button 
+            <button
               type="button"
               @click="cancelEdit"
               class="btn-secondary"
             >
               Batal
             </button>
-            <button 
+            <button
               type="submit"
               :disabled="saving"
               class="btn-primary"
@@ -427,27 +427,27 @@ const approvedExpenses = computed(() => {
 
 const filteredExpenses = computed(() => {
   let expenses = [...store.expenses]
-  
+
   if (filters.status) {
     expenses = expenses.filter(e => e.status === filters.status)
   }
-  
+
   if (filters.category) {
     expenses = expenses.filter(e => e.category === filters.category)
   }
-  
+
   if (filters.dateFrom) {
-    expenses = expenses.filter(e => 
+    expenses = expenses.filter(e =>
       new Date(e.created_at) >= new Date(filters.dateFrom)
     )
   }
-  
+
   if (filters.dateTo) {
-    expenses = expenses.filter(e => 
+    expenses = expenses.filter(e =>
       new Date(e.created_at) <= new Date(filters.dateTo + 'T23:59:59')
     )
   }
-  
+
   return expenses.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 })
 
@@ -647,7 +647,7 @@ const exportFiltered = () => {
 const downloadExpensesPDF = () => {
   try {
     const htmlContent = generateExpensesPDFContent()
-    
+
     // Try to open in new window for printing
     try {
       openPDFWindow(htmlContent, 'Lengkap')
@@ -657,7 +657,7 @@ const downloadExpensesPDF = () => {
       downloadHTMLFile(htmlContent, 'laporan_lengkap_pengeluaran')
       toast.success('PDF dibuka sebagai file HTML karena popup diblokir')
     }
-    
+
     showExportMenu.value = false
   } catch (error) {
     console.error('Error generating PDF:', error)
@@ -668,7 +668,7 @@ const downloadExpensesPDF = () => {
 const downloadExpensesSummaryPDF = () => {
   try {
     const htmlContent = generateExpensesSummaryPDFContent()
-    
+
     // Try to open in new window for printing
     try {
       openPDFWindow(htmlContent, 'Summary')
@@ -678,7 +678,7 @@ const downloadExpensesSummaryPDF = () => {
       downloadHTMLFile(htmlContent, 'summary_pengeluaran')
       toast.success('PDF dibuka sebagai file HTML karena popup diblokir')
     }
-    
+
     showExportMenu.value = false
   } catch (error) {
     console.error('Error generating Summary PDF:', error)
@@ -800,13 +800,13 @@ const generatePDFStyles = () => `
       color: #374151;
     }
     @media print {
-      body { 
-        margin: 0; 
+      body {
+        margin: 0;
         -webkit-print-color-adjust: exact;
         color-adjust: exact;
       }
-      .header { 
-        background: #dc2626 !important; 
+      .header {
+        background: #dc2626 !important;
         -webkit-print-color-adjust: exact;
         color-adjust: exact;
         break-inside: avoid;
@@ -1160,7 +1160,7 @@ const openPDFWindow = (htmlContent, reportType) => {
     setTimeout(() => {
       // Focus the window first
       printWindow.focus()
-      
+
       // Add print event listeners
       const afterPrint = () => {
         // Give user time to see the result before closing
@@ -1210,14 +1210,14 @@ const openPDFWindow = (htmlContent, reportType) => {
 // Helper functions for alternative download methods
 const downloadHTMLReport = (type) => {
   try {
-    const htmlContent = type === 'lengkap' ? 
-      generateExpensesPDFContent() : 
+    const htmlContent = type === 'lengkap' ?
+      generateExpensesPDFContent() :
       generateExpensesSummaryPDFContent()
-    
-    const filename = type === 'lengkap' ? 
-      'laporan_lengkap_pengeluaran' : 
+
+    const filename = type === 'lengkap' ?
+      'laporan_lengkap_pengeluaran' :
       'summary_pengeluaran'
-    
+
     downloadHTMLFile(htmlContent, filename)
     showExportMenu.value = false
     toast.success(`Laporan ${type} berhasil didownload sebagai HTML!`)
@@ -1229,10 +1229,10 @@ const downloadHTMLReport = (type) => {
 
 const openReportInNewTab = (type) => {
   try {
-    const htmlContent = type === 'lengkap' ? 
-      generateExpensesPDFContent() : 
+    const htmlContent = type === 'lengkap' ?
+      generateExpensesPDFContent() :
       generateExpensesSummaryPDFContent()
-    
+
     openInNewTab(htmlContent, type)
     showExportMenu.value = false
     toast.success(`Laporan ${type} berhasil dibuka di tab baru!`)

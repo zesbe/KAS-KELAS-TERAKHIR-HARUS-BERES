@@ -395,11 +395,13 @@ ${recipient.paymentLink}
           results.push({
             phone: recipient.phone,
             name: recipient.name,
-            success: true,
+            success: result.success,
             scheduledTime: scheduleTime,
             hasPaymentLink: !!recipient.paymentLink,
             paymentLink: recipient.paymentLink,
-            result: result
+            result: result,
+            startsenderMethod: result.method,
+            messageUrl: result.url
           })
           
         } catch (error) {

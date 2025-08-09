@@ -541,33 +541,47 @@
           </div>
         </div>
         
-        <div class="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-3 pt-6 border-t">
+        <div class="flex flex-col space-y-3 pt-6 border-t">
+          <!-- First row: Edit/Delete -->
           <div class="flex space-x-3">
             <button
               @click="editPayment(selectedPayment)"
-              class="btn-secondary text-blue-600 border-blue-300 hover:bg-blue-50"
+              class="btn-secondary text-blue-600 border-blue-300 hover:bg-blue-50 flex-1"
             >
               <PencilIcon class="w-4 h-4 mr-2" />
               Edit
             </button>
             <button
               @click="deletePayment(selectedPayment)"
-              class="btn-secondary text-red-600 border-red-300 hover:bg-red-50"
+              class="btn-secondary text-red-600 border-red-300 hover:bg-red-50 flex-1"
             >
               <TrashIcon class="w-4 h-4 mr-2" />
               Hapus
             </button>
           </div>
+
+          <!-- Second row: WhatsApp options -->
+          <div v-if="selectedPayment.payment_links && selectedPayment.payment_links.length > 1" class="flex space-x-3">
+            <button
+              @click="sendAllPaymentLinks(selectedPayment)"
+              class="btn-success flex-1"
+            >
+              <ChatBubbleLeftIcon class="w-4 h-4 mr-2" />
+              Kirim Semua Link ({{ selectedPayment.payment_links.length }})
+            </button>
+          </div>
+
+          <!-- Third row: Close/Single reminder -->
           <div class="flex space-x-3">
             <button
               @click="showDetailModal = false"
-              class="btn-secondary"
+              class="btn-secondary flex-1"
             >
               Tutup
             </button>
             <button
               @click="sendPaymentReminder(selectedPayment)"
-              class="btn-success"
+              class="btn-success flex-1"
             >
               <ChatBubbleLeftIcon class="w-4 h-4 mr-2" />
               Kirim Reminder

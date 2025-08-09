@@ -75,12 +75,12 @@
             <option value="custom">Kustom</option>
           </select>
         </div>
-        
+
         <div v-if="selectedPeriod === 'custom'">
           <label class="block text-sm font-medium text-gray-700 mb-2">Dari Tanggal</label>
           <input v-model="dateFrom" type="date" class="input-field" @change="filterData" />
         </div>
-        
+
         <div v-if="selectedPeriod === 'custom'">
           <label class="block text-sm font-medium text-gray-700 mb-2">Sampai Tanggal</label>
           <input v-model="dateTo" type="date" class="input-field" @change="filterData" />
@@ -409,7 +409,7 @@ const formatDate = (dateString) => {
 
 const updatePeriod = () => {
   const now = new Date()
-  
+
   switch (selectedPeriod.value) {
     case 'thisMonth':
       dateFrom.value = format(startOfMonth(now), 'yyyy-MM-dd')
@@ -425,7 +425,7 @@ const updatePeriod = () => {
       dateTo.value = format(endOfYear(now), 'yyyy-MM-dd')
       break
   }
-  
+
   if (selectedPeriod.value !== 'custom') {
     filterData()
   }
@@ -591,13 +591,13 @@ const getPeriodString = () => {
 const downloadDetailPDF = () => {
   try {
     const htmlContent = generateDetailPDFContent()
-    
+
     // Opsi 1: Buka di window baru (lebih stabil)
     openPDFWindow(htmlContent, 'Detail')
-    
+
     // Opsi 2: Download sebagai HTML yang bisa di-print
     // downloadAsHTML(htmlContent, 'Detail')
-    
+
     toast.success('PDF Detail berhasil di-generate! Window baru terbuka.')
   } catch (error) {
     console.error('Error generating Detail PDF:', error)
@@ -640,7 +640,7 @@ const generatePDFStyles = () => `
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
-    
+
     /* Improved print styles */
     @page {
       size: A4;
@@ -1072,13 +1072,13 @@ const openPDFWindow = (htmlContent, reportType) => {
     setTimeout(() => {
       // Focus ke window baru
       printWindow.focus()
-      
+
       // Tidak auto-print, biarkan user yang memutuskan
       // printWindow.print()
-      
+
       // Tampilkan instruksi di console window baru
       printWindow.console.log('PDF siap! Gunakan Ctrl+P untuk print atau Ctrl+S untuk save as PDF')
-      
+
       // Tambahkan tombol download di window
       const downloadBtn = printWindow.document.createElement('div')
       downloadBtn.innerHTML = `
@@ -1090,7 +1090,7 @@ const openPDFWindow = (htmlContent, reportType) => {
         </div>
       `
       printWindow.document.body.appendChild(downloadBtn)
-      
+
     }, 1000) // Beri waktu lebih lama untuk render
   })
 
@@ -1121,17 +1121,17 @@ const downloadPDFViaBrowser = (htmlContent, reportType) => {
   iframe.style.width = '1px'
   iframe.style.height = '1px'
   document.body.appendChild(iframe)
-  
+
   // Tulis content ke iframe
   iframe.contentDocument.write(htmlContent)
   iframe.contentDocument.close()
-  
+
   // Tunggu load kemudian print
   iframe.onload = () => {
     setTimeout(() => {
       iframe.contentWindow.focus()
       iframe.contentWindow.print()
-      
+
       // Cleanup setelah print
       setTimeout(() => {
         document.body.removeChild(iframe)

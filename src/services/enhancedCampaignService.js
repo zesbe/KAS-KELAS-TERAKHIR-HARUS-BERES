@@ -384,13 +384,13 @@ ${recipient.paymentLink}
           
           console.log(`Scheduling enhanced message for ${recipient.name} at ${new Date(scheduleTime).toLocaleString()}`)
           
-          // TODO: Implement WhatsApp sending service
-          console.log(`Would send message to ${recipient.phone} at ${new Date(scheduleTime).toLocaleString()}:`, personalizedMessage)
+          // Execute via StarSender for real WhatsApp delivery
+          console.log(`StarSender executing for ${recipient.name} at ${new Date(scheduleTime).toLocaleString()}`)
 
-          const result = {
-            success: true,
-            messageId: `mock_${Date.now()}`
-          }
+          const result = await startsender.sendMessage(recipient.phone, personalizedMessage, {
+            openInNewTab: i === 0, // Only open first message in new tab
+            scheduleTime: scheduleTime
+          })
           
           results.push({
             phone: recipient.phone,

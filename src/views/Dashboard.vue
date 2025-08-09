@@ -74,22 +74,22 @@
           </p>
         </div>
 
-        <!-- Desktop download button -->
+        <!-- Desktop report button -->
         <button
-          @click="downloadDashboardPDF"
+          @click="showPdfModal = true"
           class="hidden sm:flex mt-6 sm:mt-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 items-center border border-white/30 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-          title="Download Dashboard Report"
+          title="Dashboard Report Options"
         >
           <DocumentArrowDownIcon class="w-5 h-5 mr-2" />
-          Download PDF Report
+          Laporan Dashboard
         </button>
 
-        <!-- Mobile flip download button -->
+        <!-- Mobile flip report button -->
         <div class="sm:hidden mt-4">
           <button
             @click="showMobileDownload = !showMobileDownload"
             class="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 flex items-center justify-center border border-white/30 shadow-lg"
-            title="Toggle Download Options"
+            title="Toggle Report Options"
           >
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
             <span class="text-sm">Laporan</span>
@@ -103,17 +103,17 @@
             </svg>
           </button>
 
-          <!-- Mobile download content -->
+          <!-- Mobile report content -->
           <div
             :class="['overflow-hidden transition-all duration-300', showMobileDownload ? 'max-h-20 mt-2' : 'max-h-0']"
           >
             <button
-              @click="downloadDashboardPDF"
+              @click="showPdfModal = true"
               class="w-full bg-white/30 backdrop-blur-sm hover:bg-white/40 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center text-sm border border-white/40"
-              title="Download Dashboard Report"
+              title="Dashboard Report Options"
             >
               <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-              Download PDF Report
+              Pilih Aksi Laporan
             </button>
           </div>
         </div>

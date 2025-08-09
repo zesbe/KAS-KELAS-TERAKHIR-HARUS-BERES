@@ -393,12 +393,19 @@ onMounted(() => {
   // Listen for StarSender events
   window.addEventListener('startsender:progress', handleProgress)
   window.addEventListener('startsender:complete', handleComplete)
-  
-  // Initialize status from StarSender
-  const stats = startsender.getStats()
-  isPlaying.value = stats.isPlaying
-  currentSong.value = stats.currentSong
-  status.value = stats.status === 'active' ? 'Broadcasting' : 'Ready'
+
+  // Initialize status from StarSender (with error handling)
+  try {
+    const stats = startsender.getStats()
+    isPlaying.value = stats.isPlaying || false
+    currentSong.value = stats.currentSong || 'Ready'
+    status.value = stats.status === 'active' ? 'Broadcasting' : 'Ready'
+  } catch (error) {
+    console.log('StarSender not fully loaded yet, using defaults')
+    isPlaying.value = false
+    currentSong.value = 'Ready'
+    status.value = 'Ready'
+  }
 })
 
 onUnmounted(() => {

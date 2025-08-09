@@ -626,6 +626,453 @@ const exportFiltered = () => {
   toast.success('Data pengeluaran terfilter berhasil di-export')
 }
 
+// PDF Generation Functions
+const downloadExpensesPDF = () => {
+  try {
+    const htmlContent = generateExpensesPDFContent()
+    openPDFWindow(htmlContent, 'Lengkap')
+    showExportMenu.value = false
+    toast.success('PDF Laporan Pengeluaran berhasil di-generate!')
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    toast.error('Gagal generate PDF Laporan Pengeluaran')
+  }
+}
+
+const downloadExpensesSummaryPDF = () => {
+  try {
+    const htmlContent = generateExpensesSummaryPDFContent()
+    openPDFWindow(htmlContent, 'Summary')
+    showExportMenu.value = false
+    toast.success('PDF Summary Pengeluaran berhasil di-generate!')
+  } catch (error) {
+    console.error('Error generating Summary PDF:', error)
+    toast.error('Gagal generate PDF Summary Pengeluaran')
+  }
+}
+
+const generatePDFStyles = () => `
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.4;
+      color: #333;
+      background: white;
+      margin: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+      border-radius: 8px;
+    }
+    .header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    .header h2 { font-size: 1.2rem; margin-bottom: 1rem; opacity: 0.9; }
+    .header p { font-size: 0.9rem; opacity: 0.8; }
+    .section { margin-bottom: 30px; }
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 15px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .table th, .table td {
+      border: 1px solid #e5e7eb;
+      padding: 12px;
+      text-align: left;
+    }
+    .table th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #374151;
+      font-size: 0.9rem;
+    }
+    .table td { font-size: 0.9rem; }
+    .expense-amount { color: #dc2626; font-weight: 600; }
+    .status-approved { color: #059669; font-weight: 500; }
+    .status-pending { color: #d97706; font-weight: 500; }
+    .status-rejected { color: #dc2626; font-weight: 500; }
+    .highlight { background-color: #fef2f2; }
+    .summary-box {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #dc2626;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.8rem;
+    }
+    .category-tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: #f3f4f6;
+      color: #374151;
+    }
+    @media print {
+      body { margin: 0; }
+      .header { background: #dc2626 !important; -webkit-print-color-adjust: exact; }
+    }
+  </style>
+`
+
+const generateExpensesPDFContent = () => {
+  const currentDate = new Date().toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Laporan Lengkap Pengeluaran Kas Kelas</title>
+      ${generatePDFStyles()}
+    </head>
+    <body>
+      <div class="header">
+        <h1>💸 Laporan Lengkap Pengeluaran</h1>
+        <h2>SD Islam Al Husna - Kelas 1B</h2>
+        <p>Komplek Keuangan, Jl. Guntur I</p>
+        <p>Tanggal Cetak: ${currentDate}</p>
+        ${filters.dateFrom || filters.dateTo ? `<p>Periode: ${filters.dateFrom || 'Awal'} - ${filters.dateTo || 'Sekarang'}</p>` : ''}
+      </div>
+
+      <!-- Executive Summary -->
+      <div class="summary-box">
+        <h3 style="margin-bottom: 15px; color: #1f2937;">📊 Ringkasan Pengeluaran</h3>
+        <div class="grid-3">
+          <div style="text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; color: #dc2626;">${formatCurrency(totalExpenses.value)}</div>
+            <div style="font-size: 0.9rem; color: #6b7280;">Total Pengeluaran</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; color: #d97706;">${pendingExpenses.value.length}</div>
+            <div style="font-size: 0.9rem; color: #6b7280;">Menunggu Persetujuan</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; color: #059669;">${approvedExpenses.value.length}</div>
+            <div style="font-size: 0.9rem; color: #6b7280;">Disetujui</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expenses by Category -->
+      <div class="section">
+        <h3 class="section-title">📈 Pengeluaran per Kategori</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Kategori</th>
+              <th>Jumlah Item</th>
+              <th>Total Pengeluaran</th>
+              <th>Persentase</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${generateCategoryBreakdown()}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Detailed Expenses -->
+      <div class="section">
+        <h3 class="section-title">📋 Detail Pengeluaran</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width: 12%">Tanggal</th>
+              <th style="width: 15%">Kategori</th>
+              <th style="width: 30%">Keterangan</th>
+              <th style="width: 15%">Jumlah</th>
+              <th style="width: 12%">Status</th>
+              <th style="width: 16%">Disetujui Oleh</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredExpenses.value.map((expense, index) => `
+              <tr ${index % 2 === 0 ? 'class="highlight"' : ''}>
+                <td>${formatDate(expense.created_at)}</td>
+                <td><span class="category-tag">${getCategoryLabel(expense.category)}</span></td>
+                <td>
+                  ${expense.description}
+                  ${expense.notes ? `<br><small style="color: #6b7280;">${expense.notes}</small>` : ''}
+                </td>
+                <td class="expense-amount">${formatCurrency(expense.amount)}</td>
+                <td class="status-${expense.status}">${getStatusLabel(expense.status)}</td>
+                <td>${expense.approved_by || '-'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Financial Impact -->
+      <div class="section">
+        <h3 class="section-title">💰 Dampak Keuangan</h3>
+        <div class="grid-2">
+          <div class="card">
+            <h4 style="color: #059669; margin-bottom: 10px;">💵 Saldo Kas</h4>
+            <table class="table">
+              <tr>
+                <td><strong>Saldo Saat Ini</strong></td>
+                <td style="color: ${store.currentBalance >= 0 ? '#059669' : '#dc2626'}; font-weight: bold;">
+                  ${formatCurrency(store.currentBalance)}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Total Pemasukan</strong></td>
+                <td style="color: #059669;">${formatCurrency(store.totalIncome)}</td>
+              </tr>
+              <tr>
+                <td><strong>Total Pengeluaran</strong></td>
+                <td style="color: #dc2626;">${formatCurrency(totalExpenses.value)}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="card">
+            <h4 style="color: #6b7280; margin-bottom: 10px;">📊 Statistik</h4>
+            <table class="table">
+              <tr>
+                <td><strong>Total Item Pengeluaran</strong></td>
+                <td>${filteredExpenses.value.length}</td>
+              </tr>
+              <tr>
+                <td><strong>Rata-rata per Item</strong></td>
+                <td>${filteredExpenses.value.length > 0 ? formatCurrency(totalExpenses.value / approvedExpenses.value.length) : 'Rp 0'}</td>
+              </tr>
+              <tr>
+                <td><strong>Item Terbesar</strong></td>
+                <td>${filteredExpenses.value.length > 0 ? formatCurrency(Math.max(...filteredExpenses.value.filter(e => e.status === 'approved').map(e => e.amount))) : 'Rp 0'}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>© ${new Date().getFullYear()} SD Islam Al Husna - Sistem Kas Digital Kelas 1B</p>
+        <p>Laporan Pengeluaran dibuat pada ${new Date().toLocaleString('id-ID')}</p>
+        <p style="margin-top: 5px;">📍 Komplek Keuangan, Jl. Guntur I | 📞 (021) 7654-321</p>
+      </div>
+    </body>
+    </html>
+  `
+}
+
+const generateExpensesSummaryPDFContent = () => {
+  const currentDate = new Date().toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Summary Pengeluaran Kas Kelas</title>
+      ${generatePDFStyles()}
+    </head>
+    <body>
+      <div class="header">
+        <h1>📋 Summary Pengeluaran</h1>
+        <h2>SD Islam Al Husna - Kelas 1B</h2>
+        <p>Komplek Keuangan, Jl. Guntur I</p>
+        <p>Tanggal Cetak: ${currentDate}</p>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="summary-box">
+        <h3 style="margin-bottom: 15px; color: #1f2937;">🎯 Key Metrics</h3>
+        <div class="grid-3">
+          <div style="text-align: center; padding: 15px; background: #fef2f2; border-radius: 8px;">
+            <div style="font-size: 1.8rem; font-weight: bold; color: #dc2626;">${formatCurrency(totalExpenses.value)}</div>
+            <div style="font-size: 0.9rem; color: #991b1b; margin-top: 5px;">Total Pengeluaran</div>
+          </div>
+          <div style="text-align: center; padding: 15px; background: #fefbeb; border-radius: 8px;">
+            <div style="font-size: 1.8rem; font-weight: bold; color: #d97706;">${pendingExpenses.value.length}</div>
+            <div style="font-size: 0.9rem; color: #92400e; margin-top: 5px;">Pending</div>
+          </div>
+          <div style="text-align: center; padding: 15px; background: #f0fdf4; border-radius: 8px;">
+            <div style="font-size: 1.8rem; font-weight: bold; color: #059669;">${approvedExpenses.value.length}</div>
+            <div style="font-size: 0.9rem; color: #047857; margin-top: 5px;">Disetujui</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Summary -->
+      <div class="section">
+        <h3 class="section-title">📊 Summary per Kategori</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Kategori</th>
+              <th>Jumlah</th>
+              <th>Total</th>
+              <th>%</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${generateCategoryBreakdown()}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Recent Expenses -->
+      <div class="section">
+        <h3 class="section-title">🕒 Pengeluaran Terbaru</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Kategori</th>
+              <th>Keterangan</th>
+              <th>Jumlah</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredExpenses.value.slice(0, 10).map((expense, index) => `
+              <tr ${index % 2 === 0 ? 'class="highlight"' : ''}>
+                <td>${formatDate(expense.created_at)}</td>
+                <td><span class="category-tag">${getCategoryLabel(expense.category)}</span></td>
+                <td>${expense.description}</td>
+                <td class="expense-amount">${formatCurrency(expense.amount)}</td>
+                <td class="status-${expense.status}">${getStatusLabel(expense.status)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Financial Health -->
+      <div class="grid-2">
+        <div class="card">
+          <h4 style="color: #059669; margin-bottom: 15px;">💰 Kesehatan Keuangan</h4>
+          <table class="table">
+            <tr>
+              <td><strong>Saldo Kas</strong></td>
+              <td style="color: ${store.currentBalance >= 0 ? '#059669' : '#dc2626'}; font-weight: bold;">
+                ${formatCurrency(store.currentBalance)}
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Rasio Pengeluaran</strong></td>
+              <td>${store.totalIncome > 0 ? Math.round((totalExpenses.value / store.totalIncome) * 100) : 0}%</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h4 style="color: #6b7280; margin-bottom: 15px;">📈 Quick Stats</h4>
+          <table class="table">
+            <tr>
+              <td><strong>Rata-rata Pengeluaran</strong></td>
+              <td>${approvedExpenses.value.length > 0 ? formatCurrency(totalExpenses.value / approvedExpenses.value.length) : 'Rp 0'}</td>
+            </tr>
+            <tr>
+              <td><strong>Pengeluaran Terbesar</strong></td>
+              <td>${filteredExpenses.value.length > 0 ? formatCurrency(Math.max(...filteredExpenses.value.filter(e => e.status === 'approved').map(e => e.amount))) : 'Rp 0'}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>© ${new Date().getFullYear()} SD Islam Al Husna - Sistem Kas Digital Kelas 1B</p>
+        <p>Summary Pengeluaran dibuat pada ${new Date().toLocaleString('id-ID')}</p>
+      </div>
+    </body>
+    </html>
+  `
+}
+
+const generateCategoryBreakdown = () => {
+  const categoryTotals = {}
+
+  filteredExpenses.value
+    .filter(e => e.status === 'approved')
+    .forEach(e => {
+      const category = getCategoryLabel(e.category)
+      if (!categoryTotals[category]) {
+        categoryTotals[category] = { count: 0, amount: 0 }
+      }
+      categoryTotals[category].count += 1
+      categoryTotals[category].amount += e.amount
+    })
+
+  const totalAmount = Object.values(categoryTotals).reduce((sum, cat) => sum + cat.amount, 0)
+
+  return Object.entries(categoryTotals)
+    .sort((a, b) => b[1].amount - a[1].amount)
+    .map(([category, data]) => {
+      const percentage = totalAmount > 0 ? ((data.amount / totalAmount) * 100).toFixed(1) : 0
+      return `
+        <tr>
+          <td><span class="category-tag">${category}</span></td>
+          <td>${data.count} item</td>
+          <td class="expense-amount">${formatCurrency(data.amount)}</td>
+          <td>${percentage}%</td>
+        </tr>
+      `
+    }).join('')
+}
+
+const openPDFWindow = (htmlContent, reportType) => {
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) {
+    throw new Error('Popup blocked. Please allow popups for this site.')
+  }
+
+  printWindow.document.write(htmlContent)
+  printWindow.document.close()
+
+  printWindow.addEventListener('load', () => {
+    setTimeout(() => {
+      printWindow.print()
+      // Close window after printing
+      setTimeout(() => {
+        printWindow.close()
+      }, 1000)
+    }, 500)
+  })
+}
+
 // Close export menu when clicking outside
 const handleClickOutside = (event) => {
   if (showExportMenu.value && !event.target.closest('.relative')) {

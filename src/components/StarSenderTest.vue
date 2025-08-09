@@ -354,6 +354,8 @@ const quickTest = async () => {
   addLog('⚡ Launching instant force test...', 'info')
 
   try {
+    // Lazy load demo data
+    const { createInstantTestMessage } = await import('@/services/demoData')
     const testMessage = createInstantTestMessage()
     const testPhone = '628123456789'
 

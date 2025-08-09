@@ -253,43 +253,45 @@
     </div>
 
     <!-- Recent Transactions -->
-    <div class="card p-4 sm:p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-gray-900">Transaksi Terbaru</h3>
-        <router-link
-          to="/transactions"
-          class="text-sm text-primary-600 hover:text-primary-500"
-        >
-          Lihat Semua
-        </router-link>
+    <div class="card">
+      <div class="card-header">
+        <div class="flex items-center justify-between">
+          <h3 class="heading-3">Recent Transactions</h3>
+          <router-link
+            to="/transactions"
+            class="text-sm text-slate-600 hover:text-slate-900 font-semibold transition-colors duration-200"
+          >
+            View All →
+          </router-link>
+        </div>
       </div>
+      <div class="card-body">
 
       <!-- Mobile Card View -->
       <div class="block sm:hidden space-y-3">
-        <div v-for="transaction in store.recentTransactions" :key="transaction.id" class="bg-gray-50 rounded-lg p-3">
-          <div class="flex items-center justify-between mb-2">
-            <div class="font-medium text-sm">{{ transaction.student?.name || '-' }}</div>
+        <div v-for="transaction in store.recentTransactions" :key="transaction.id" class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+          <div class="flex items-center justify-between mb-3">
+            <div class="font-semibold text-sm text-slate-900">{{ transaction.student?.name || '-' }}</div>
             <span :class="[
-              'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
-              transaction.status === 'completed' ? 'bg-success-100 text-success-800' : 'bg-warning-100 text-warning-800'
+              transaction.status === 'completed' ? 'badge-success' : 'badge-warning'
             ]">
-              {{ transaction.status === 'completed' ? 'Selesai' : 'Pending' }}
+              {{ transaction.status === 'completed' ? 'Completed' : 'Pending' }}
             </span>
           </div>
-          <div class="space-y-1 text-sm">
+          <div class="space-y-2 text-sm">
             <div class="flex justify-between">
-              <span class="text-gray-600">Keterangan:</span>
-              <span class="text-right">{{ transaction.description }}</span>
+              <span class="text-slate-500 font-medium">Description:</span>
+              <span class="text-right text-slate-900 font-medium">{{ transaction.description }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-gray-600">Jumlah:</span>
-              <span :class="transaction.type === 'income' ? 'text-success-600' : 'text-red-600'" class="font-medium">
+              <span class="text-slate-500 font-medium">Amount:</span>
+              <span :class="transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'" class="font-bold">
                 {{ transaction.type === 'income' ? '+' : '-' }}{{ formatCurrency(transaction.amount) }}
               </span>
             </div>
             <div class="flex justify-between">
-              <span class="text-gray-600">Tanggal:</span>
-              <span class="text-xs">{{ formatDate(transaction.created_at) }}</span>
+              <span class="text-slate-500 font-medium">Date:</span>
+              <span class="text-xs text-slate-600 font-medium">{{ formatDate(transaction.created_at) }}</span>
             </div>
           </div>
         </div>
@@ -297,57 +299,52 @@
 
       <!-- Desktop Table View -->
       <div class="hidden sm:block overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="table-enterprise">
+          <thead>
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tanggal
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Siswa
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Keterangan
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Jumlah
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
+              <th>Date</th>
+              <th>Student</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Status</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
+          <tbody>
             <tr v-for="transaction in store.recentTransactions" :key="transaction.id">
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="font-medium">
                 {{ formatDate(transaction.created_at) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="font-semibold">
                 {{ transaction.student?.name || '-' }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td class="text-slate-600">
                 {{ transaction.description }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <span :class="transaction.type === 'income' ? 'text-success-600' : 'text-red-600'">
+              <td>
+                <span :class="transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'" class="font-bold">
                   {{ transaction.type === 'income' ? '+' : '-' }}{{ formatCurrency(transaction.amount) }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td>
                 <span :class="[
-                  'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
-                  transaction.status === 'completed' ? 'bg-success-100 text-success-800' : 'bg-warning-100 text-warning-800'
+                  transaction.status === 'completed' ? 'badge-success' : 'badge-warning'
                 ]">
-                  {{ transaction.status === 'completed' ? 'Selesai' : 'Pending' }}
+                  {{ transaction.status === 'completed' ? 'Completed' : 'Pending' }}
                 </span>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-        
-      <div v-if="store.recentTransactions.length === 0" class="text-center py-8">
-        <p class="text-sm text-gray-500">Belum ada transaksi</p>
+
+      <div v-if="store.recentTransactions.length === 0" class="text-center py-12">
+        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+        </div>
+        <p class="text-sm text-slate-500 font-medium">No transactions yet</p>
+      </div>
       </div>
     </div>
 

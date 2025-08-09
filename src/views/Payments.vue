@@ -324,10 +324,10 @@
               <span class="text-xs">{{ formatDate(payment.created_at) }}</span>
             </div>
           </div>
-          <div class="flex items-center justify-center space-x-3 mt-3 pt-3 border-t border-gray-200">
+          <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-gray-200">
             <button
               @click="copyPaymentLink(payment)"
-              class="flex items-center text-primary-600 hover:text-primary-900"
+              class="flex items-center justify-center text-primary-600 hover:text-primary-900 py-2"
               title="Copy Link"
             >
               <LinkIcon class="w-4 h-4 mr-1" />
@@ -335,24 +335,34 @@
             </button>
             <button
               @click="sendPaymentLink(payment)"
-              class="flex items-center text-success-600 hover:text-success-900"
+              class="flex items-center justify-center text-success-600 hover:text-success-900 py-2"
               title="Kirim via WhatsApp"
             >
               <ChatBubbleLeftIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Kirim</span>
             </button>
             <button
+              v-if="payment.status === 'pending'"
+              @click="markAsPaid(payment)"
+              class="flex items-center justify-center text-green-600 hover:text-green-900 py-2"
+              title="Tandai Lunas"
+            >
+              <CheckCircleIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Lunas</span>
+            </button>
+            <button
               @click="checkPaymentStatus(payment)"
-              class="flex items-center text-warning-600 hover:text-warning-900"
+              class="flex items-center justify-center text-warning-600 hover:text-warning-900 py-2"
               title="Cek Status"
             >
               <ArrowPathIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Cek</span>
             </button>
+          </div>
+          <div class="flex justify-center mt-2">
             <button
               @click="deletePaymentLink(payment)"
-              class="flex items-center text-red-600 hover:text-red-900"
-              title="Hapus"
+              class="flex items-center justify-center text-red-600 hover:text-red-900 py-2 w-full"
             >
               <TrashIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Hapus</span>

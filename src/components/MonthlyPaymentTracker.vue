@@ -280,7 +280,13 @@ const currentMonthName = computed(() => {
 const currentMonthStats = computed(() => {
   const now = new Date()
   const currentMonthCode = now.toISOString().slice(0, 7)
-  const currentMonth = monthlyData.value.find(m => m.monthCode === currentMonthCode)
+
+  // Find current month in the selected year's data
+  const currentMonth = monthlyData.value.find(m => {
+    const monthDate = new Date(m.year, new Date(m.monthCode + '-01').getMonth(), 1)
+    const monthCode = monthDate.toISOString().slice(0, 7)
+    return monthCode === currentMonthCode
+  })
 
   if (!currentMonth) {
     return {

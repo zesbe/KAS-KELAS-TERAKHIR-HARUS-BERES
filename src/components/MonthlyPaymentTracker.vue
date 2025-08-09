@@ -376,7 +376,7 @@ const loadMonthlyData = () => {
     months.push({
       monthCode,
       monthName,
-      year,
+      year: monthYear, // Use the actual year of the month
       isCurrentMonth,
       paidStudents,
       unpaidStudents,

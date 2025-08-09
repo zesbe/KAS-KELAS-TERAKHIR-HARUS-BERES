@@ -596,6 +596,7 @@ import { useAppStore } from '@/stores'
 import campaignService from '@/services/campaignService'
 import enhancedCampaignService from '@/services/enhancedCampaignService'
 import StarSenderPanel from '@/components/StarSenderPanel.vue'
+import StarSenderTest from '@/components/StarSenderTest.vue'
 import {
   PlusIcon,
   CalendarDaysIcon,
@@ -720,7 +721,7 @@ Silakan melakukan pembayaran kas kelas untuk bulan Januari 2024.
 
 💰 Jumlah: Rp 50.000
 📅 Jatuh Tempo: 31 Januari 2024
-���� WhatsApp: [[PHONE]]
+📱 WhatsApp: [[PHONE]]
 
 Terima kasih atas perhatiannya! 🙏
 

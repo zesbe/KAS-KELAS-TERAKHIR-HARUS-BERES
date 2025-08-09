@@ -333,7 +333,7 @@
               <span class="text-xs">{{ formatDate(payment.created_at) }}</span>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-gray-200">
+          <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-200">
             <button
               @click="copyPaymentLink(payment)"
               class="flex items-center justify-center text-primary-600 hover:text-primary-900 py-2"

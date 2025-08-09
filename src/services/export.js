@@ -44,21 +44,24 @@ class ExportService {
   // Download Excel utility (true Excel format with UTF-8 BOM)
   downloadExcel(headers, data, filename) {
     const csvContent = [
-      headers.join(','),
+      headers.join('\t'),
       ...data.map(row =>
         row.map(field => {
           const fieldStr = field?.toString() || ''
-          return `"${fieldStr.replace(/"/g, '""')}"`
-        }).join(',')
+          // For Excel, escape tabs and newlines
+          return fieldStr.replace(/\t/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ' ')
+        }).join('\t')
       )
     ].join('\n')
 
     // Add UTF-8 BOM for proper Excel compatibility
     const BOM = '\uFEFF'
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const blob = new Blob([BOM + csvContent], {
+      type: 'application/vnd.ms-excel;charset=utf-8;'
+    })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
-    link.download = `${filename}.csv`
+    link.download = `${filename}.xls`
     link.click()
   }
 

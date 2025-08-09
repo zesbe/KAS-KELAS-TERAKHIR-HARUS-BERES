@@ -719,18 +719,30 @@ const loadData = async () => {
   try {
     loading.value = true
 
-    // Load students
-    await store.fetchStudents()
-    students.value = store.students
-
-    // Load campaigns from database/storage
-    const campaignResult = await campaignService.getCampaigns()
-
-    if (!campaignResult.success && campaignResult.error) {
-      throw new Error(campaignResult.error)
+    // Load students with error handling
+    try {
+      await store.fetchStudents()
+      students.value = store.students || []
+    } catch (studentError) {
+      console.warn('Error loading students:', studentError)
+      students.value = []
+      toast.warning('Data siswa tidak dapat dimuat, menggunakan data kosong')
     }
 
-    campaigns.value = campaignResult.data || []
+    // Load campaigns from database/storage with error handling
+    try {
+      const campaignResult = await campaignService.getCampaigns()
+
+      if (!campaignResult.success && campaignResult.error) {
+        throw new Error(campaignResult.error)
+      }
+
+      campaigns.value = campaignResult.data || []
+    } catch (campaignError) {
+      console.warn('Error loading campaigns:', campaignError)
+      campaigns.value = []
+      toast.warning('Data campaign tidak dapat dimuat, menggunakan data kosong')
+    }
 
     // If no campaigns exist, create demo data
     if (campaigns.value.length === 0) {

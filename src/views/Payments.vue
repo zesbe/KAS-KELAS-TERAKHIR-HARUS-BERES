@@ -1018,43 +1018,52 @@ const checkPaymentStatus = async (payment) => {
 }
 
 const markAsPaid = async (payment) => {
-  if (!confirm(`Tandai pembayaran ${payment.student?.name} sebagai LUNAS?\n\nJumlah: ${formatCurrency(payment.amount)}\nKeterangan: ${payment.description}`)) {
+  const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+
+  if (!confirm(`Tandai pembayaran ${payment.student?.name} sebagai LUNAS untuk bulan ${currentMonth}?\n\nJumlah: ${formatCurrency(payment.amount)}\nKeterangan: ${payment.description}\n\n⚠️ Ini akan menambah saldo kas kelas dan menandai siswa sebagai sudah bayar bulan ini.`)) {
     return
   }
 
   try {
+    const now = new Date().toISOString()
+    const currentMonthCode = now.slice(0, 7) // YYYY-MM format
+
     // Update payment status to completed
-    await store.db.updatePaymentLink(payment.id, {
+    await store.updatePaymentLink(payment.id, {
       status: 'completed',
-      payment_method: 'manual', // Manual marking
-      completed_at: new Date().toISOString(),
-      notes: 'Ditandai lunas secara manual oleh admin'
+      payment_method: 'manual',
+      completed_at: now,
+      month: currentMonthCode,
+      notes: `Ditandai lunas secara manual oleh admin pada ${new Date().toLocaleString('id-ID')}`
     })
 
-    // Create transaction record
+    // Create transaction record that will automatically update balance
     await store.addTransaction({
       type: 'income',
       amount: payment.amount,
-      description: payment.description + ' (Manual)',
+      description: `${payment.description} - ${currentMonth} (Manual)`,
       student_id: payment.student_id,
       payment_method: 'manual',
       order_id: payment.order_id,
       status: 'completed',
-      created_at: new Date().toISOString(),
-      notes: 'Pembayaran ditandai lunas secara manual'
+      month: currentMonthCode,
+      created_at: now,
+      notes: `Pembayaran manual - ${payment.student?.name} untuk ${currentMonth}`
     })
 
-    // Refresh data
+    // Refresh data to update UI and balance
     await store.fetchPaymentLinks()
     await store.fetchTransactions()
 
-    toast.success(`✅ ${payment.student?.name} berhasil ditandai LUNAS!`, {
-      timeout: 4000
+    // Show success with balance update info
+    const newBalance = store.currentBalance
+    toast.success(`✅ ${payment.student?.name} berhasil ditandai LUNAS!\n💰 Saldo kas bertambah: ${formatCurrency(payment.amount)}\n📊 Saldo saat ini: ${formatCurrency(newBalance)}`, {
+      timeout: 6000
     })
 
   } catch (error) {
     console.error('Error marking payment as paid:', error)
-    toast.error('Gagal menandai pembayaran sebagai lunas')
+    toast.error('Gagal menandai pembayaran sebagai lunas: ' + error.message)
   }
 }
 

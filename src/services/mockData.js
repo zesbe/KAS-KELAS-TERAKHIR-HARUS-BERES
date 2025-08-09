@@ -1,12 +1,6 @@
 // Mock data for development when Supabase is not configured
 
-const mockStudents = [
-  { id: '1', name: 'Aqilnafi Segara', nickname: 'Nafi', phone: '+62 856-2468-7313', created_at: '2024-01-15T08:00:00Z' },
-  { id: '2', name: 'Arkaan Jawara Bayanaka', nickname: 'Arkaan', phone: '+62 821-1475-9339', created_at: '2024-01-15T08:00:00Z' },
-  { id: '3', name: 'Athafariz Zehan Sasongko', nickname: 'Atha', phone: '+62 812-9670-7505', created_at: '2024-01-15T08:00:00Z' },
-  { id: '4', name: 'Azma Raudhatul Jannah', nickname: 'Azma', phone: '+62 856-8500-062', created_at: '2024-01-15T08:00:00Z' },
-  { id: '5', name: 'Dizya Nayara Khanza Pujiarto', nickname: 'Dizya', phone: '+62 812-8147-6276', created_at: '2024-01-15T08:00:00Z' }
-]
+const mockStudents = []
 
 const mockTransactions = [
   {

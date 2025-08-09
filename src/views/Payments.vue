@@ -351,6 +351,14 @@
               <span class="text-xs">Kirim</span>
             </button>
             <button
+              @click="viewInvoice(payment)"
+              class="flex items-center justify-center text-purple-600 hover:text-purple-900 py-2"
+              title="Lihat Invoice"
+            >
+              <DocumentTextIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Invoice</span>
+            </button>
+            <button
               v-if="payment.status === 'pending'"
               @click="markAsPaid(payment)"
               class="flex items-center justify-center text-green-600 hover:text-green-900 py-2"

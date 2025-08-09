@@ -447,19 +447,32 @@
           <div>
             <h5 class="font-medium text-gray-900 mb-3">Detail per Bulan</h5>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div 
-                v-for="month in selectedPayment.month_details" 
+              <div
+                v-for="month in selectedPayment.month_details"
                 :key="month.month"
                 class="p-3 border rounded-lg"
                 :class="month.paid ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'"
               >
                 <div class="flex items-center justify-between">
                   <span class="text-sm font-medium">{{ month.label }}</span>
-                  <span v-if="month.paid" class="text-green-600 text-xs">✓ Lunas</span>
-                  <span v-else class="text-gray-500 text-xs">Belum bayar</span>
+                  <div class="flex items-center space-x-2">
+                    <span v-if="month.paid" class="text-green-600 text-xs">✓ Lunas</span>
+                    <span v-else class="text-gray-500 text-xs">Belum bayar</span>
+                    <button
+                      v-if="!month.paid"
+                      @click="markMonthAsPaid(selectedPayment, month)"
+                      class="text-green-600 hover:text-green-800 text-xs px-2 py-1 border border-green-300 rounded hover:bg-green-50"
+                      title="Tandai Lunas"
+                    >
+                      ✓ Tandai Lunas
+                    </button>
+                  </div>
                 </div>
                 <div class="text-xs text-gray-600 mt-1">
                   {{ formatCurrency(month.amount) }}
+                </div>
+                <div v-if="month.paid && month.paid_at" class="text-xs text-green-600 mt-1">
+                  Dibayar: {{ formatDate(month.paid_at) }}
                 </div>
               </div>
             </div>

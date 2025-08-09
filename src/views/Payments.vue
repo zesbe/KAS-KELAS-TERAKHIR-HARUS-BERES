@@ -765,12 +765,71 @@ const generating = ref(false)
 const creating = ref(false)
 const activeTab = ref('single')
 
+// Generate available months for payment (academic year style)
+const generateAvailableMonths = () => {
+  const months = []
+  const currentDate = new Date()
+  const currentYear = currentDate.getFullYear()
+
+  // Academic year months (August to July)
+  const academicMonths = [
+    { month: 7, name: 'Agustus' },   // August (7)
+    { month: 8, name: 'September' }, // September (8)
+    { month: 9, name: 'Oktober' },   // October (9)
+    { month: 10, name: 'November' }, // November (10)
+    { month: 11, name: 'Desember' }, // December (11)
+    { month: 0, name: 'Januari' },   // January (0) - next year
+    { month: 1, name: 'Februari' },  // February (1) - next year
+    { month: 2, name: 'Maret' },     // March (2) - next year
+    { month: 3, name: 'April' },     // April (3) - next year
+    { month: 4, name: 'Mei' },       // May (4) - next year
+    { month: 5, name: 'Juni' },      // June (5) - next year
+    { month: 6, name: 'Juli' }       // July (6) - next year
+  ]
+
+  academicMonths.forEach(({ month, name }) => {
+    // For August-December, use current year
+    // For January-July, use next year
+    const year = month >= 7 ? currentYear : currentYear + 1
+    const monthDate = new Date(year, month, 1)
+    const monthCode = monthDate.toISOString().slice(0, 7) // YYYY-MM
+
+    months.push({
+      value: monthCode,
+      label: `${name} ${year}`,
+      name: name,
+      year: year
+    })
+  })
+
+  return months
+}
+
+const availableMonths = ref(generateAvailableMonths())
+
+// Find current month or default to first available
+const getCurrentMonth = () => {
+  const currentMonthCode = new Date().toISOString().slice(0, 7)
+  const foundMonth = availableMonths.value.find(m => m.value === currentMonthCode)
+  return foundMonth ? foundMonth.value : availableMonths.value[0].value
+}
+
 const quickGenerate = reactive({
   amount: 50000,
-  description: 'Kas Bulanan',
+  paymentMonth: getCurrentMonth(),
+  description: '',
   target: 'all',
   selectedStudents: []
 })
+
+// Auto-generate description based on selected month
+const autoDescription = computed(() => {
+  const selectedMonth = availableMonths.value.find(m => m.value === quickGenerate.paymentMonth)
+  return selectedMonth ? `Kas Kelas ${selectedMonth.name} ${selectedMonth.year}` : 'Kas Bulanan'
+})
+
+// Update quickGenerate to include auto description
+quickGenerate.autoDescription = autoDescription
 
 const singleLink = reactive({
   studentId: '',

@@ -328,13 +328,15 @@ const loadMonthlyData = () => {
   }
 
   for (const { year: monthYear, month: monthIndex } of academicMonths) {
+    const monthDate = new Date(monthYear, monthIndex, 1)
+    const monthCode = monthDate.toISOString().slice(0, 7) // YYYY-MM
+    const monthName = monthDate.toLocaleDateString('id-ID', { month: 'long' })
+
     const currentDate = new Date()
-    const currentYear = currentDate.getFullYear()
     const currentMonthCode = currentDate.toISOString().slice(0, 7)
 
-    // Only highlight as current month if we're viewing the current year AND it's the current month
-    // Disable highlighting for 2025 since it's a future year
-    const isCurrentMonth = (year === currentYear) && (monthCode === currentMonthCode) && (year <= 2024)
+    // Highlight current month if it matches
+    const isCurrentMonth = monthCode === currentMonthCode
     
     // Get transactions for this month
     const monthTransactions = store.transactions.filter(t => {
@@ -343,7 +345,7 @@ const loadMonthlyData = () => {
 
       // Debug logging for August and September 2025
       if ((monthName === 'Agustus' || monthName === 'September') && year === 2025) {
-        console.log(`🔍 ${monthName} ${year} (${monthCode}):`, {
+        console.log(`�� ${monthName} ${year} (${monthCode}):`, {
           transaction: t.description,
           created_at: t.created_at,
           transactionMonth,

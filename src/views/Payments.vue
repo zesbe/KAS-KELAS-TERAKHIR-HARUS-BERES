@@ -1124,13 +1124,14 @@ const generateMessageTemplate = (payment) => {
       .replace('{link}', payment.payment_url)
   }
 
-  // Default professional reminder template
+  // Default professional reminder template with dynamic greeting
   const student = payment.student
   const studentName = student?.name || 'Siswa'
+  const greeting = getIndonesianTimeGreeting()
 
   return `Assalamu'alaikum Wr. Wb.
 
-Selamat pagi orang tua dari ${studentName}
+${greeting} orang tua dari ${studentName}
 
 Dengan hormat, kami ingin mengingatkan mengenai pembayaran uang kas kelas untuk bulan ini sebesar ${formatCurrency(payment.amount)}
 
@@ -1149,6 +1150,7 @@ Wassalamu'alaikum Wr. Wb.
 
 ---
 *Order ID: ${payment.order_id}*
+*Dikirim: ${greeting} (${getIndonesianTime()})*
 *Sistem Kas Kelas Otomatis*`
 }
 

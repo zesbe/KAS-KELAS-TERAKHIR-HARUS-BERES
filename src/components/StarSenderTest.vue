@@ -139,7 +139,6 @@ Hello [[NAME]], this is a test message with CORS bypass capabilities.
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import startsender from '@/services/startsender'
-import { setupDemoEnvironment, createQuickTestCampaign, createInstantTestMessage, demoMessageTemplates } from '@/services/demoData'
 
 // Test form
 const testForm = reactive({

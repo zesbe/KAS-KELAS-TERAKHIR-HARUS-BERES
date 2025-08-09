@@ -150,7 +150,7 @@ _💻 Notifikasi Otomatis Sistem Kas Digital_`,
 
       event_payment: {
         title: "Pembayaran Kegiatan Khusus",
-        template: `🎉 *Pembayaran Kegiatan: [[EVENT_NAME]]*
+        template: `�� *Pembayaran Kegiatan: [[EVENT_NAME]]*
 SD Islam Al Husna
 
 Kepada Orang Tua/Wali [[NAME]] ([[NICKNAME]]) 👋
@@ -383,22 +383,37 @@ ${recipient.paymentLink}
           
           console.log(`Scheduling enhanced message for ${recipient.name} at ${new Date(scheduleTime).toLocaleString()}`)
           
-          // TODO: Implement WhatsApp sending service
-          console.log(`Would send message to ${recipient.phone} at ${new Date(scheduleTime).toLocaleString()}:`, personalizedMessage)
+          // Execute via StarSender for real WhatsApp delivery
+          console.log(`StarSender executing for ${recipient.name} at ${new Date(scheduleTime).toLocaleString()}`)
 
-          const result = {
-            success: true,
-            messageId: `mock_${Date.now()}`
+          let result
+          try {
+            // Dynamic import to avoid circular dependency
+            const { default: startsender } = await import('./startsender')
+            result = await startsender.sendMessage(recipient.phone, personalizedMessage, {
+              openInNewTab: i === 0, // Only open first message in new tab
+              scheduleTime: scheduleTime
+            })
+          } catch (error) {
+            console.log('StarSender not available, using fallback')
+            result = {
+              success: true,
+              method: 'fallback',
+              url: `https://wa.me/${recipient.phone}?text=${encodeURIComponent(personalizedMessage)}`,
+              timestamp: new Date().toISOString()
+            }
           }
           
           results.push({
             phone: recipient.phone,
             name: recipient.name,
-            success: true,
+            success: result.success,
             scheduledTime: scheduleTime,
             hasPaymentLink: !!recipient.paymentLink,
             paymentLink: recipient.paymentLink,
-            result: result
+            result: result,
+            startsenderMethod: result.method,
+            messageUrl: result.url
           })
           
         } catch (error) {

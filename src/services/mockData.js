@@ -1,96 +1,12 @@
 // Mock data for development when Supabase is not configured
 
-const mockStudents = [
-  { id: '1', name: 'Aqilnafi Segara', nickname: 'Nafi', phone: '+62 856-2468-7313', created_at: '2024-01-15T08:00:00Z' },
-  { id: '2', name: 'Arkaan Jawara Bayanaka', nickname: 'Arkaan', phone: '+62 821-1475-9339', created_at: '2024-01-15T08:00:00Z' },
-  { id: '3', name: 'Athafariz Zehan Sasongko', nickname: 'Atha', phone: '+62 812-9670-7505', created_at: '2024-01-15T08:00:00Z' },
-  { id: '4', name: 'Azma Raudhatul Jannah', nickname: 'Azma', phone: '+62 856-8500-062', created_at: '2024-01-15T08:00:00Z' },
-  { id: '5', name: 'Dizya Nayara Khanza Pujiarto', nickname: 'Dizya', phone: '+62 812-8147-6276', created_at: '2024-01-15T08:00:00Z' }
-]
+const mockStudents = []
 
-const mockTransactions = [
-  {
-    id: '1',
-    student_id: '1',
-    type: 'income',
-    amount: 50000,
-    description: 'Kas Bulanan Januari',
-    status: 'completed',
-    payment_method: 'qris',
-    created_at: '2024-01-20T10:00:00Z',
-    student: { name: 'Aqilnafi Segara', nickname: 'Nafi' }
-  },
-  {
-    id: '2',
-    student_id: '2',
-    type: 'income',
-    amount: 50000,
-    description: 'Kas Bulanan Januari',
-    status: 'completed',
-    payment_method: 'cash',
-    created_at: '2024-01-22T09:00:00Z',
-    student: { name: 'Arkaan Jawara Bayanaka', nickname: 'Arkaan' }
-  },
-  {
-    id: '3',
-    student_id: '3',
-    type: 'income',
-    amount: 50000,
-    description: 'Kas Bulanan Januari',
-    status: 'completed',
-    payment_method: 'qris',
-    created_at: '2024-01-25T11:00:00Z',
-    student: { name: 'Athafariz Zehan Sasongko', nickname: 'Atha' }
-  }
-]
+const mockTransactions = []
 
-const mockExpenses = [
-  {
-    id: '1',
-    category: 'perlengkapan',
-    amount: 15000,
-    description: 'Pembelian spidol dan kertas',
-    notes: 'Untuk kegiatan belajar',
-    status: 'approved',
-    approved_by: 'Admin',
-    approved_at: '2024-01-26T08:00:00Z',
-    created_at: '2024-01-25T14:00:00Z'
-  },
-  {
-    id: '2',
-    category: 'kegiatan',
-    amount: 30000,
-    description: 'Snack untuk acara kelas',
-    notes: 'Acara perpisahan semester',
-    status: 'pending',
-    created_at: '2024-01-28T10:00:00Z'
-  }
-]
+const mockExpenses = []
 
-const mockPaymentLinks = [
-  {
-    id: '1',
-    student_id: '4',
-    order_id: 'AZMA240130ABC123',
-    payment_url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/50000?order_id=AZMA240130ABC123',
-    amount: 50000,
-    description: 'Kas Bulanan Februari',
-    status: 'pending',
-    created_at: '2024-01-30T08:00:00Z',
-    student: { name: 'Azma Raudhatul Jannah', nickname: 'Azma', phone: '+62 856-8500-062' }
-  },
-  {
-    id: '2',
-    student_id: '5',
-    order_id: 'DIZYA240130DEF456',
-    payment_url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/50000?order_id=DIZYA240130DEF456',
-    amount: 50000,
-    description: 'Kas Bulanan Februari',
-    status: 'pending',
-    created_at: '2024-01-30T08:30:00Z',
-    student: { name: 'Dizya Nayara Khanza Pujiarto', nickname: 'Dizya', phone: '+62 812-8147-6276' }
-  }
-]
+const mockPaymentLinks = []
 
 
 

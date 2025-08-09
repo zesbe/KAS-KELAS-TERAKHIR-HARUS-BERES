@@ -35,6 +35,40 @@
       </div>
     </div>
 
+    <!-- Quick Actions Card -->
+    <div class="card p-6">
+      <h4 class="text-lg font-medium text-gray-900 mb-4">⚡ Aksi Cepat</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="border rounded-lg p-4 bg-blue-50">
+          <h5 class="font-medium text-blue-900 mb-2">💡 Tips Marking Manual</h5>
+          <ul class="text-sm text-blue-800 space-y-1">
+            <li>• Klik tombol "✓ Tandai Lunas" untuk mark individual payment</li>
+            <li>• Gunakan "✓ Tandai Semua Lunas" untuk mark bulk dalam detail</li>
+            <li>• Progress akan otomatis terupdate</li>
+            <li>• Data tersimpan otomatis</li>
+          </ul>
+        </div>
+
+        <div class="border rounded-lg p-4 bg-green-50">
+          <h5 class="font-medium text-green-900 mb-2">📊 Status Overview</h5>
+          <div class="text-sm space-y-1">
+            <div class="flex justify-between">
+              <span class="text-green-700">Lunas:</span>
+              <span class="font-semibold">{{ multiMonthPayments.filter(p => p.status === 'completed').length }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-blue-700">Sebagian:</span>
+              <span class="font-semibold">{{ multiMonthPayments.filter(p => p.status === 'partial').length }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-yellow-700">Pending:</span>
+              <span class="font-semibold">{{ multiMonthPayments.filter(p => p.status === 'pending').length }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Multi-Month Payments List -->
     <div class="card p-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
@@ -46,6 +80,15 @@
             <option value="partial">Sebagian</option>
             <option value="completed">Lunas</option>
           </select>
+          <button
+            @click="downloadMultiMonthPDF"
+            class="btn-secondary flex items-center"
+            title="Download PDF Report"
+          >
+            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+            <span class="hidden sm:inline">Download PDF</span>
+            <span class="sm:hidden">PDF</span>
+          </button>
         </div>
       </div>
 
@@ -92,6 +135,9 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">{{ payment.period_label }}</div>
                 <div class="text-sm text-gray-500">{{ payment.months }} bulan</div>
+                <div v-if="payment.payment_links" class="text-xs text-blue-600 mt-1">
+                  {{ payment.payment_links.length }} link tersedia
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-gray-900">{{ formatCurrency(payment.total_amount) }}</div>
@@ -115,26 +161,40 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center space-x-2">
-                  <button 
+                  <button
                     @click="viewDetails(payment)"
                     class="text-primary-600 hover:text-primary-900"
                     title="Lihat Detail"
                   >
                     <EyeIcon class="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     @click="sendReminder(payment)"
                     class="text-success-600 hover:text-success-900"
                     title="Kirim Reminder"
                   >
                     <ChatBubbleLeftIcon class="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     @click="copyPaymentLink(payment)"
                     class="text-warning-600 hover:text-warning-900"
                     title="Copy Link"
                   >
                     <LinkIcon class="w-4 h-4" />
+                  </button>
+                  <button
+                    @click="editPayment(payment)"
+                    class="text-blue-600 hover:text-blue-900"
+                    title="Edit Pembayaran"
+                  >
+                    <PencilIcon class="w-4 h-4" />
+                  </button>
+                  <button
+                    @click="deletePayment(payment)"
+                    class="text-red-600 hover:text-red-900"
+                    title="Hapus Pembayaran"
+                  >
+                    <TrashIcon class="w-4 h-4" />
                   </button>
                 </div>
               </td>
@@ -180,18 +240,28 @@
             </div>
           </div>
           
-          <div class="flex items-center justify-center space-x-3 mt-3 pt-3 border-t border-gray-200">
-            <button @click="viewDetails(payment)" class="flex items-center text-primary-600">
+          <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-gray-200">
+            <button @click="viewDetails(payment)" class="flex items-center justify-center text-primary-600 py-2">
               <EyeIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Detail</span>
             </button>
-            <button @click="sendReminder(payment)" class="flex items-center text-success-600">
+            <button @click="sendReminder(payment)" class="flex items-center justify-center text-success-600 py-2">
               <ChatBubbleLeftIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Kirim</span>
             </button>
-            <button @click="copyPaymentLink(payment)" class="flex items-center text-warning-600">
+            <button @click="copyPaymentLink(payment)" class="flex items-center justify-center text-warning-600 py-2">
               <LinkIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Copy</span>
+            </button>
+            <button @click="editPayment(payment)" class="flex items-center justify-center text-blue-600 py-2">
+              <PencilIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Edit</span>
+            </button>
+          </div>
+          <div class="flex justify-center mt-2">
+            <button @click="deletePayment(payment)" class="flex items-center justify-center text-red-600 py-2 w-full">
+              <TrashIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Hapus</span>
             </button>
           </div>
         </div>
@@ -204,7 +274,9 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
       <div class="bg-white rounded-lg max-w-lg w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Buat Pembayaran Multi-Bulan</h3>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          {{ selectedPayment ? 'Edit Pembayaran Multi-Bulan' : 'Buat Pembayaran Multi-Bulan' }}
+        </h3>
         
         <form @submit.prevent="createMultiMonthPayment" class="space-y-4">
           <div>
@@ -247,11 +319,10 @@
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah per Bulan</label>
-            <input 
+            <input
               v-model.number="form.monthlyAmount"
-              type="number" 
-              min="1000"
-              step="1000"
+              type="number"
+              min="1"
               required
               class="input-field"
               @input="calculateTotal"
@@ -259,11 +330,70 @@
             />
           </div>
 
+          <!-- Link Generation Options -->
+          <div class="border rounded-lg p-4 bg-blue-50">
+            <h4 class="font-medium text-blue-900 mb-3">💳 Opsi Generate Link Pembayaran</h4>
 
+            <div class="space-y-3">
+              <label class="flex items-start space-x-3">
+                <input
+                  v-model="form.linkType"
+                  type="radio"
+                  value="individual"
+                  class="mt-1"
+                />
+                <div>
+                  <div class="font-medium text-gray-900">Link Individual per Bulan</div>
+                  <div class="text-sm text-gray-600">
+                    Generate {{ form.months }} link terpisah ({{ formatCurrency(form.monthlyAmount) }} per link)
+                  </div>
+                  <div class="text-xs text-green-600 mt-1">
+                    ✅ Orang tua bisa bayar bertahap • ✅ Tracking per bulan lebih detail
+                  </div>
+                </div>
+              </label>
+
+              <label class="flex items-start space-x-3">
+                <input
+                  v-model="form.linkType"
+                  type="radio"
+                  value="single"
+                  class="mt-1"
+                />
+                <div>
+                  <div class="font-medium text-gray-900">Link Total Sekaligus</div>
+                  <div class="text-sm text-gray-600">
+                    Generate 1 link untuk total {{ formatCurrency(form.monthlyAmount * form.months) }}
+                  </div>
+                  <div class="text-xs text-blue-600 mt-1">
+                    ✅ Pembayaran sekaligus • ✅ Lebih praktis untuk orang tua
+                  </div>
+                </div>
+              </label>
+
+              <label class="flex items-start space-x-3">
+                <input
+                  v-model="form.linkType"
+                  type="radio"
+                  value="both"
+                  class="mt-1"
+                />
+                <div>
+                  <div class="font-medium text-gray-900">Kedua Opsi (Recommended)</div>
+                  <div class="text-sm text-gray-600">
+                    Generate link individual + link total (orang tua pilih sendiri)
+                  </div>
+                  <div class="text-xs text-purple-600 mt-1">
+                    ✅ Fleksibilitas maksimal • ✅ Cocok untuk semua preferensi
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
 
           <!-- Summary -->
           <div class="bg-gray-50 p-4 rounded-lg">
-            <h4 class="font-medium text-gray-900 mb-2">Ringkasan Pembayaran</h4>
+            <h4 class="font-medium text-gray-900 mb-2">📋 Ringkasan Pembayaran</h4>
             <div class="space-y-1 text-sm">
               <div class="flex justify-between">
                 <span>Periode:</span>
@@ -277,16 +407,29 @@
                 <span>Total Pembayaran:</span>
                 <span>{{ formatCurrency(form.monthlyAmount * form.months) }}</span>
               </div>
-              <div class="text-blue-600 text-xs mt-2">
-                Pembayaran untuk {{ form.months }} bulan kas kelas
+            </div>
+
+            <!-- Link Generation Summary -->
+            <div class="mt-3 pt-3 border-t border-gray-300">
+              <h5 class="font-medium text-gray-900 mb-2">🔗 Link yang akan dibuat:</h5>
+              <div class="space-y-1 text-xs">
+                <div v-if="form.linkType === 'individual' || form.linkType === 'both'" class="text-green-600">
+                  ✅ {{ form.months }} link individual ({{ formatCurrency(form.monthlyAmount) }} per link)
+                </div>
+                <div v-if="form.linkType === 'single' || form.linkType === 'both'" class="text-blue-600">
+                  ✅ 1 link total sekaligus ({{ formatCurrency(form.monthlyAmount * form.months) }})
+                </div>
+                <div v-if="form.linkType === 'both'" class="text-purple-600 font-medium">
+                  💡 Orang tua bisa pilih bayar bertahap atau sekaligus
+                </div>
               </div>
             </div>
           </div>
           
           <div class="flex justify-end space-x-3 pt-4">
-            <button 
+            <button
               type="button"
-              @click="showCreateModal = false"
+              @click="closeCreateModal"
               class="btn-secondary"
             >
               Batal
@@ -296,7 +439,7 @@
               :disabled="creating"
               class="btn-primary"
             >
-              {{ creating ? 'Membuat...' : 'Buat Pembayaran' }}
+              {{ creating ? 'Menyimpan...' : (selectedPayment ? 'Update Pembayaran' : 'Buat Pembayaran') }}
             </button>
           </div>
         </form>
@@ -345,58 +488,170 @@
 
           <!-- Month Details -->
           <div>
-            <h5 class="font-medium text-gray-900 mb-3">Detail per Bulan</h5>
+            <div class="flex items-center justify-between mb-3">
+              <h5 class="font-medium text-gray-900">Detail per Bulan</h5>
+              <button
+                v-if="selectedPayment.month_details && selectedPayment.month_details.some(m => !m.paid)"
+                @click="markAllMonthsAsPaid(selectedPayment)"
+                class="text-green-600 hover:text-green-800 text-xs px-3 py-1 border border-green-300 rounded-full hover:bg-green-50"
+              >
+                ✓ Tandai Semua Lunas
+              </button>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div 
-                v-for="month in selectedPayment.month_details" 
+              <div
+                v-for="month in selectedPayment.month_details"
                 :key="month.month"
                 class="p-3 border rounded-lg"
                 :class="month.paid ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'"
               >
                 <div class="flex items-center justify-between">
                   <span class="text-sm font-medium">{{ month.label }}</span>
-                  <span v-if="month.paid" class="text-green-600 text-xs">✓ Lunas</span>
-                  <span v-else class="text-gray-500 text-xs">Belum bayar</span>
+                  <div class="flex items-center space-x-2">
+                    <span v-if="month.paid" class="text-green-600 text-xs">✓ Lunas</span>
+                    <span v-else class="text-gray-500 text-xs">Belum bayar</span>
+                    <button
+                      v-if="!month.paid"
+                      @click="markMonthAsPaid(selectedPayment, month)"
+                      class="text-green-600 hover:text-green-800 text-xs px-2 py-1 border border-green-300 rounded hover:bg-green-50"
+                      title="Tandai Lunas"
+                    >
+                      ✓ Tandai Lunas
+                    </button>
+                  </div>
                 </div>
                 <div class="text-xs text-gray-600 mt-1">
                   {{ formatCurrency(month.amount) }}
+                </div>
+                <div v-if="month.paid && month.paid_at" class="text-xs text-green-600 mt-1">
+                  Dibayar: {{ formatDate(month.paid_at) }}
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Payment Link -->
+          <!-- Generated Payment Links -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Link Pembayaran</label>
-            <div class="flex items-center space-x-2">
-              <input 
-                :value="selectedPayment.payment_url"
-                readonly
-                class="input-field text-xs"
-              />
-              <button 
-                @click="copyToClipboard(selectedPayment.payment_url)"
-                class="btn-secondary p-2"
+            <label class="block text-sm font-medium text-gray-700 mb-3">🔗 Link Pembayaran yang Dibuat</label>
+
+            <div v-if="selectedPayment.payment_links && selectedPayment.payment_links.length > 0" class="space-y-3">
+              <div
+                v-for="link in selectedPayment.payment_links"
+                :key="link.id"
+                class="border rounded-lg p-3"
+                :class="link.type === 'total' ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'"
               >
-                <DocumentDuplicateIcon class="w-4 h-4" />
-              </button>
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center space-x-2">
+                    <span
+                      :class="link.type === 'total' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'"
+                      class="px-2 py-1 rounded-full text-xs font-medium"
+                    >
+                      {{ link.type === 'total' ? '💰 Total Sekaligus' : `📅 Bulan ${link.month}` }}
+                    </span>
+                    <span class="font-medium text-sm">{{ formatCurrency(link.amount) }}</span>
+                  </div>
+                  <div class="flex space-x-1">
+                    <button
+                      @click="copyToClipboard(link.url)"
+                      class="p-1 text-gray-500 hover:text-gray-700"
+                      title="Copy Link"
+                    >
+                      <DocumentDuplicateIcon class="w-4 h-4" />
+                    </button>
+                    <button
+                      @click="sendPaymentLinkWhatsApp(link, selectedPayment.student)"
+                      class="p-1 text-green-500 hover:text-green-700"
+                      title="Kirim via WhatsApp"
+                    >
+                      <ChatBubbleLeftIcon class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div class="text-xs text-gray-600 mb-2">
+                  {{ link.description }}
+                </div>
+
+                <div class="text-xs font-mono text-gray-500 bg-white px-2 py-1 rounded border">
+                  Order ID: {{ link.order_id }}
+                </div>
+
+                <div class="mt-2 flex items-center space-x-2">
+                  <input
+                    :value="link.url"
+                    readonly
+                    class="input-field text-xs flex-1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Legacy single link fallback -->
+            <div v-else class="border rounded-lg p-3 bg-gray-50">
+              <div class="flex items-center space-x-2">
+                <input
+                  :value="selectedPayment.payment_url"
+                  readonly
+                  class="input-field text-xs flex-1"
+                />
+                <button
+                  @click="copyToClipboard(selectedPayment.payment_url)"
+                  class="btn-secondary p-2"
+                >
+                  <DocumentDuplicateIcon class="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
         
-        <div class="flex justify-end space-x-3 pt-6 border-t">
-          <button 
-            @click="showDetailModal = false"
-            class="btn-secondary"
-          >
-            Tutup
-          </button>
-          <button 
-            @click="sendPaymentReminder(selectedPayment)"
-            class="btn-success"
-          >
-            Kirim Reminder
-          </button>
+        <div class="flex flex-col space-y-3 pt-6 border-t">
+          <!-- First row: Edit/Delete -->
+          <div class="flex space-x-3">
+            <button
+              @click="editPayment(selectedPayment)"
+              class="btn-secondary text-blue-600 border-blue-300 hover:bg-blue-50 flex-1"
+            >
+              <PencilIcon class="w-4 h-4 mr-2" />
+              Edit
+            </button>
+            <button
+              @click="deletePayment(selectedPayment)"
+              class="btn-secondary text-red-600 border-red-300 hover:bg-red-50 flex-1"
+            >
+              <TrashIcon class="w-4 h-4 mr-2" />
+              Hapus
+            </button>
+          </div>
+
+          <!-- Second row: WhatsApp options -->
+          <div v-if="selectedPayment.payment_links && selectedPayment.payment_links.length > 1" class="flex space-x-3">
+            <button
+              @click="sendAllPaymentLinks(selectedPayment)"
+              class="btn-success flex-1"
+            >
+              <ChatBubbleLeftIcon class="w-4 h-4 mr-2" />
+              Kirim Semua Link ({{ selectedPayment.payment_links.length }})
+            </button>
+          </div>
+
+          <!-- Third row: Close/Single reminder -->
+          <div class="flex space-x-3">
+            <button
+              @click="showDetailModal = false"
+              class="btn-secondary flex-1"
+            >
+              Tutup
+            </button>
+            <button
+              @click="sendPaymentReminder(selectedPayment)"
+              class="btn-success flex-1"
+            >
+              <ChatBubbleLeftIcon class="w-4 h-4 mr-2" />
+              Kirim Reminder
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -407,12 +662,16 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useToast } from 'vue-toastification'
 import { useAppStore } from '@/stores'
+import { getIndonesianTimeGreeting, getIndonesianTime } from '@/utils/timeGreeting'
 import {
   PlusIcon,
   EyeIcon,
   ChatBubbleLeftIcon,
   LinkIcon,
-  DocumentDuplicateIcon
+  DocumentDuplicateIcon,
+  PencilIcon,
+  TrashIcon,
+  DocumentArrowDownIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
@@ -429,45 +688,12 @@ const form = reactive({
   startMonth: new Date().getMonth() + 1,
   year: new Date().getFullYear(),
   months: 6,
-  monthlyAmount: 50000
+  monthlyAmount: 50000,
+  linkType: 'both' // 'individual', 'single', or 'both'
 })
 
-// Sample data for demo
-const multiMonthPayments = ref([
-  {
-    id: '1',
-    student: { id: '1', name: 'Aqilnafi Segara', nickname: 'Nafi' },
-    period_label: 'Feb - Jul 2024',
-    months: 6,
-    monthly_amount: 50000,
-    total_amount: 300000,
-    paid_amount: 150000,
-    progress_percentage: 50,
-    status: 'partial',
-    payment_url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/140000?order_id=NAFI240201ABC123',
-    month_details: [
-      { month: 2, label: 'Februari 2024', amount: 50000, paid: true },
-      { month: 3, label: 'Maret 2024', amount: 50000, paid: true },
-      { month: 4, label: 'April 2024', amount: 50000, paid: true },
-      { month: 5, label: 'Mei 2024', amount: 50000, paid: false },
-      { month: 6, label: 'Juni 2024', amount: 50000, paid: false },
-      { month: 7, label: 'Juli 2024', amount: 50000, paid: false }
-    ]
-  },
-  {
-    id: '2',
-    student: { id: '2', name: 'Arkaan Jawara Bayanaka', nickname: 'Arkaan' },
-    period_label: 'Jan - Des 2024',
-    months: 12,
-    monthly_amount: 50000,
-    total_amount: 600000,
-    paid_amount: 600000,
-    progress_percentage: 100,
-    status: 'completed',
-    payment_url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/600000?order_id=ARKAAN240101XYZ789',
-    month_details: []
-  }
-])
+// Multi-month payments data (empty by default)
+const multiMonthPayments = ref([])
 
 const students = computed(() => store.students)
 
@@ -546,44 +772,122 @@ const useTemplate = (template) => {
   showCreateModal.value = true
 }
 
+const getMonthName = (monthIndex) => {
+  const monthNames = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ]
+  return monthNames[(monthIndex - 1) % 12]
+}
+
+const closeCreateModal = () => {
+  showCreateModal.value = false
+  selectedPayment.value = null
+
+  // Reset form
+  Object.assign(form, {
+    studentId: '',
+    startMonth: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
+    months: 6,
+    monthlyAmount: 50000,
+    linkType: 'both'
+  })
+}
+
 const createMultiMonthPayment = async () => {
   creating.value = true
   try {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     const student = students.value.find(s => s.id === form.studentId)
     const totalAmount = calculateTotal()
-    const newPayment = {
-      id: Date.now().toString(),
-      student,
-      period_label: getPeriodLabel(),
-      months: form.months,
-      monthly_amount: form.monthlyAmount,
-      total_amount: totalAmount,
-      paid_amount: 0,
-      progress_percentage: 0,
-      status: 'pending',
-      payment_url: `https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/${totalAmount}?order_id=${student.nickname.toUpperCase()}${Date.now()}`,
-      month_details: []
+
+    if (selectedPayment.value) {
+      // Edit mode - update existing payment
+      const paymentToUpdate = selectedPayment.value
+      const index = multiMonthPayments.value.findIndex(p => p.id === paymentToUpdate.id)
+
+      if (index !== -1) {
+        // Preserve paid amount and progress when editing
+        const updatedPayment = {
+          ...paymentToUpdate,
+          student,
+          period_label: getPeriodLabel(),
+          months: form.months,
+          monthly_amount: form.monthlyAmount,
+          total_amount: totalAmount,
+          progress_percentage: Math.round((paymentToUpdate.paid_amount / totalAmount) * 100),
+          payment_url: `https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/${totalAmount}?order_id=${student.nickname.toUpperCase()}${paymentToUpdate.id}`
+        }
+
+        multiMonthPayments.value[index] = updatedPayment
+        toast.success(`✅ Pembayaran ${student.name} berhasil diupdate!`)
+      }
+    } else {
+      // Create mode - add new payment
+      const baseOrderId = `${student.nickname.toUpperCase()}${Date.now()}`
+      const paymentLinks = []
+
+      // Generate links based on selected type
+      if (form.linkType === 'individual' || form.linkType === 'both') {
+        // Generate individual monthly links
+        for (let i = 1; i <= form.months; i++) {
+          const monthOrderId = `${baseOrderId}M${i.toString().padStart(2, '0')}`
+          paymentLinks.push({
+            id: `individual_${i}`,
+            type: 'individual',
+            month: i,
+            amount: form.monthlyAmount,
+            order_id: monthOrderId,
+            url: `https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/${form.monthlyAmount}?order_id=${monthOrderId}`,
+            description: `Kas Bulan ke-${i} (${getMonthName(form.startMonth + i - 1)})`
+          })
+        }
+      }
+
+      if (form.linkType === 'single' || form.linkType === 'both') {
+        // Generate single total link
+        const totalOrderId = `${baseOrderId}TOTAL`
+        paymentLinks.push({
+          id: 'total',
+          type: 'total',
+          amount: totalAmount,
+          order_id: totalOrderId,
+          url: `https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/${totalAmount}?order_id=${totalOrderId}`,
+          description: `Kas ${form.months} Bulan Sekaligus`
+        })
+      }
+
+      const newPayment = {
+        id: Date.now().toString(),
+        student,
+        period_label: getPeriodLabel(),
+        months: form.months,
+        monthly_amount: form.monthlyAmount,
+        total_amount: totalAmount,
+        paid_amount: 0,
+        progress_percentage: 0,
+        status: 'pending',
+        payment_url: paymentLinks[0]?.url || '', // Default to first link
+        payment_links: paymentLinks,
+        link_type: form.linkType,
+        month_details: []
+      }
+
+      multiMonthPayments.value.unshift(newPayment)
+
+      const linkCount = paymentLinks.length
+      const linkTypes = form.linkType === 'both' ? 'individual + total' : form.linkType
+      toast.success(`✅ Multi-Month Payment berhasil dibuat!\n${linkCount} link ${linkTypes} telah digenerate`)
     }
-    
-    multiMonthPayments.value.unshift(newPayment)
-    
-    toast.success('Pembayaran multi-bulan berhasil dibuat!')
-    showCreateModal.value = false
-    
-    // Reset form
-    Object.assign(form, {
-      studentId: '',
-      startMonth: new Date().getMonth() + 1,
-      year: new Date().getFullYear(),
-      months: 6,
-      monthlyAmount: 50000
-    })
-    
+
+    closeCreateModal()
+
   } catch (error) {
-    toast.error('Gagal membuat pembayaran multi-bulan')
+    console.error('Error saving payment:', error)
+    toast.error('Gagal menyimpan pembayaran multi-bulan')
   } finally {
     creating.value = false
   }
@@ -594,8 +898,70 @@ const viewDetails = (payment) => {
   showDetailModal.value = true
 }
 
-const sendReminder = (payment) => {
-  toast.success(`Reminder dikirim ke ${payment.student.name}`)
+const sendReminder = async (payment) => {
+  try {
+    // Create comprehensive reminder message with dynamic greeting
+    const student = payment.student
+    const remainingAmount = payment.total_amount - payment.paid_amount
+    const progressPercent = payment.progress_percentage
+    const greeting = getIndonesianTimeGreeting()
+
+    let message = `🔔 *REMINDER PEMBAYARAN KAS KELAS* 🔔
+
+Assalamu'alaikum Wr. Wb.
+
+${greeting} orang tua dari ${student.name} (${student.nickname})! 👋
+
+📋 *Detail Pembayaran Multi-Bulan:*
+• Periode: ${payment.period_label}
+• Total Pembayaran: ${formatCurrency(payment.total_amount)}
+• Sudah Dibayar: ${formatCurrency(payment.paid_amount)}
+• Sisa Pembayaran: ${formatCurrency(remainingAmount)}
+• Progress: ${progressPercent}%
+
+`
+
+    if (payment.status === 'pending') {
+      message += `⚠️ *Status: Belum Ada Pembayaran*
+Mohon segera lakukan pembayaran untuk periode ${payment.period_label}.
+
+`
+    } else if (payment.status === 'partial') {
+      message += `⏳ *Status: Pembayaran Sebagian*
+Terima kasih sudah melakukan pembayaran sebagian. Mohon lanjutkan pembayaran untuk bulan-bulan berikutnya.
+
+`
+    }
+
+    message += `💳 *Link Pembayaran:*
+${payment.payment_url}
+
+📞 *Bantuan:*
+Jika ada pertanyaan atau kesulitan, silakan hubungi bendahara kelas.
+
+Terima kasih atas kerjasamanya! 🙏
+
+Wassalamu'alaikum Wr. Wb.
+
+---
+*Dikirim: ${greeting} (${getIndonesianTime()})*
+*Sistem Kas Kelas Otomatis*
+_Pesan ini dikirim secara otomatis_`
+
+    // Simulate sending WhatsApp message
+    const whatsappUrl = `https://wa.me/${student.phone?.replace(/\D/g, '').replace(/^0/, '62')}?text=${encodeURIComponent(message)}`
+
+    // Open WhatsApp in new tab
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+
+    toast.success(`📤 Reminder lengkap dikirim ke ${student.name}`, {
+      timeout: 4000
+    })
+
+  } catch (error) {
+    console.error('Error sending reminder:', error)
+    toast.error('Gagal mengirim reminder')
+  }
 }
 
 const copyPaymentLink = async (payment) => {
@@ -616,9 +982,381 @@ const copyToClipboard = async (text) => {
   }
 }
 
-const sendPaymentReminder = (payment) => {
-  toast.success(`Reminder pembayaran dikirim ke ${payment.student.name}`)
+const sendPaymentReminder = async (payment) => {
+  // Use the same comprehensive reminder as sendReminder
+  await sendReminder(payment)
   showDetailModal.value = false
+}
+
+const sendPaymentLinkWhatsApp = async (link, student) => {
+  try {
+    const studentName = student?.name || 'Siswa'
+    const phone = student?.phone || ''
+
+    // Create message based on link type with dynamic greeting
+    const greeting = getIndonesianTimeGreeting()
+    let message = `Assalamu'alaikum Wr. Wb.
+
+${greeting} orang tua dari ${studentName}
+
+Dengan hormat, kami ingin mengingatkan mengenai pembayaran uang kas kelas.
+
+`
+
+    if (link.type === 'total') {
+      message += `💰 **Pembayaran ${link.description}**
+Jumlah: ${formatCurrency(link.amount)}
+
+Pembayaran ini untuk beberapa bulan sekaligus, lebih praktis dan efisien.`
+    } else {
+      message += `📅 **${link.description}**
+Jumlah: ${formatCurrency(link.amount)}
+
+Pembayaran untuk bulan ini, bisa dibayar bertahap setiap bulan.`
+    }
+
+    message += `
+
+Untuk kemudahan pembayaran, Bapak/Ibu dapat menggunakan link pembayaran berikut:
+
+${link.url}
+
+Pembayaran dapat dilakukan melalui QRIS dengan berbagai metode:
+
+✅ Scan QR Code
+✅ E-Wallet (GoPay, OVO, DANA, ShopeePay)
+
+Terima kasih atas perhatian dan kerjasamanya.
+
+Wassalamu'alaikum Wr. Wb.
+
+---
+*Order ID: ${link.order_id}*
+*Dikirim: ${greeting} (${getIndonesianTime()})*
+*Sistem Kas Kelas Otomatis*`
+
+    // Clean phone number for WhatsApp (Indonesian format)
+    const cleanPhone = phone.replace(/\D/g, '').replace(/^0/, '62')
+
+    // Create WhatsApp URL
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
+
+    // Open WhatsApp directly
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+
+    toast.success(`📱 WhatsApp terbuka untuk ${studentName}\n${link.description}`, {
+      timeout: 3000
+    })
+
+  } catch (error) {
+    console.error('Error opening WhatsApp:', error)
+    toast.error('Gagal membuka WhatsApp')
+  }
+}
+
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const markMonthAsPaid = async (payment, month) => {
+  if (!confirm(`Tandai ${month.label} untuk ${payment.student?.name} sebagai LUNAS?\n\nJumlah: ${formatCurrency(month.amount)}`)) {
+    return
+  }
+
+  try {
+    // Update month as paid
+    month.paid = true
+    month.paid_at = new Date().toISOString()
+
+    // Recalculate payment progress
+    const paidMonths = payment.month_details.filter(m => m.paid).length
+    const totalMonths = payment.month_details.length
+    const newPaidAmount = paidMonths * payment.monthly_amount
+    const newProgressPercentage = Math.round((paidMonths / totalMonths) * 100)
+
+    // Update payment object
+    payment.paid_amount = newPaidAmount
+    payment.progress_percentage = newProgressPercentage
+
+    // Update status based on progress
+    if (newProgressPercentage === 100) {
+      payment.status = 'completed'
+    } else if (newProgressPercentage > 0) {
+      payment.status = 'partial'
+    }
+
+    // Save to localStorage (in a real app, this would be API call)
+    localStorage.setItem('multiMonthPayments', JSON.stringify(multiMonthPayments.value))
+
+    toast.success(`✅ ${month.label} berhasil ditandai LUNAS!\nProgress: ${newProgressPercentage}%`, {
+      timeout: 4000
+    })
+
+  } catch (error) {
+    console.error('Error marking month as paid:', error)
+    toast.error('Gagal menandai bulan sebagai lunas')
+  }
+}
+
+const markAllMonthsAsPaid = async (payment) => {
+  const unpaidMonths = payment.month_details.filter(m => !m.paid)
+  const totalUnpaidAmount = unpaidMonths.length * payment.monthly_amount
+
+  if (!confirm(`Tandai SEMUA bulan yang belum lunas untuk ${payment.student?.name}?\n\n${unpaidMonths.length} bulan × ${formatCurrency(payment.monthly_amount)} = ${formatCurrency(totalUnpaidAmount)}`)) {
+    return
+  }
+
+  try {
+    const currentTime = new Date().toISOString()
+
+    // Mark all unpaid months as paid
+    unpaidMonths.forEach(month => {
+      month.paid = true
+      month.paid_at = currentTime
+    })
+
+    // Update payment progress to 100%
+    payment.paid_amount = payment.total_amount
+    payment.progress_percentage = 100
+    payment.status = 'completed'
+
+    // Save to localStorage (in a real app, this would be API call)
+    localStorage.setItem('multiMonthPayments', JSON.stringify(multiMonthPayments.value))
+
+    toast.success(`🎉 SEMUA bulan berhasil ditandai LUNAS!\n${payment.student?.name} - ${formatCurrency(totalUnpaidAmount)}`, {
+      timeout: 5000
+    })
+
+  } catch (error) {
+    console.error('Error marking all months as paid:', error)
+    toast.error('Gagal menandai semua bulan sebagai lunas')
+  }
+}
+
+const downloadMultiMonthPDF = async () => {
+  try {
+    const pdfContent = generateMultiMonthPDFContent()
+
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Laporan Multi-Month Payment - ${new Date().toLocaleDateString('id-ID')}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
+            h2 { color: #374151; margin-top: 20px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
+            th { background-color: #f3f4f6; font-weight: bold; }
+            .status-pending { color: #d97706; }
+            .status-partial { color: #2563eb; }
+            .status-completed { color: #059669; }
+            .summary { background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0; }
+            .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 12px; }
+            .progress-bar { width: 100%; height: 20px; background-color: #e5e7eb; border-radius: 10px; }
+            .progress-fill { height: 100%; background-color: #3b82f6; border-radius: 10px; }
+          </style>
+        </head>
+        <body>
+          ${pdfContent}
+          <div class="footer">
+            Generated on ${new Date().toLocaleString('id-ID')} | Sistem Kas Kelas Multi-Month
+          </div>
+        </body>
+        </html>
+      `)
+      printWindow.document.close()
+
+      setTimeout(() => {
+        printWindow.print()
+      }, 500)
+    }
+
+    toast.success('PDF Report Multi-Month siap untuk di-print/save')
+
+  } catch (error) {
+    console.error('Error generating Multi-Month PDF:', error)
+    toast.error('Gagal membuat PDF report')
+  }
+}
+
+const generateMultiMonthPDFContent = () => {
+  const payments = filteredPayments.value
+  const totalStudents = payments.length
+  const completedPayments = payments.filter(p => p.status === 'completed').length
+  const partialPayments = payments.filter(p => p.status === 'partial').length
+  const pendingPayments = payments.filter(p => p.status === 'pending').length
+  const totalAmount = payments.reduce((sum, p) => sum + p.total_amount, 0)
+  const totalPaidAmount = payments.reduce((sum, p) => sum + p.paid_amount, 0)
+
+  let tableRows = ''
+  payments.forEach(payment => {
+    const statusClass = `status-${payment.status}`
+    tableRows += `
+      <tr>
+        <td>${payment.student?.name || '-'}</td>
+        <td>${payment.period_label}</td>
+        <td>${payment.months} bulan</td>
+        <td>${formatCurrency(payment.total_amount)}</td>
+        <td>${formatCurrency(payment.paid_amount)}</td>
+        <td>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${payment.progress_percentage}%"></div>
+          </div>
+          ${payment.progress_percentage}%
+        </td>
+        <td class="${statusClass}">${getStatusLabel(payment.status)}</td>
+      </tr>
+    `
+  })
+
+  return `
+    <h1>📊 Laporan Pembayaran Multi-Bulan</h1>
+
+    <div class="summary">
+      <h2>📈 Ringkasan</h2>
+      <p><strong>Total Siswa:</strong> ${totalStudents}</p>
+      <p><strong>Lunas:</strong> ${completedPayments} | <strong>Sebagian:</strong> ${partialPayments} | <strong>Pending:</strong> ${pendingPayments}</p>
+      <p><strong>Total Amount:</strong> ${formatCurrency(totalAmount)}</p>
+      <p><strong>Total Terbayar:</strong> ${formatCurrency(totalPaidAmount)}</p>
+      <p><strong>Progress Keseluruhan:</strong> ${Math.round((totalPaidAmount / totalAmount) * 100) || 0}%</p>
+      <p><strong>Filter Status:</strong> ${filterStatus.value || 'Semua Status'}</p>
+    </div>
+
+    <h2>📋 Detail Pembayaran Multi-Bulan</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Siswa</th>
+          <th>Periode</th>
+          <th>Durasi</th>
+          <th>Total Amount</th>
+          <th>Terbayar</th>
+          <th>Progress</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows || '<tr><td colspan="7" style="text-align: center; color: #6b7280;">Tidak ada data pembayaran multi-bulan</td></tr>'}
+      </tbody>
+    </table>
+  `
+}
+
+const sendAllPaymentLinks = async (payment) => {
+  if (!payment.payment_links || payment.payment_links.length === 0) {
+    toast.warning('Tidak ada link pembayaran untuk dikirim')
+    return
+  }
+
+  try {
+    const student = payment.student
+    const studentName = student?.name || 'Siswa'
+    const phone = student?.phone || ''
+
+    // Create comprehensive message with all payment options
+    const greeting = getIndonesianTimeGreeting()
+    let message = `Assalamu'alaikum Wr. Wb.
+
+${greeting} orang tua dari ${studentName}
+
+Dengan hormat, kami menyediakan beberapa opsi pembayaran kas kelas untuk kemudahan Bapak/Ibu:
+
+📋 **OPSI PEMBAYARAN TERSEDIA**
+
+`
+
+    // Add each payment link option
+    payment.payment_links.forEach((link, index) => {
+      message += `${index + 1}. ${link.type === 'total' ? '💰' : '📅'} **${link.description}**
+   Jumlah: ${formatCurrency(link.amount)}
+   Link: ${link.url}
+   Order ID: ${link.order_id}
+
+`
+    })
+
+    message += `Bapak/Ibu dapat memilih opsi yang paling sesuai:
+
+${payment.payment_links.find(l => l.type === 'total') ? '✅ Bayar sekaligus (lebih praktis)\n' : ''}${payment.payment_links.find(l => l.type === 'individual') ? '✅ Bayar bertahap per bulan (lebih fleksibel)\n' : ''}
+Pembayaran dapat dilakukan melalui QRIS dengan berbagai metode:
+
+✅ Scan QR Code
+✅ E-Wallet (GoPay, OVO, DANA, ShopeePay)
+
+Terima kasih atas perhatian dan kerjasamanya.
+
+Wassalamu'alaikum Wr. Wb.
+
+---
+*Dikirim: ${greeting} (${getIndonesianTime()})*
+*Sistem Kas Kelas Otomatis*`
+
+    // Clean phone number for WhatsApp (Indonesian format)
+    const cleanPhone = phone.replace(/\D/g, '').replace(/^0/, '62')
+
+    // Create WhatsApp URL
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
+
+    // Open WhatsApp directly
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+
+    toast.success(`📱 WhatsApp terbuka untuk ${studentName}\n${payment.payment_links.length} opsi pembayaran dikirim`, {
+      timeout: 4000
+    })
+
+  } catch (error) {
+    console.error('Error opening WhatsApp:', error)
+    toast.error('Gagal membuka WhatsApp')
+  }
+}
+
+const editPayment = (payment) => {
+  // Populate form with payment data for editing
+  const student = payment.student
+  form.studentId = student.id
+  form.months = payment.months
+  form.monthlyAmount = payment.monthly_amount
+
+  // Set start month and year from period
+  const currentDate = new Date()
+  form.startMonth = currentDate.getMonth() + 1
+  form.year = currentDate.getFullYear()
+
+  // Store the payment being edited
+  selectedPayment.value = payment
+  showCreateModal.value = true
+
+  toast.info(`Editing pembayaran untuk ${student.name}`)
+}
+
+const deletePayment = (payment) => {
+  if (!confirm(`Yakin ingin menghapus pembayaran multi-bulan untuk ${payment.student.name}?\n\nPeriode: ${payment.period_label}\nTotal: ${formatCurrency(payment.total_amount)}`)) {
+    return
+  }
+
+  try {
+    // Find and remove payment from array
+    const index = multiMonthPayments.value.findIndex(p => p.id === payment.id)
+    if (index !== -1) {
+      multiMonthPayments.value.splice(index, 1)
+      toast.success(`✅ Pembayaran ${payment.student.name} berhasil dihapus`)
+    } else {
+      toast.warning('Pembayaran tidak ditemukan')
+    }
+  } catch (error) {
+    console.error('Error deleting payment:', error)
+    toast.error('Gagal menghapus pembayaran')
+  }
 }
 
 onMounted(() => {

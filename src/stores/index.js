@@ -63,16 +63,71 @@ export const useAppStore = defineStore('app', {
       return state.paymentLinks.filter(p => p.status === 'pending')
     },
     
-    // Students by payment status
+    // Students by payment status with monthly tracking
     studentsByPaymentStatus: (state) => {
-      const paidStudents = state.transactions
-        .filter(t => t.type === 'income' && t.status === 'completed')
+      const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM format
+
+      // Get paid students for current month
+      const paidStudentIds = state.transactions
+        .filter(t => {
+          const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
+          return t.type === 'income' &&
+                 t.status === 'completed' &&
+                 transactionMonth === currentMonth
+        })
         .map(t => t.student_id)
 
-      return {
-        paid: state.students.filter(s => paidStudents.includes(s.id)),
-        unpaid: state.students.filter(s => !paidStudents.includes(s.id))
-      }
+      // Get all payment history by student
+      const studentPaymentHistory = {}
+      state.transactions
+        .filter(t => t.type === 'income' && t.status === 'completed')
+        .forEach(t => {
+          const month = new Date(t.created_at).toISOString().slice(0, 7)
+          if (!studentPaymentHistory[t.student_id]) {
+            studentPaymentHistory[t.student_id] = {}
+          }
+          if (!studentPaymentHistory[t.student_id][month]) {
+            studentPaymentHistory[t.student_id][month] = []
+          }
+          studentPaymentHistory[t.student_id][month].push(t)
+        })
+
+      const paid = state.students.filter(s => paidStudentIds.includes(s.id))
+        .map(s => ({
+          ...s,
+          paymentHistory: studentPaymentHistory[s.id] || {},
+          totalPaid: Object.values(studentPaymentHistory[s.id] || {})
+            .flat()
+            .reduce((sum, t) => sum + t.amount, 0),
+          paidThisMonth: !!studentPaymentHistory[s.id]?.[currentMonth]
+        }))
+
+      const unpaid = state.students.filter(s => !paidStudentIds.includes(s.id))
+        .map(s => ({
+          ...s,
+          paymentHistory: studentPaymentHistory[s.id] || {},
+          totalPaid: Object.values(studentPaymentHistory[s.id] || {})
+            .flat()
+            .reduce((sum, t) => sum + t.amount, 0),
+          paidThisMonth: false
+        }))
+
+      return { paid, unpaid }
+    },
+
+    // Students eligible for payment link generation (not paid this month)
+    unpaidStudentsThisMonth: (state) => {
+      const currentMonth = new Date().toISOString().slice(0, 7)
+      const paidStudentIds = state.transactions
+        .filter(t => {
+          const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
+          return t.type === 'income' &&
+                 t.status === 'completed' &&
+                 transactionMonth === currentMonth
+        })
+        .map(t => t.student_id)
+
+      return state.students.filter(s => !paidStudentIds.includes(s.id))
     },
 
     // Check if any data is loading
@@ -188,6 +243,19 @@ export const useAppStore = defineStore('app', {
       }
     },
 
+    // Update payment link with better status tracking
+    async updatePaymentLink(id, updates) {
+      try {
+        const { data, error } = await db.updatePaymentLink(id, updates)
+        if (error) throw error
+        await this.fetchPaymentLinks()
+        return data
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
+    },
+
     async deleteExpense(id) {
       try {
         const { data, error } = await db.deleteExpense(id)
@@ -222,17 +290,72 @@ export const useAppStore = defineStore('app', {
         const student = this.students.find(s => s.id === studentId)
         if (!student) throw new Error('Student not found')
 
+        // Check if student already paid this month
+        const currentMonth = new Date().toISOString().slice(0, 7)
+        const studentAlreadyPaid = this.transactions.some(t => {
+          const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
+          return t.student_id === studentId &&
+                 t.type === 'income' &&
+                 t.status === 'completed' &&
+                 transactionMonth === currentMonth
+        })
+
+        if (studentAlreadyPaid) {
+          throw new Error(`${student.name} sudah membayar untuk bulan ini`)
+        }
+
         const paymentData = pakasirService.createPaymentLink(student, amount, description)
 
         const { data, error } = await db.addPaymentLink({
           ...paymentData,
           student_id: studentId,
-          status: 'pending'
+          status: 'pending',
+          month: currentMonth // Track which month this payment is for
         })
 
         if (error) throw error
         await this.fetchPaymentLinks()
         return data
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
+    },
+
+    // Bulk generate payment links for unpaid students only
+    async generateBulkPaymentLinks(amount, description, excludePaidStudents = true) {
+      try {
+        const targetStudents = excludePaidStudents ?
+          this.unpaidStudentsThisMonth :
+          this.students
+
+        if (targetStudents.length === 0) {
+          throw new Error('Semua siswa sudah membayar untuk bulan ini')
+        }
+
+        const results = []
+        const currentMonth = new Date().toISOString().slice(0, 7)
+
+        for (const student of targetStudents) {
+          try {
+            const paymentData = pakasirService.createPaymentLink(student, amount, description)
+
+            const { data, error } = await db.addPaymentLink({
+              ...paymentData,
+              student_id: student.id,
+              status: 'pending',
+              month: currentMonth
+            })
+
+            if (error) throw error
+            results.push({ student: student.name, success: true, data })
+          } catch (error) {
+            results.push({ student: student.name, success: false, error: error.message })
+          }
+        }
+
+        await this.fetchPaymentLinks()
+        return results
       } catch (error) {
         this.error = error.message
         throw error

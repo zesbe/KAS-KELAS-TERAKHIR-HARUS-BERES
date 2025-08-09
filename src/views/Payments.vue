@@ -124,11 +124,10 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
-          <input 
+          <input
             v-model.number="quickGenerate.amount"
-            type="number" 
-            min="1000"
-            step="1000"
+            type="number"
+            min="1"
             class="input-field"
             placeholder="Contoh: 50000"
           />
@@ -285,6 +284,15 @@
             <option value="completed">Selesai</option>
             <option value="expired">Expired</option>
           </select>
+          <button
+            @click="downloadPaymentsPDF"
+            class="btn-secondary flex items-center"
+            title="Download PDF Report"
+          >
+            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+            <span class="hidden sm:inline">Download PDF</span>
+            <span class="sm:hidden">PDF</span>
+          </button>
         </div>
       </div>
       
@@ -325,10 +333,10 @@
               <span class="text-xs">{{ formatDate(payment.created_at) }}</span>
             </div>
           </div>
-          <div class="flex items-center justify-center space-x-3 mt-3 pt-3 border-t border-gray-200">
+          <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-200">
             <button
               @click="copyPaymentLink(payment)"
-              class="flex items-center text-primary-600 hover:text-primary-900"
+              class="flex items-center justify-center text-primary-600 hover:text-primary-900 py-2"
               title="Copy Link"
             >
               <LinkIcon class="w-4 h-4 mr-1" />
@@ -336,24 +344,42 @@
             </button>
             <button
               @click="sendPaymentLink(payment)"
-              class="flex items-center text-success-600 hover:text-success-900"
+              class="flex items-center justify-center text-success-600 hover:text-success-900 py-2"
               title="Kirim via WhatsApp"
             >
               <ChatBubbleLeftIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Kirim</span>
             </button>
             <button
+              @click="viewInvoice(payment)"
+              class="flex items-center justify-center text-purple-600 hover:text-purple-900 py-2"
+              title="Lihat Invoice"
+            >
+              <DocumentTextIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Invoice</span>
+            </button>
+            <button
+              v-if="payment.status === 'pending'"
+              @click="markAsPaid(payment)"
+              class="flex items-center justify-center text-green-600 hover:text-green-900 py-2"
+              title="Tandai Lunas"
+            >
+              <CheckCircleIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Lunas</span>
+            </button>
+            <button
               @click="checkPaymentStatus(payment)"
-              class="flex items-center text-warning-600 hover:text-warning-900"
+              class="flex items-center justify-center text-warning-600 hover:text-warning-900 py-2"
               title="Cek Status"
             >
               <ArrowPathIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Cek</span>
             </button>
+          </div>
+          <div class="flex justify-center mt-2">
             <button
               @click="deletePaymentLink(payment)"
-              class="flex items-center text-red-600 hover:text-red-900"
-              title="Hapus"
+              class="flex items-center justify-center text-red-600 hover:text-red-900 py-2 w-full"
             >
               <TrashIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Hapus</span>
@@ -424,28 +450,43 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center space-x-2">
-                  <button 
+                  <button
                     @click="copyPaymentLink(payment)"
                     class="text-primary-600 hover:text-primary-900"
                     title="Copy Link"
                   >
                     <LinkIcon class="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     @click="sendPaymentLink(payment)"
                     class="text-success-600 hover:text-success-900"
                     title="Kirim via WhatsApp"
                   >
                     <ChatBubbleLeftIcon class="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
+                    v-if="payment.status === 'pending'"
+                    @click="markAsPaid(payment)"
+                    class="text-green-600 hover:text-green-900"
+                    title="Tandai Lunas"
+                  >
+                    <CheckCircleIcon class="w-4 h-4" />
+                  </button>
+                  <button
+                    @click="viewInvoice(payment)"
+                    class="text-purple-600 hover:text-purple-900"
+                    title="Lihat Invoice"
+                  >
+                    <DocumentTextIcon class="w-4 h-4" />
+                  </button>
+                  <button
                     @click="checkPaymentStatus(payment)"
                     class="text-warning-600 hover:text-warning-900"
                     title="Cek Status"
                   >
                     <ArrowPathIcon class="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     @click="deletePaymentLink(payment)"
                     class="text-red-600 hover:text-red-900"
                     title="Hapus"
@@ -485,11 +526,10 @@
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
-            <input 
+            <input
               v-model.number="singleLink.amount"
-              type="number" 
-              min="1000"
-              step="1000"
+              type="number"
+              min="1"
               required
               class="input-field"
               placeholder="Masukkan jumlah"
@@ -576,10 +616,11 @@
           >
             Tutup
           </button>
-          <button 
+          <button
             @click="sendWhatsAppMessage(previewPayment)"
             class="btn-success"
           >
+            <ChatBubbleLeftIcon class="w-4 h-4 mr-2" />
             Kirim via WhatsApp
           </button>
         </div>
@@ -672,10 +713,12 @@
 import { ref, reactive, computed } from 'vue'
 import { useAppStore } from '@/stores'
 import { useToast } from 'vue-toastification'
+import { useRouter } from 'vue-router'
 import pakasirService from '@/services/pakasir'
 import MultiMonthPayment from '@/components/MultiMonthPayment.vue'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
+import { getIndonesianTimeGreeting, getIndonesianTime } from '@/utils/timeGreeting'
 import {
   PlusIcon,
   CreditCardIcon,
@@ -687,11 +730,13 @@ import {
   ArrowPathIcon,
   TrashIcon,
   DocumentDuplicateIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  DocumentArrowDownIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
 const toast = useToast()
+const router = useRouter()
 
 const showCreateModal = ref(false)
 const showPreviewModal = ref(false)
@@ -788,32 +833,60 @@ const getStatusClass = (status) => {
 const generateBulkLinks = async () => {
   try {
     generating.value = true
-    
+
     let targetStudents = []
-    
+    const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+
     if (quickGenerate.target === 'all') {
       targetStudents = store.students
     } else if (quickGenerate.target === 'unpaid') {
-      const paidStudentIds = store.transactions
-        .filter(t => t.type === 'income' && t.status === 'completed')
-        .map(t => t.student_id)
-      targetStudents = store.students.filter(s => !paidStudentIds.includes(s.id))
+      // Use the new getter that excludes students who already paid this month
+      targetStudents = store.unpaidStudentsThisMonth
+
+      if (targetStudents.length === 0) {
+        toast.info(`Semua siswa sudah membayar untuk bulan ${currentMonth}! 🎉`)
+        return
+      }
     } else if (quickGenerate.target === 'selected') {
       targetStudents = store.students.filter(s => quickGenerate.selectedStudents.includes(s.id))
     }
-    
-    const promises = targetStudents.map(student => 
-      store.generatePaymentLink(student.id, quickGenerate.amount, quickGenerate.description)
-    )
-    
-    await Promise.all(promises)
-    
-    toast.success(`Berhasil generate ${targetStudents.length} link pembayaran`)
-    
+
+    // Show confirmation for bulk generation
+    if (targetStudents.length > 5) {
+      const confirmed = confirm(`Generate link pembayaran untuk ${targetStudents.length} siswa?\n\nBulan: ${currentMonth}\nJumlah: ${formatCurrency(quickGenerate.amount)}\nKeterangan: ${quickGenerate.description}`)
+      if (!confirmed) return
+    }
+
+    // Use the new bulk generation method
+    try {
+      const results = await store.generateBulkPaymentLinks(
+        quickGenerate.amount,
+        quickGenerate.description,
+        quickGenerate.target === 'unpaid'
+      )
+
+      const successful = results.filter(r => r.success).length
+      const failed = results.filter(r => !r.success).length
+
+      if (successful > 0) {
+        toast.success(`✅ Berhasil generate ${successful} link pembayaran untuk bulan ${currentMonth}`)
+      }
+      if (failed > 0) {
+        toast.warning(`⚠️ ${failed} link gagal dibuat (mungkin siswa sudah bayar)`)
+      }
+
+    } catch (error) {
+      if (error.message.includes('sudah membayar')) {
+        toast.info(error.message)
+      } else {
+        throw error
+      }
+    }
+
     // Reset form
     quickGenerate.selectedStudents = []
   } catch (error) {
-    toast.error('Gagal generate link pembayaran')
+    toast.error('Gagal generate link pembayaran: ' + error.message)
     console.error('Error generating bulk links:', error)
   } finally {
     generating.value = false
@@ -823,22 +896,29 @@ const generateBulkLinks = async () => {
 const createSingleLink = async () => {
   try {
     creating.value = true
-    
+
+    const student = store.students.find(s => s.id === singleLink.studentId)
+    const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+
     await store.generatePaymentLink(
       singleLink.studentId,
       singleLink.amount,
       singleLink.description
     )
-    
-    toast.success('Link pembayaran berhasil dibuat')
+
+    toast.success(`✅ Link pembayaran berhasil dibuat untuk ${student?.name} - ${currentMonth}`)
     showCreateModal.value = false
-    
+
     // Reset form
     singleLink.studentId = ''
     singleLink.amount = 0
     singleLink.description = ''
   } catch (error) {
-    toast.error('Gagal membuat link pembayaran')
+    if (error.message.includes('sudah membayar')) {
+      toast.warning(error.message)
+    } else {
+      toast.error('Gagal membuat link pembayaran: ' + error.message)
+    }
     console.error('Error creating payment link:', error)
   } finally {
     creating.value = false
@@ -847,49 +927,94 @@ const createSingleLink = async () => {
 
 const copyPaymentLink = async (payment) => {
   try {
-    await navigator.clipboard.writeText(payment.payment_url)
-    toast.success('Link berhasil disalin')
+    // Try modern clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(payment.payment_url)
+      toast.success('Link berhasil disalin ke clipboard')
+    } else {
+      // Fallback for older browsers or non-secure contexts
+      const textArea = document.createElement('textarea')
+      textArea.value = payment.payment_url
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+
+      try {
+        document.execCommand('copy')
+        toast.success('Link berhasil disalin')
+      } catch (err) {
+        toast.error('Gagal menyalin link - silakan copy manual')
+        console.error('Copy fallback failed:', err)
+      } finally {
+        document.body.removeChild(textArea)
+      }
+    }
   } catch (error) {
-    toast.error('Gagal menyalin link')
+    console.error('Error copying payment link:', error)
+    toast.error('Gagal menyalin link - silakan copy manual')
   }
 }
 
 const sendPaymentLink = (payment) => {
-  previewPayment.value = payment
-  showPreviewModal.value = true
+  // Send directly to WhatsApp without modal
+  sendWhatsAppMessage(payment)
 }
 
 const sendWhatsAppMessage = async (payment) => {
   try {
-    const paymentData = {
-      studentName: payment.student?.name,
-      amount: payment.amount,
-      description: payment.description,
-      orderId: payment.order_id,
-      paymentUrl: payment.payment_url,
-      dueDate: new Date(payment.expires_at).toLocaleDateString('id-ID')
-    }
+    const student = payment.student
+    const studentName = student?.name || 'Siswa'
+    const studentNickname = student?.nickname || studentName
+    const phone = student?.phone || ''
 
-    const message = // TODO: Implement WhatsApp service - generatePaymentMessage(paymentData)
+    // Create professional message template with dynamic greeting
+    const greeting = getIndonesianTimeGreeting()
+    const message = `Assalamu'alaikum Wr. Wb.
 
-    await // TODO: Implement WhatsApp service - sendMessage(payment.student?.phone, message)
+${greeting} orang tua dari ${studentName}
 
-    toast.success('Pesan berhasil dikirim')
+Dengan hormat, kami ingin mengingatkan mengenai pembayaran uang kas kelas untuk bulan ini sebesar ${formatCurrency(payment.amount)}
+
+Untuk kemudahan pembayaran, Bapak/Ibu dapat menggunakan link pembayaran berikut:
+
+${payment.payment_url}
+
+Pembayaran dapat dilakukan melalui QRIS dengan berbagai metode:
+
+✅ Scan QR Code
+✅ E-Wallet (GoPay, OVO, DANA, ShopeePay)
+
+Terima kasih atas perhatian dan kerjasamanya.
+
+Wassalamu'alaikum Wr. Wb.
+
+---
+*Order ID: ${payment.order_id}*
+*Dikirim: ${greeting} (${getIndonesianTime()})*
+*Sistem Kas Kelas Otomatis*`
+
+    // Clean phone number for WhatsApp (Indonesian format)
+    const cleanPhone = phone.replace(/\D/g, '').replace(/^0/, '62')
+
+    // Create WhatsApp URL
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
+
+    // Open WhatsApp directly
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+
+    toast.success(`📱 WhatsApp terbuka untuk ${studentName}`, {
+      timeout: 3000
+    })
+
+    // Close preview modal if open
     showPreviewModal.value = false
+
   } catch (error) {
-    if (error.message.includes('CORS Error')) {
-      toast.error('CORS Error: Tidak dapat mengirim pesan langsung dari browser. Gunakan backend server untuk production.')
-      // Show alternative action
-      showCorsErrorModal.value = true
-      corsErrorData.value = {
-        phone: payment.student?.phone,
-        message: message,
-        studentName: payment.student?.name
-      }
-    } else {
-      toast.error('Gagal mengirim pesan: ' + error.message)
-    }
-    console.error('Error sending WhatsApp message:', error)
+    console.error('Error opening WhatsApp:', error)
+    toast.error('Gagal membuka WhatsApp')
   }
 }
 
@@ -927,6 +1052,56 @@ const checkPaymentStatus = async (payment) => {
   }
 }
 
+const markAsPaid = async (payment) => {
+  const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+
+  if (!confirm(`Tandai pembayaran ${payment.student?.name} sebagai LUNAS untuk bulan ${currentMonth}?\n\nJumlah: ${formatCurrency(payment.amount)}\nKeterangan: ${payment.description}\n\n⚠️ Ini akan menambah saldo kas kelas dan menandai siswa sebagai sudah bayar bulan ini.`)) {
+    return
+  }
+
+  try {
+    const now = new Date().toISOString()
+    const currentMonthCode = now.slice(0, 7) // YYYY-MM format
+
+    // Update payment status to completed
+    await store.updatePaymentLink(payment.id, {
+      status: 'completed',
+      payment_method: 'manual',
+      completed_at: now,
+      month: currentMonthCode,
+      notes: `Ditandai lunas secara manual oleh admin pada ${new Date().toLocaleString('id-ID')}`
+    })
+
+    // Create transaction record that will automatically update balance
+    await store.addTransaction({
+      type: 'income',
+      amount: payment.amount,
+      description: `${payment.description} - ${currentMonth} (Manual)`,
+      student_id: payment.student_id,
+      payment_method: 'manual',
+      order_id: payment.order_id,
+      status: 'completed',
+      month: currentMonthCode,
+      created_at: now,
+      notes: `Pembayaran manual - ${payment.student?.name} untuk ${currentMonth}`
+    })
+
+    // Refresh data to update UI and balance
+    await store.fetchPaymentLinks()
+    await store.fetchTransactions()
+
+    // Show success with balance update info
+    const newBalance = store.currentBalance
+    toast.success(`✅ ${payment.student?.name} berhasil ditandai LUNAS!\n💰 Saldo kas bertambah: ${formatCurrency(payment.amount)}\n📊 Saldo saat ini: ${formatCurrency(newBalance)}`, {
+      timeout: 6000
+    })
+
+  } catch (error) {
+    console.error('Error marking payment as paid:', error)
+    toast.error('Gagal menandai pembayaran sebagai lunas: ' + error.message)
+  }
+}
+
 const deletePaymentLink = async (payment) => {
   if (confirm('Apakah Anda yakin ingin menghapus link pembayaran ini?')) {
     try {
@@ -939,12 +1114,47 @@ const deletePaymentLink = async (payment) => {
   }
 }
 
+const viewInvoice = (payment) => {
+  // Navigate to invoice page with specific order ID for targeted invoice
+  if (payment.order_id) {
+    router.push({ path: '/invoice', query: { orderId: payment.order_id } })
+  } else if (payment.student_id) {
+    router.push({ path: '/invoice', query: { studentId: payment.student_id } })
+  } else {
+    toast.warning('Data pembayaran tidak lengkap untuk membuat invoice')
+  }
+}
+
 const copyToClipboard = async (text) => {
   try {
-    await navigator.clipboard.writeText(text)
-    toast.success('Berhasil disalin')
+    // Try modern clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+      toast.success('Berhasil disalin ke clipboard')
+    } else {
+      // Fallback for older browsers or non-secure contexts
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+
+      try {
+        document.execCommand('copy')
+        toast.success('Berhasil disalin')
+      } catch (err) {
+        toast.warning('Silakan copy manual dari text yang ditampilkan')
+        console.error('Copy fallback failed:', err)
+      } finally {
+        document.body.removeChild(textArea)
+      }
+    }
   } catch (error) {
-    toast.error('Gagal menyalin')
+    console.error('Error copying to clipboard:', error)
+    toast.error('Gagal menyalin - silakan copy manual')
   }
 }
 
@@ -986,17 +1196,148 @@ const generateMessageTemplate = (payment) => {
       .replace('{link}', payment.payment_url)
   }
 
-  // Default reminder template using StarSender service
-  const paymentData = {
-    studentName: payment.student?.name,
-    amount: payment.amount,
-    description: payment.description,
-    orderId: payment.order_id,
-    paymentUrl: payment.payment_url,
-    dueDate: new Date(payment.expires_at).toLocaleDateString('id-ID')
-  }
+  // Default professional reminder template with dynamic greeting
+  const student = payment.student
+  const studentName = student?.name || 'Siswa'
+  const greeting = getIndonesianTimeGreeting()
 
-  return // TODO: Implement WhatsApp service - generatePaymentMessage(paymentData)
+  return `Assalamu'alaikum Wr. Wb.
+
+${greeting} orang tua dari ${studentName}
+
+Dengan hormat, kami ingin mengingatkan mengenai pembayaran uang kas kelas untuk bulan ini sebesar ${formatCurrency(payment.amount)}
+
+Untuk kemudahan pembayaran, Bapak/Ibu dapat menggunakan link pembayaran berikut:
+
+${payment.payment_url}
+
+Pembayaran dapat dilakukan melalui QRIS dengan berbagai metode:
+
+✅ Scan QR Code
+✅ E-Wallet (GoPay, OVO, DANA, ShopeePay)
+
+Terima kasih atas perhatian dan kerjasamanya.
+
+Wassalamu'alaikum Wr. Wb.
+
+---
+*Order ID: ${payment.order_id}*
+*Dikirim: ${greeting} (${getIndonesianTime()})*
+*Sistem Kas Kelas Otomatis*`
+}
+
+const downloadPaymentsPDF = async () => {
+  try {
+    // Create PDF content
+    const pdfContent = generatePaymentsPDFContent()
+
+    // Create a temporary HTML element for PDF generation
+    const element = document.createElement('div')
+    element.innerHTML = pdfContent
+    element.style.position = 'absolute'
+    element.style.left = '-9999px'
+    element.style.top = '-9999px'
+    document.body.appendChild(element)
+
+    // Simple implementation: Create a new window with the content
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Laporan Pembayaran - ${new Date().toLocaleDateString('id-ID')}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
+            h2 { color: #374151; margin-top: 20px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
+            th { background-color: #f3f4f6; font-weight: bold; }
+            .status-pending { color: #d97706; }
+            .status-completed { color: #059669; }
+            .status-expired { color: #dc2626; }
+            .summary { background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0; }
+            .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          ${pdfContent}
+          <div class="footer">
+            Generated on ${new Date().toLocaleString('id-ID')} | Sistem Kas Kelas
+          </div>
+        </body>
+        </html>
+      `)
+      printWindow.document.close()
+
+      setTimeout(() => {
+        printWindow.print()
+      }, 500)
+    }
+
+    // Clean up
+    document.body.removeChild(element)
+
+    toast.success('PDF Report siap untuk di-print/save')
+
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    toast.error('Gagal membuat PDF report')
+  }
+}
+
+const generatePaymentsPDFContent = () => {
+  const payments = filteredPayments.value
+  const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0)
+  const pendingCount = payments.filter(p => p.status === 'pending').length
+  const completedCount = payments.filter(p => p.status === 'completed').length
+
+  let tableRows = ''
+  payments.forEach(payment => {
+    const statusClass = `status-${payment.status}`
+    tableRows += `
+      <tr>
+        <td>${payment.student?.name || '-'}</td>
+        <td>${payment.student?.nickname || '-'}</td>
+        <td>${formatCurrency(payment.amount)}</td>
+        <td>${payment.description}</td>
+        <td class="${statusClass}">${getStatusLabel(payment.status)}</td>
+        <td>${formatDate(payment.created_at)}</td>
+        <td style="font-family: monospace; font-size: 11px;">${payment.order_id}</td>
+      </tr>
+    `
+  })
+
+  return `
+    <h1>📊 Laporan Pembayaran Kas Kelas</h1>
+
+    <div class="summary">
+      <h2>📈 Ringkasan</h2>
+      <p><strong>Total Link Pembayaran:</strong> ${payments.length}</p>
+      <p><strong>Pending:</strong> ${pendingCount} | <strong>Selesai:</strong> ${completedCount}</p>
+      <p><strong>Total Amount:</strong> ${formatCurrency(totalAmount)}</p>
+      <p><strong>Filter Status:</strong> ${statusFilter.value || 'Semua Status'}</p>
+    </div>
+
+    <h2>📋 Detail Pembayaran</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Siswa</th>
+          <th>Nickname</th>
+          <th>Jumlah</th>
+          <th>Keterangan</th>
+          <th>Status</th>
+          <th>Tanggal Dibuat</th>
+          <th>Order ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows || '<tr><td colspan="7" style="text-align: center; color: #6b7280;">Tidak ada data pembayaran</td></tr>'}
+      </tbody>
+    </table>
+  `
 }
 
 const sendBulkMessages = async () => {
@@ -1010,47 +1351,68 @@ const sendBulkMessages = async () => {
     }
 
     const results = []
-    const delay = bulkMessage.delayMinutes * 60 * 1000 // Convert to milliseconds
+    const delaySeconds = bulkMessage.delayMinutes * 60
 
     for (let i = 0; i < targetPayments.length; i++) {
       const payment = targetPayments[i]
+      const student = payment.student
+      const phone = student?.phone || ''
 
       try {
         if (i > 0) {
           // Add delay between messages
-          await new Promise(resolve => setTimeout(resolve, delay))
+          await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000))
         }
 
         const message = generateMessageTemplate(payment)
-        await // TODO: Implement WhatsApp service - sendMessage(payment.student?.phone, message)
+
+        // Clean phone number for WhatsApp (Indonesian format)
+        const cleanPhone = phone.replace(/\D/g, '').replace(/^0/, '62')
+
+        // Create WhatsApp URL
+        const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
+
+        // Open WhatsApp (only first one opens in new tab, others use link click method)
+        if (i === 0) {
+          window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+        } else {
+          // For subsequent messages, use invisible link method to avoid popup blocks
+          const link = document.createElement('a')
+          link.href = whatsappUrl
+          link.target = '_blank'
+          link.rel = 'noopener noreferrer'
+          link.style.display = 'none'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        }
 
         results.push({
-          recipient: payment.student?.name,
-          phone: payment.student?.phone,
+          recipient: student?.name,
+          phone: phone,
           success: true
         })
 
-        toast.success(`Pesan berhasil dikirim ke ${payment.student?.name}`)
+        toast.success(`📱 ${i + 1}/${targetPayments.length} - WhatsApp dibuka untuk ${student?.name}`, {
+          timeout: 2000
+        })
+
       } catch (error) {
         results.push({
-          recipient: payment.student?.name,
-          phone: payment.student?.phone,
+          recipient: student?.name,
+          phone: phone,
           success: false,
           error: error.message
         })
 
-        if (error.message.includes('CORS Error')) {
-          toast.error(`CORS Error: Tidak dapat mengirim ke ${payment.student?.name}. Gunakan backend server untuk production.`)
-        } else {
-          toast.error(`Gagal mengirim pesan ke ${payment.student?.name}: ${error.message}`)
-        }
+        toast.error(`❌ Gagal membuka WhatsApp untuk ${student?.name}`)
       }
     }
 
     const successCount = results.filter(r => r.success).length
     const failCount = results.filter(r => !r.success).length
 
-    toast.success(`Selesai! ${successCount} pesan berhasil dikirim${failCount > 0 ? `, ${failCount} gagal` : ''}`)
+    toast.success(`🎉 Selesai! ${successCount} WhatsApp terbuka${failCount > 0 ? `, ${failCount} gagal` : ''}`)
 
     // Reset form
     bulkMessage.selectedPayments = []

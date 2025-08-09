@@ -57,6 +57,25 @@
         </div>
       </div>
     </div>
+
+    <!-- Dashboard Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Dashboard Kas Kelas</h1>
+        <p class="mt-1 text-sm text-gray-500">
+          Overview keuangan dan statistik pembayaran
+        </p>
+      </div>
+      <button
+        @click="downloadDashboardPDF"
+        class="btn-primary mt-4 sm:mt-0 flex items-center"
+        title="Download Dashboard Report"
+      >
+        <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+        Download PDF Report
+      </button>
+    </div>
+
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="card p-6">
@@ -264,6 +283,9 @@
       </div>
     </div>
 
+    <!-- Monthly Payment Tracking -->
+    <MonthlyPaymentTracker />
+
     <!-- Quick Actions -->
     <div class="card p-4 sm:p-6">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
@@ -310,6 +332,7 @@ import { useAppStore } from '@/stores'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { runDatabaseDiagnostics, generateSetupRecommendation } from '@/utils/databaseDiagnostics'
+import MonthlyPaymentTracker from '@/components/MonthlyPaymentTracker.vue'
 import {
   BanknotesIcon,
   ReceiptPercentIcon,
@@ -317,7 +340,8 @@ import {
   UsersIcon,
   SpeakerWaveIcon,
   DocumentChartBarIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  DocumentArrowDownIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
@@ -366,5 +390,173 @@ const formatCurrency = (amount) => {
 
 const formatDate = (dateString) => {
   return format(new Date(dateString), 'dd MMM yyyy', { locale: id })
+}
+
+const downloadDashboardPDF = async () => {
+  try {
+    const pdfContent = generateDashboardPDFContent()
+
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Dashboard Report - ${new Date().toLocaleDateString('id-ID')}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
+            h2 { color: #374151; margin-top: 20px; }
+            .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
+            .stat-card { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; }
+            .stat-value { font-size: 24px; font-weight: bold; color: #1f2937; }
+            .stat-label { color: #6b7280; font-size: 14px; margin-bottom: 5px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
+            th { background-color: #f3f4f6; font-weight: bold; }
+            .income { color: #059669; }
+            .expense { color: #dc2626; }
+            .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          ${pdfContent}
+          <div class="footer">
+            Generated on ${new Date().toLocaleString('id-ID')} | Dashboard Kas Kelas
+          </div>
+        </body>
+        </html>
+      `)
+      printWindow.document.close()
+
+      setTimeout(() => {
+        printWindow.print()
+      }, 500)
+    }
+
+    console.log('✅ Dashboard PDF Report generated successfully')
+
+  } catch (error) {
+    console.error('Error generating Dashboard PDF:', error)
+    alert('Gagal membuat PDF report dashboard')
+  }
+}
+
+const generateDashboardPDFContent = () => {
+  // Get ALL transactions, not just 10
+  const allTransactions = store.transactions || []
+
+  // Also get all students with payment status
+  const allStudents = store.students || []
+  const paidStudentIds = allTransactions
+    .filter(t => t.type === 'income' && t.status === 'completed')
+    .map(t => t.student_id)
+
+  const studentsWithStatus = allStudents.map(student => ({
+    ...student,
+    hasPaid: paidStudentIds.includes(student.id),
+    paymentCount: allTransactions.filter(t =>
+      t.student_id === student.id &&
+      t.type === 'income' &&
+      t.status === 'completed'
+    ).length
+  }))
+
+  // Generate recent transactions table (show latest 15)
+  let transactionRows = ''
+  const recentTransactions = allTransactions.slice(0, 15)
+  recentTransactions.forEach(transaction => {
+    const amountClass = transaction.type === 'income' ? 'income' : 'expense'
+    const amountSign = transaction.type === 'income' ? '+' : '-'
+    transactionRows += `
+      <tr>
+        <td>${transaction.student?.name || '-'}</td>
+        <td>${transaction.description}</td>
+        <td class="${amountClass}">${amountSign}${formatCurrency(transaction.amount)}</td>
+        <td>${transaction.status === 'completed' ? 'Selesai' : 'Pending'}</td>
+        <td>${formatDate(transaction.created_at)}</td>
+      </tr>
+    `
+  })
+
+  // Generate ALL students payment status table
+  let studentRows = ''
+  studentsWithStatus.forEach(student => {
+    const statusClass = student.hasPaid ? 'income' : 'expense'
+    const statusText = student.hasPaid ? '✅ Sudah Bayar' : '❌ Belum Bayar'
+    studentRows += `
+      <tr>
+        <td>${student.name}</td>
+        <td>${student.nickname}</td>
+        <td>${student.phone || '-'}</td>
+        <td>${student.paymentCount}</td>
+        <td class="${statusClass}">${statusText}</td>
+      </tr>
+    `
+  })
+
+  return `
+    <h1>📊 Dashboard Report Kas Kelas</h1>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">💰 Total Pemasukan</div>
+        <div class="stat-value income">${formatCurrency(store.totalIncome)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">📄 Total Pengeluaran</div>
+        <div class="stat-value expense">${formatCurrency(store.totalExpenses)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">💳 Saldo Kas</div>
+        <div class="stat-value">${formatCurrency(store.totalIncome - store.totalExpenses)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">👥 Total Siswa</div>
+        <div class="stat-value">${store.students.length}</div>
+      </div>
+    </div>
+
+    <h2>👥 Status Pembayaran Semua Siswa (${allStudents.length} Siswa)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Siswa</th>
+          <th>Nickname</th>
+          <th>No. HP</th>
+          <th>Total Bayar</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${studentRows || '<tr><td colspan="5" style="text-align: center; color: #6b7280;">Tidak ada data siswa</td></tr>'}
+      </tbody>
+    </table>
+
+    <h2>📋 Transaksi Terbaru (15 Terakhir)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Siswa</th>
+          <th>Keterangan</th>
+          <th>Jumlah</th>
+          <th>Status</th>
+          <th>Tanggal</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${transactionRows || '<tr><td colspan="5" style="text-align: center; color: #6b7280;">Tidak ada transaksi</td></tr>'}
+      </tbody>
+    </table>
+
+    <h2>📈 Ringkasan Lengkap</h2>
+    <p><strong>Total Siswa:</strong> ${allStudents.length}</p>
+    <p><strong>Siswa Sudah Bayar:</strong> ${studentsWithStatus.filter(s => s.hasPaid).length}</p>
+    <p><strong>Siswa Belum Bayar:</strong> ${studentsWithStatus.filter(s => !s.hasPaid).length}</p>
+    <p><strong>Total Pemasukan:</strong> ${formatCurrency(store.totalIncome)}</p>
+    <p><strong>Total Pengeluaran:</strong> ${formatCurrency(store.totalExpenses)}</p>
+    <p><strong>Saldo Kas:</strong> ${formatCurrency(store.totalIncome - store.totalExpenses)}</p>
+    <p><strong>Total Transaksi:</strong> ${allTransactions.length}</p>
+  `
 }
 </script>

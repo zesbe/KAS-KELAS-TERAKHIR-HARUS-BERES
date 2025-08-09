@@ -92,6 +92,9 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">{{ payment.period_label }}</div>
                 <div class="text-sm text-gray-500">{{ payment.months }} bulan</div>
+                <div v-if="payment.payment_links" class="text-xs text-blue-600 mt-1">
+                  {{ payment.payment_links.length }} link tersedia
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-gray-900">{{ formatCurrency(payment.total_amount) }}</div>

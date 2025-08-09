@@ -293,6 +293,53 @@ class WhatsAppSender {
     this.isActive = false
     console.log('🛑 WhatsApp sender stopped')
   }
+
+  // Test WhatsApp connection
+  async testConnection(testPhone = '6281234567890') {
+    const testMessage = `🧪 Test message from StarSender - ${new Date().toLocaleTimeString()}`
+
+    try {
+      const result = await this.sendMessage(testPhone, testMessage, { openInNewTab: true })
+
+      if (result.success) {
+        console.log('✅ WhatsApp test connection successful')
+        return {
+          success: true,
+          message: 'WhatsApp connection test successful',
+          method: result.method,
+          timestamp: result.timestamp
+        }
+      } else {
+        console.error('❌ WhatsApp test connection failed:', result.error)
+        return {
+          success: false,
+          message: 'WhatsApp connection test failed',
+          error: result.error,
+          timestamp: result.timestamp
+        }
+      }
+    } catch (error) {
+      console.error('❌ WhatsApp test connection error:', error)
+      return {
+        success: false,
+        message: 'WhatsApp connection test error',
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }
+    }
+  }
+
+  // Get system info
+  getSystemInfo() {
+    return {
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      language: navigator.language,
+      cookieEnabled: navigator.cookieEnabled,
+      onLine: navigator.onLine,
+      timestamp: new Date().toISOString()
+    }
+  }
 }
 
 // Create global instance

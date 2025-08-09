@@ -17,21 +17,66 @@
 
     <!-- Quick Multi-Month Templates -->
     <div class="card p-6">
-      <h4 class="text-lg font-medium text-gray-900 mb-4">Template Cepat</h4>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <h4 class="text-lg font-medium text-gray-900 mb-4">🎯 Template Pembayaran Populer</h4>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <button 
           v-for="template in quickTemplates" 
           :key="template.months"
           @click="useTemplate(template)"
-          class="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors"
+          class="relative p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all duration-300 hover:shadow-lg group"
         >
           <div class="text-center">
-            <div class="text-2xl font-bold text-primary-600">{{ template.months }}</div>
-            <div class="text-sm font-medium text-gray-900 mt-1">{{ template.label }}</div>
-            <div class="text-xs text-gray-500 mt-1">{{ formatCurrency(template.amount) }}</div>
-            <div class="text-xs text-gray-600 mt-1">{{ template.months }} × Rp 50.000</div>
+            <!-- Badge for popular -->
+            <div v-if="template.popular" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+              POPULER
+            </div>
+            
+            <!-- Icon -->
+            <div class="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center" 
+                 :class="template.bgColor">
+              <span class="text-2xl">{{ template.icon }}</span>
+            </div>
+            
+            <!-- Title -->
+            <div class="text-xl font-bold text-gray-900 mb-2">{{ template.label }}</div>
+            
+            <!-- Duration -->
+            <div class="text-sm text-gray-600 mb-3">{{ template.months }} Bulan Berturut-turut</div>
+            
+            <!-- Price -->
+            <div class="text-lg font-bold text-primary-600 mb-2">{{ formatCurrency(template.amount) }}</div>
+            <div class="text-xs text-gray-500 mb-3">{{ template.months }} × {{ formatCurrency(50000) }}</div>
+            
+            <!-- Benefits -->
+            <div class="text-xs text-gray-600 space-y-1">
+              <div v-for="benefit in template.benefits" :key="benefit" class="flex items-center justify-center">
+                <span class="text-green-500 mr-1">✓</span>
+                {{ benefit }}
+              </div>
+            </div>
+            
+            <!-- Discount badge if any -->
+            <div v-if="template.discount" class="mt-3">
+              <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                {{ template.discount }}
+              </span>
+            </div>
           </div>
         </button>
+      </div>
+      
+      <!-- Custom Template -->
+      <div class="mt-6 pt-6 border-t border-gray-200">
+        <div class="text-center">
+          <button
+            @click="showCreateModal = true"
+            class="inline-flex items-center px-6 py-3 border border-primary-300 rounded-lg text-primary-700 bg-primary-50 hover:bg-primary-100 transition-colors"
+          >
+            <PlusIcon class="w-5 h-5 mr-2" />
+            Buat Template Kustom
+          </button>
+          <p class="text-sm text-gray-500 mt-2">Atau buat pembayaran dengan periode dan jumlah sesuai kebutuhan</p>
+        </div>
       </div>
     </div>
 
@@ -715,9 +760,36 @@ const months = [
 const years = [2024, 2025, 2026]
 
 const quickTemplates = [
-  { months: 3, label: '3 Bulan', amount: 150000 },
-  { months: 6, label: '6 Bulan', amount: 300000 },
-  { months: 12, label: '1 Tahun', amount: 600000 }
+  { 
+    months: 3, 
+    label: 'Paket Triwulan', 
+    amount: 150000,
+    icon: '📅',
+    bgColor: 'bg-blue-100',
+    popular: false,
+    benefits: ['Bayar 3 bulan', 'Lebih terjangkau', 'Fleksibel'],
+    discount: null
+  },
+  { 
+    months: 6, 
+    label: 'Paket Semester', 
+    amount: 300000,
+    icon: '🎯',
+    bgColor: 'bg-green-100',
+    popular: true,
+    benefits: ['Bayar 6 bulan', 'Paling populer', 'Hemat waktu'],
+    discount: 'REKOMENDASI'
+  },
+  { 
+    months: 9, 
+    label: 'Paket 3 Cawu', 
+    amount: 450000,
+    icon: '⭐',
+    bgColor: 'bg-purple-100',
+    popular: false,
+    benefits: ['Bayar 9 bulan', 'Hampir setahun', 'Praktis'],
+    discount: null
+  }
 ]
 
 const filteredPayments = computed(() => {
@@ -900,53 +972,89 @@ const viewDetails = (payment) => {
 
 const sendReminder = async (payment) => {
   try {
-    // Create comprehensive reminder message with dynamic greeting
+    // Create beautiful comprehensive reminder message with dynamic greeting
     const student = payment.student
     const remainingAmount = payment.total_amount - payment.paid_amount
     const progressPercent = payment.progress_percentage
     const greeting = getIndonesianTimeGreeting()
 
-    let message = `🔔 *REMINDER PEMBAYARAN KAS KELAS* 🔔
+    let message = `🔔 *REMINDER PEMBAYARAN MULTI-BULAN* 🔔
 
 Assalamu'alaikum Wr. Wb.
 
-${greeting} orang tua dari ${student.name} (${student.nickname})! 👋
+${greeting} Bapak/Ibu orang tua dari *${student.name}* (${student.nickname}) 👋
 
-📋 *Detail Pembayaran Multi-Bulan:*
-• Periode: ${payment.period_label}
-• Total Pembayaran: ${formatCurrency(payment.total_amount)}
-• Sudah Dibayar: ${formatCurrency(payment.paid_amount)}
-• Sisa Pembayaran: ${formatCurrency(remainingAmount)}
-• Progress: ${progressPercent}%
+Kami ingin mengingatkan mengenai status pembayaran kas kelas multi-bulan:
+
+📊 *STATUS PEMBAYARAN SAAT INI:*
+🏷️ Periode: *${payment.period_label}*
+💰 Total Pembayaran: *${formatCurrency(payment.total_amount)}*
+✅ Sudah Dibayar: *${formatCurrency(payment.paid_amount)}*
+⏳ Sisa Pembayaran: *${formatCurrency(remainingAmount)}*
+📈 Progress: *${progressPercent}%*
 
 `
 
     if (payment.status === 'pending') {
-      message += `⚠️ *Status: Belum Ada Pembayaran*
-Mohon segera lakukan pembayaran untuk periode ${payment.period_label}.
+      message += `⚠️ *STATUS: BELUM ADA PEMBAYARAN*
+
+Mohon segera lakukan pembayaran untuk periode *${payment.period_label}*.
+
+🎯 *PILIHAN PEMBAYARAN:*
+${payment.payment_links && payment.payment_links.length > 1 ? 
+'✅ Bayar Sekaligus (lebih praktis)\n✅ Bayar Bertahap (lebih fleksibel)' : 
+'✅ Gunakan link pembayaran di bawah'}
 
 `
     } else if (payment.status === 'partial') {
-      message += `⏳ *Status: Pembayaran Sebagian*
-Terima kasih sudah melakukan pembayaran sebagian. Mohon lanjutkan pembayaran untuk bulan-bulan berikutnya.
+      message += `⏳ *STATUS: PEMBAYARAN SEBAGIAN*
+
+Terima kasih sudah melakukan pembayaran sebagian! 🙏
+Mohon lanjutkan pembayaran untuk bulan-bulan berikutnya.
+
+💡 *SISA PEMBAYARAN:*
+Tinggal *${formatCurrency(remainingAmount)}* lagi untuk melengkapi pembayaran periode ini.
 
 `
     }
 
-    message += `💳 *Link Pembayaran:*
+    // Add payment links if available
+    if (payment.payment_links && payment.payment_links.length > 0) {
+      message += `🔗 *LINK PEMBAYARAN TERSEDIA:*
+
+`
+      payment.payment_links.forEach((link, index) => {
+        const icon = link.type === 'total' ? '💰' : '📅'
+        message += `${icon} *${link.description}*
+💵 ${formatCurrency(link.amount)}
+🔗 ${link.url}
+
+`
+      })
+    } else {
+      message += `🔗 *LINK PEMBAYARAN:*
 ${payment.payment_url}
 
-📞 *Bantuan:*
-Jika ada pertanyaan atau kesulitan, silakan hubungi bendahara kelas.
+`
+    }
 
-Terima kasih atas kerjasamanya! 🙏
+    message += `💳 *METODE PEMBAYARAN:*
+✅ Scan QR Code QRIS
+✅ GoPay, OVO, DANA, ShopeePay
+✅ Transfer Bank (via QRIS)
+✅ Kartu Kredit/Debit
+
+📞 *BANTUAN & SUPPORT:*
+Jika ada pertanyaan atau kesulitan dalam pembayaran, silakan hubungi bendahara kelas.
+
+Terima kasih atas perhatian dan kerjasamanya! 🙏
 
 Wassalamu'alaikum Wr. Wb.
 
 ---
-*Dikirim: ${greeting} (${getIndonesianTime()})*
-*Sistem Kas Kelas Otomatis*
-_Pesan ini dikirim secara otomatis_`
+*📱 Dikirim: ${greeting} (${getIndonesianTime()})*
+*🤖 Sistem Kas Kelas Otomatis*
+*🔔 Pesan Reminder Otomatis*`
 
     // Simulate sending WhatsApp message
     const whatsappUrl = `https://wa.me/${student.phone?.replace(/\D/g, '').replace(/^0/, '62')}?text=${encodeURIComponent(message)}`
@@ -954,8 +1062,8 @@ _Pesan ini dikirim secara otomatis_`
     // Open WhatsApp in new tab
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
 
-    toast.success(`📤 Reminder lengkap dikirim ke ${student.name}`, {
-      timeout: 4000
+    toast.success(`📤 Reminder Premium dikirim ke ${student.name}!\n📊 Progress: ${progressPercent}%`, {
+      timeout: 5000
     })
 
   } catch (error) {
@@ -993,47 +1101,68 @@ const sendPaymentLinkWhatsApp = async (link, student) => {
     const studentName = student?.name || 'Siswa'
     const phone = student?.phone || ''
 
-    // Create message based on link type with dynamic greeting
+    // Create beautiful message based on link type with dynamic greeting
     const greeting = getIndonesianTimeGreeting()
-    let message = `Assalamu'alaikum Wr. Wb.
+    let message = `🎯 *LINK PEMBAYARAN KAS KELAS* 🎯
 
-${greeting} orang tua dari ${studentName}
+Assalamu'alaikum Wr. Wb.
 
-Dengan hormat, kami ingin mengingatkan mengenai pembayaran uang kas kelas.
+${greeting} Bapak/Ibu orang tua dari *${studentName}* 👋
+
+Dengan hormat, kami mengirimkan link pembayaran kas kelas untuk kemudahan Bapak/Ibu.
 
 `
 
     if (link.type === 'total') {
-      message += `💰 **Pembayaran ${link.description}**
-Jumlah: ${formatCurrency(link.amount)}
+      message += `💰 *PEMBAYARAN SEKALIGUS*
+🏷️ ${link.description.toUpperCase()}
+💵 Jumlah: *${formatCurrency(link.amount)}*
 
-Pembayaran ini untuk beberapa bulan sekaligus, lebih praktis dan efisien.`
+✨ *KEUNTUNGAN BAYAR SEKALIGUS:*
+✅ Lebih praktis dan efisien
+✅ Tidak perlu ingat jadwal bulanan
+✅ Sekali bayar, langsung lunas untuk beberapa bulan
+✅ Hemat waktu dan tenaga`
     } else {
-      message += `📅 **${link.description}**
-Jumlah: ${formatCurrency(link.amount)}
+      message += `📅 *PEMBAYARAN BERTAHAP*
+🏷️ ${link.description.toUpperCase()}
+💵 Jumlah: *${formatCurrency(link.amount)}*
 
-Pembayaran untuk bulan ini, bisa dibayar bertahap setiap bulan.`
+✨ *KEUNTUNGAN BAYAR BERTAHAP:*
+✅ Lebih fleksibel sesuai budget
+✅ Bayar per bulan sesuai kemampuan
+✅ Bisa mulai kapan saja
+✅ Tidak memberatkan keuangan`
     }
 
     message += `
 
-Untuk kemudahan pembayaran, Bapak/Ibu dapat menggunakan link pembayaran berikut:
-
+🔗 *LINK PEMBAYARAN:*
 ${link.url}
 
-Pembayaran dapat dilakukan melalui QRIS dengan berbagai metode:
+💳 *METODE PEMBAYARAN TERSEDIA:*
+✅ Scan QR Code QRIS
+✅ GoPay, OVO, DANA, ShopeePay
+✅ Transfer Bank (via QRIS)
+✅ Kartu Kredit/Debit
 
-✅ Scan QR Code
-✅ E-Wallet (GoPay, OVO, DANA, ShopeePay)
+📱 *CARA PEMBAYARAN:*
+1. Klik link di atas
+2. Pilih metode pembayaran
+3. Scan QR Code atau ikuti instruksi
+4. Selesai! Pembayaran otomatis tercatat
 
-Terima kasih atas perhatian dan kerjasamanya.
+📞 *BANTUAN:*
+Jika ada kesulitan, silakan hubungi bendahara kelas.
+
+Terima kasih atas kepercayaan dan kerjasamanya! 🙏
 
 Wassalamu'alaikum Wr. Wb.
 
 ---
-*Order ID: ${link.order_id}*
-*Dikirim: ${greeting} (${getIndonesianTime()})*
-*Sistem Kas Kelas Otomatis*`
+*📝 Order ID: \`${link.order_id}\`*
+*📱 Dikirim: ${greeting} (${getIndonesianTime()})*
+*🤖 Sistem Kas Kelas Otomatis*`
 
     // Clean phone number for WhatsApp (Indonesian format)
     const cleanPhone = phone.replace(/\D/g, '').replace(/^0/, '62')
@@ -1044,8 +1173,8 @@ Wassalamu'alaikum Wr. Wb.
     // Open WhatsApp directly
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
 
-    toast.success(`📱 WhatsApp terbuka untuk ${studentName}\n${link.description}`, {
-      timeout: 3000
+    toast.success(`📱 Template Premium dikirim ke ${studentName}!\n🎯 ${link.description}`, {
+      timeout: 4000
     })
 
   } catch (error) {
@@ -1263,43 +1392,54 @@ const sendAllPaymentLinks = async (payment) => {
     const studentName = student?.name || 'Siswa'
     const phone = student?.phone || ''
 
-    // Create comprehensive message with all payment options
+    // Create beautiful comprehensive message with all payment options
     const greeting = getIndonesianTimeGreeting()
-    let message = `Assalamu'alaikum Wr. Wb.
+    let message = `🌟 *PEMBAYARAN KAS KELAS MULTI-BULAN* 🌟
 
-${greeting} orang tua dari ${studentName}
+Assalamu'alaikum Wr. Wb.
 
-Dengan hormat, kami menyediakan beberapa opsi pembayaran kas kelas untuk kemudahan Bapak/Ibu:
+${greeting} Bapak/Ibu orang tua dari *${studentName}* 👋
 
-📋 **OPSI PEMBAYARAN TERSEDIA**
+Kami menyediakan *BEBERAPA OPSI PEMBAYARAN* yang dapat dipilih sesuai kemudahan Bapak/Ibu:
+
+📋 *PILIHAN PEMBAYARAN TERSEDIA:*
 
 `
 
-    // Add each payment link option
+    // Add each payment link option with better formatting
     payment.payment_links.forEach((link, index) => {
-      message += `${index + 1}. ${link.type === 'total' ? '💰' : '📅'} **${link.description}**
-   Jumlah: ${formatCurrency(link.amount)}
-   Link: ${link.url}
-   Order ID: ${link.order_id}
+      const icon = link.type === 'total' ? '💰' : '📅'
+      const typeLabel = link.type === 'total' ? 'SEKALIGUS' : 'BERTAHAP'
+      
+      message += `${index + 1}. ${icon} *${link.description.toUpperCase()}*
+   💵 Jumlah: *${formatCurrency(link.amount)}*
+   🏷️ Tipe: ${typeLabel}
+   🔗 Link: ${link.url}
+   📝 Order ID: \`${link.order_id}\`
 
 `
     })
 
-    message += `Bapak/Ibu dapat memilih opsi yang paling sesuai:
+    message += `🎯 *KEUNTUNGAN SETIAP OPSI:*
 
-${payment.payment_links.find(l => l.type === 'total') ? '✅ Bayar sekaligus (lebih praktis)\n' : ''}${payment.payment_links.find(l => l.type === 'individual') ? '✅ Bayar bertahap per bulan (lebih fleksibel)\n' : ''}
-Pembayaran dapat dilakukan melalui QRIS dengan berbagai metode:
+${payment.payment_links.find(l => l.type === 'total') ? '💰 *Bayar Sekaligus:*\n   ✅ Lebih praktis dan cepat\n   ✅ Tidak perlu ingat jadwal bulanan\n   ✅ Sekali bayar, langsung lunas\n\n' : ''}${payment.payment_links.find(l => l.type === 'individual') ? '📅 *Bayar Bertahap:*\n   ✅ Lebih fleksibel sesuai budget\n   ✅ Bayar per bulan sesuai kebutuhan\n   ✅ Bisa mulai kapan saja\n\n' : ''}💳 *METODE PEMBAYARAN TERSEDIA:*
 
-✅ Scan QR Code
-✅ E-Wallet (GoPay, OVO, DANA, ShopeePay)
+✅ Scan QR Code QRIS
+✅ GoPay, OVO, DANA, ShopeePay
+✅ Transfer Bank (via QRIS)
+✅ Kartu Kredit/Debit
 
-Terima kasih atas perhatian dan kerjasamanya.
+📞 *BANTUAN & SUPPORT:*
+Jika ada pertanyaan atau kesulitan dalam pembayaran, silakan hubungi bendahara kelas.
+
+Terima kasih atas kepercayaan dan kerjasamanya! 🙏
 
 Wassalamu'alaikum Wr. Wb.
 
 ---
-*Dikirim: ${greeting} (${getIndonesianTime()})*
-*Sistem Kas Kelas Otomatis*`
+*📱 Dikirim: ${greeting} (${getIndonesianTime()})*
+*🤖 Sistem Kas Kelas Otomatis*
+*⚡ Powered by Multi-Month Payment*`
 
     // Clean phone number for WhatsApp (Indonesian format)
     const cleanPhone = phone.replace(/\D/g, '').replace(/^0/, '62')
@@ -1310,8 +1450,8 @@ Wassalamu'alaikum Wr. Wb.
     // Open WhatsApp directly
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
 
-    toast.success(`📱 WhatsApp terbuka untuk ${studentName}\n${payment.payment_links.length} opsi pembayaran dikirim`, {
-      timeout: 4000
+    toast.success(`📱 Template Premium dikirim ke ${studentName}!\n🎯 ${payment.payment_links.length} opsi pembayaran tersedia`, {
+      timeout: 5000
     })
 
   } catch (error) {

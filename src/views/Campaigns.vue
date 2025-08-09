@@ -81,6 +81,8 @@
             <select v-model="quickBroadcast.template" @change="applyQuickTemplate" class="input-field">
               <option value="">-- Pilih Template --</option>
               <option value="reminder">💰 Reminder Pembayaran</option>
+              <option value="multi_month_offer">🎯 Penawaran Multi-Bulan (3,6,9)</option>
+              <option value="payment_options">💳 Opsi Pembayaran Fleksibel</option>
               <option value="urgent">🚨 Urgent - Pembayaran Segera</option>
               <option value="announcement">📢 Pengumuman Penting</option>
               <option value="custom">✏️ Custom Message</option>
@@ -568,6 +570,81 @@ Ini adalah pengingat pembayaran kas kelas untuk bulan ini.
 Silakan segera lakukan pembayaran agar administrasi kelas tetap lancar.
 
 Terima kasih! 🙏`,
+
+  multi_month_offer: `🎯 *PENAWARAN SPESIAL PEMBAYARAN MULTI-BULAN* 🎯
+
+Assalamu'alaikum Wr. Wb.
+
+Halo Bapak/Ibu orang tua dari *[[NAME]]* 👋
+
+Kami menawarkan kemudahan pembayaran kas kelas dengan sistem *MULTI-BULAN* yang lebih praktis!
+
+📦 *PAKET PEMBAYARAN TERSEDIA:*
+
+1. 📅 *PAKET TRIWULAN (3 Bulan)*
+   💰 Rp 150.000 (3 × Rp 50.000)
+   ✅ Lebih terjangkau
+   ✅ Fleksibel
+
+2. 🎯 *PAKET SEMESTER (6 Bulan)* - POPULER!
+   💰 Rp 300.000 (6 × Rp 50.000)
+   ✅ Paling praktis
+   ✅ Hemat waktu
+
+3. ⭐ *PAKET 3 CAWU (9 Bulan)*
+   💰 Rp 450.000 (9 × Rp 50.000)
+   ✅ Hampir setahun
+   ✅ Sangat praktis
+
+💡 *KEUNTUNGAN MULTI-BULAN:*
+✅ Tidak perlu ingat bayar setiap bulan
+✅ Bisa pilih bayar sekaligus atau bertahap
+✅ Link pembayaran otomatis tersedia
+✅ Tracking progress yang jelas
+
+🔗 Untuk membuat link pembayaran, silakan hubungi bendahara kelas atau akses sistem kas kelas.
+
+Terima kasih! 🙏
+
+Wassalamu'alaikum Wr. Wb.`,
+
+  payment_options: `💳 *OPSI PEMBAYARAN FLEKSIBEL* 💳
+
+Assalamu'alaikum Wr. Wb.
+
+Halo *[[NAME]]* 👋
+
+Untuk kemudahan pembayaran kas kelas, kami menyediakan berbagai opsi:
+
+🎯 *PILIHAN PEMBAYARAN:*
+
+1. 📅 *BULANAN REGULER*
+   💰 Rp 50.000/bulan
+   ✅ Bayar setiap bulan
+   ✅ Paling fleksibel
+
+2. 💰 *MULTI-BULAN SEKALIGUS*
+   💰 Pilih: 3, 6, atau 9 bulan
+   ✅ Lebih praktis
+   ✅ Tidak perlu repot setiap bulan
+
+3. 🔄 *KOMBINASI*
+   ✅ Bayar bertahap per bulan
+   ✅ Atau sekaligus (terserah pilihan)
+
+💳 *METODE PEMBAYARAN:*
+✅ QRIS (Scan QR Code)
+✅ GoPay, OVO, DANA, ShopeePay
+✅ Transfer Bank
+✅ Kartu Kredit/Debit
+
+🔗 Link pembayaran akan dikirimkan sesuai pilihan Bapak/Ibu.
+
+Silakan hubungi bendahara untuk memilih opsi yang paling sesuai!
+
+Terima kasih! 🙏
+
+Wassalamu'alaikum Wr. Wb.`,
 
   urgent: `🚨 **URGENT** - [[NAME]]
 

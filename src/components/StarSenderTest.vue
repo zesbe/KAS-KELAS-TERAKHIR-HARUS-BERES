@@ -324,11 +324,13 @@ const formatTime = (timestamp) => {
   return timestamp.toLocaleTimeString('id-ID')
 }
 
-// Demo setup methods
-const setupDemo = () => {
+// Demo setup methods with lazy loading
+const setupDemo = async () => {
   addLog('🌟 Setting up StarSender demo environment...', 'info')
 
   try {
+    // Lazy load demo data
+    const { setupDemoEnvironment, demoMessageTemplates } = await import('@/services/demoData')
     const demoData = setupDemoEnvironment()
 
     addLog(`✅ Demo setup complete!`, 'success')

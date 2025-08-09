@@ -713,7 +713,8 @@ import {
   ArrowPathIcon,
   TrashIcon,
   DocumentDuplicateIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  DocumentArrowDownIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
@@ -930,7 +931,7 @@ ${payment.payment_url}
 Pembayaran dapat dilakukan melalui QRIS dengan berbagai metode:
 
 ✅ Scan QR Code
-��� E-Wallet (GoPay, OVO, DANA, ShopeePay)
+✅ E-Wallet (GoPay, OVO, DANA, ShopeePay)
 
 Terima kasih atas perhatian dan kerjasamanya.
 

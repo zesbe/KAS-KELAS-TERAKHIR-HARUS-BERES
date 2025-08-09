@@ -472,91 +472,9 @@ const formatDate = (dateString) => {
   return format(new Date(dateString), 'dd MMM yyyy', { locale: id })
 }
 
-const downloadDashboardPDF = async () => {
-  try {
-    const pdfContent = generateDashboardPDFContent()
-    const timestamp = new Date().toLocaleDateString('id-ID').replace(/\//g, '_')
-    const fileName = `Dashboard_Kas_Kelas_${timestamp}.html`
-
-    // Create complete HTML content
-    const htmlContent = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Report - ${new Date().toLocaleDateString('id-ID')}</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.5; }
-    h1 { color: #1f2937; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; }
-    h2 { color: #374151; margin-top: 30px; border-left: 4px solid #3b82f6; padding-left: 10px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0; }
-    .stat-card { border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; background-color: #f9fafb; }
-    .stat-value { font-size: 24px; font-weight: bold; color: #1f2937; }
-    .stat-label { color: #6b7280; font-size: 14px; margin-bottom: 5px; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    th, td { border: 1px solid #d1d5db; padding: 10px; text-align: left; font-size: 12px; }
-    th { background-color: #f3f4f6; font-weight: bold; }
-    .income { color: #059669; font-weight: bold; }
-    .expense { color: #dc2626; font-weight: bold; }
-    .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 12px; border-top: 1px solid #d1d5db; padding-top: 15px; }
-    tr:nth-child(even) { background-color: #f9fafb; }
-    .mobile-info { background-color: #ecfdf5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
-    @media print { .mobile-info { display: none; } }
-    @media (max-width: 768px) {
-      .stats-grid { grid-template-columns: 1fr; }
-      table { font-size: 10px; }
-      th, td { padding: 6px; }
-    }
-  </style>
-</head>
-<body>
-  <div class="mobile-info">
-    <h3 style="color: #065f46; margin: 0 0 10px 0;">📱 Panduan Download:</h3>
-    <ul style="margin: 0; color: #047857; font-size: 14px;">
-      <li><strong>Mobile:</strong> Menu browser (⋮) → "Simpan halaman" atau "Unduh"</li>
-      <li><strong>Share:</strong> Gunakan tombol share browser untuk kirim via WhatsApp</li>
-      <li><strong>Print:</strong> Menu browser → "Cetak" → "Simpan sebagai PDF"</li>
-    </ul>
-  </div>
-  ${pdfContent}
-  <div class="footer">Generated on ${new Date().toLocaleString('id-ID')} | Dashboard Kas Kelas</div>
-</body>
-</html>`
-
-    // Detect mobile device
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-
-    if (isMobile) {
-      // Mobile: Open in new tab with instructions
-      const newWindow = window.open('', '_blank')
-      if (newWindow) {
-        newWindow.document.write(htmlContent)
-        newWindow.document.close()
-        toast.success('📱 Laporan terbuka di tab baru. Gunakan menu browser (⋮) untuk download!', { timeout: 6000 })
-      } else {
-        // Fallback: Create blob and download link
-        createDownloadLink(htmlContent, fileName)
-      }
-    } else {
-      // Desktop: Create download link AND open preview
-      createDownloadLink(htmlContent, fileName)
-
-      // Open preview in new tab
-      setTimeout(() => {
-        const previewWindow = window.open('', '_blank')
-        if (previewWindow) {
-          previewWindow.document.write(htmlContent)
-          previewWindow.document.close()
-        }
-      }, 300)
-    }
-
-    console.log('✅ Dashboard PDF Report generated successfully')
-
-  } catch (error) {
-    console.error('Error generating Dashboard PDF:', error)
-    toast.error('Gagal membuat PDF report dashboard')
-  }
+// Legacy function - now just calls download
+const downloadDashboardPDF = () => {
+  handleDashboardDownload()
 }
 
 // Helper function to create downloadable file

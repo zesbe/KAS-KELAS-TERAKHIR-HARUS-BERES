@@ -462,21 +462,78 @@
             </div>
           </div>
 
-          <!-- Payment Link -->
+          <!-- Generated Payment Links -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Link Pembayaran</label>
-            <div class="flex items-center space-x-2">
-              <input 
-                :value="selectedPayment.payment_url"
-                readonly
-                class="input-field text-xs"
-              />
-              <button 
-                @click="copyToClipboard(selectedPayment.payment_url)"
-                class="btn-secondary p-2"
+            <label class="block text-sm font-medium text-gray-700 mb-3">🔗 Link Pembayaran yang Dibuat</label>
+
+            <div v-if="selectedPayment.payment_links && selectedPayment.payment_links.length > 0" class="space-y-3">
+              <div
+                v-for="link in selectedPayment.payment_links"
+                :key="link.id"
+                class="border rounded-lg p-3"
+                :class="link.type === 'total' ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'"
               >
-                <DocumentDuplicateIcon class="w-4 h-4" />
-              </button>
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center space-x-2">
+                    <span
+                      :class="link.type === 'total' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'"
+                      class="px-2 py-1 rounded-full text-xs font-medium"
+                    >
+                      {{ link.type === 'total' ? '💰 Total Sekaligus' : `📅 Bulan ${link.month}` }}
+                    </span>
+                    <span class="font-medium text-sm">{{ formatCurrency(link.amount) }}</span>
+                  </div>
+                  <div class="flex space-x-1">
+                    <button
+                      @click="copyToClipboard(link.url)"
+                      class="p-1 text-gray-500 hover:text-gray-700"
+                      title="Copy Link"
+                    >
+                      <DocumentDuplicateIcon class="w-4 h-4" />
+                    </button>
+                    <button
+                      @click="sendPaymentLinkWhatsApp(link, selectedPayment.student)"
+                      class="p-1 text-green-500 hover:text-green-700"
+                      title="Kirim via WhatsApp"
+                    >
+                      <ChatBubbleLeftIcon class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div class="text-xs text-gray-600 mb-2">
+                  {{ link.description }}
+                </div>
+
+                <div class="text-xs font-mono text-gray-500 bg-white px-2 py-1 rounded border">
+                  Order ID: {{ link.order_id }}
+                </div>
+
+                <div class="mt-2 flex items-center space-x-2">
+                  <input
+                    :value="link.url"
+                    readonly
+                    class="input-field text-xs flex-1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Legacy single link fallback -->
+            <div v-else class="border rounded-lg p-3 bg-gray-50">
+              <div class="flex items-center space-x-2">
+                <input
+                  :value="selectedPayment.payment_url"
+                  readonly
+                  class="input-field text-xs flex-1"
+                />
+                <button
+                  @click="copyToClipboard(selectedPayment.payment_url)"
+                  class="btn-secondary p-2"
+                >
+                  <DocumentDuplicateIcon class="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -1104,6 +1104,41 @@ const markMonthAsPaid = async (payment, month) => {
   }
 }
 
+const markAllMonthsAsPaid = async (payment) => {
+  const unpaidMonths = payment.month_details.filter(m => !m.paid)
+  const totalUnpaidAmount = unpaidMonths.length * payment.monthly_amount
+
+  if (!confirm(`Tandai SEMUA bulan yang belum lunas untuk ${payment.student?.name}?\n\n${unpaidMonths.length} bulan × ${formatCurrency(payment.monthly_amount)} = ${formatCurrency(totalUnpaidAmount)}`)) {
+    return
+  }
+
+  try {
+    const currentTime = new Date().toISOString()
+
+    // Mark all unpaid months as paid
+    unpaidMonths.forEach(month => {
+      month.paid = true
+      month.paid_at = currentTime
+    })
+
+    // Update payment progress to 100%
+    payment.paid_amount = payment.total_amount
+    payment.progress_percentage = 100
+    payment.status = 'completed'
+
+    // Save to localStorage (in a real app, this would be API call)
+    localStorage.setItem('multiMonthPayments', JSON.stringify(multiMonthPayments.value))
+
+    toast.success(`🎉 SEMUA bulan berhasil ditandai LUNAS!\n${payment.student?.name} - ${formatCurrency(totalUnpaidAmount)}`, {
+      timeout: 5000
+    })
+
+  } catch (error) {
+    console.error('Error marking all months as paid:', error)
+    toast.error('Gagal menandai semua bulan sebagai lunas')
+  }
+}
+
 const sendAllPaymentLinks = async (payment) => {
   if (!payment.payment_links || payment.payment_links.length === 0) {
     toast.warning('Tidak ada link pembayaran untuk dikirim')

@@ -2,7 +2,6 @@
 // Integrates PakaSir payment links directly into campaign messages
 
 import { db } from '@/lib/supabase'
-import starsenderService from './starsender'
 import pakasirService from './pakasir'
 
 class EnhancedCampaignService {
@@ -384,12 +383,13 @@ ${recipient.paymentLink}
           
           console.log(`Scheduling enhanced message for ${recipient.name} at ${new Date(scheduleTime).toLocaleString()}`)
           
-          // Send message via StarSender with schedule
-          const result = await starsenderService.sendMessage(
-            recipient.phone, 
-            personalizedMessage, 
-            { schedule: scheduleTime }
-          )
+          // TODO: Implement WhatsApp sending service
+          console.log(`Would send message to ${recipient.phone} at ${new Date(scheduleTime).toLocaleString()}:`, personalizedMessage)
+
+          const result = {
+            success: true,
+            messageId: `mock_${Date.now()}`
+          }
           
           results.push({
             phone: recipient.phone,

@@ -267,11 +267,10 @@
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
-            <input 
+            <input
               v-model.number="expenseForm.amount"
-              type="number" 
-              min="1000"
-              step="1000"
+              type="number"
+              min="1"
               required
               class="input-field"
               placeholder="Masukkan jumlah"

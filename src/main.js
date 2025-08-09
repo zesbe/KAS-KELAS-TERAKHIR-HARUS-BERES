@@ -20,6 +20,18 @@ window.addEventListener('unhandledrejection', (event) => {
   }
 })
 
+// Global error handler for JavaScript errors
+window.addEventListener('error', (event) => {
+  console.error('Global error:', event.error)
+
+  // Check if it's a chunk loading error (common in SPA)
+  if (event.message?.includes('Loading chunk') ||
+      event.message?.includes('ChunkLoadError')) {
+    console.info('Chunk loading error detected - refreshing page')
+    window.location.reload()
+  }
+})
+
 const app = createApp(App)
 const pinia = createPinia()
 

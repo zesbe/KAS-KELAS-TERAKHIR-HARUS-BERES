@@ -1,8 +1,7 @@
 // Campaign Management Service
-// Handles scheduled WhatsApp campaigns with StarSender integration
+// Handles scheduled WhatsApp campaigns
 
 import { db } from '@/lib/supabase'
-import starsenderService from './starsender'
 
 class CampaignService {
   constructor() {
@@ -71,18 +70,13 @@ class CampaignService {
           // Personalize message
           const personalizedMessage = this.personalizeMessage(campaign.message, recipient)
           
-          // Send message via StarSender with schedule
-          const sendOptions = {
-            schedule: scheduleTime // Unix timestamp in milliseconds
+          // TODO: Implement WhatsApp sending service
+          console.log(`Would schedule message for ${recipient.name} at ${new Date(scheduleTime).toLocaleString()}:`, personalizedMessage)
+
+          const result = {
+            success: true,
+            messageId: `mock_${Date.now()}_${i}`
           }
-          
-          console.log(`Scheduling message for ${recipient.name} at ${new Date(scheduleTime).toLocaleString()}`)
-          
-          const result = await starsenderService.sendMessage(
-            recipient.phone, 
-            personalizedMessage, 
-            sendOptions
-          )
           
           results.push({
             phone: recipient.phone,

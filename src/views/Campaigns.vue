@@ -588,7 +588,6 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useToast } from 'vue-toastification'
 import { useAppStore } from '@/stores'
-import starsenderService from '@/services/starsender'
 import campaignService from '@/services/campaignService'
 import enhancedCampaignService from '@/services/enhancedCampaignService'
 import { 

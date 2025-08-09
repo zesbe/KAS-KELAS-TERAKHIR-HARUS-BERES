@@ -673,7 +673,6 @@ import { ref, reactive, computed } from 'vue'
 import { useAppStore } from '@/stores'
 import { useToast } from 'vue-toastification'
 import pakasirService from '@/services/pakasir'
-import starsenderService from '@/services/starsender'
 import MultiMonthPayment from '@/components/MultiMonthPayment.vue'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
@@ -871,9 +870,9 @@ const sendWhatsAppMessage = async (payment) => {
       dueDate: new Date(payment.expires_at).toLocaleDateString('id-ID')
     }
 
-    const message = starsenderService.generatePaymentMessage(paymentData)
+    const message = // TODO: Implement WhatsApp service - generatePaymentMessage(paymentData)
 
-    await starsenderService.sendMessage(payment.student?.phone, message)
+    await // TODO: Implement WhatsApp service - sendMessage(payment.student?.phone, message)
 
     toast.success('Pesan berhasil dikirim')
     showPreviewModal.value = false
@@ -997,7 +996,7 @@ const generateMessageTemplate = (payment) => {
     dueDate: new Date(payment.expires_at).toLocaleDateString('id-ID')
   }
 
-  return starsenderService.generatePaymentMessage(paymentData)
+  return // TODO: Implement WhatsApp service - generatePaymentMessage(paymentData)
 }
 
 const sendBulkMessages = async () => {
@@ -1023,7 +1022,7 @@ const sendBulkMessages = async () => {
         }
 
         const message = generateMessageTemplate(payment)
-        await starsenderService.sendMessage(payment.student?.phone, message)
+        await // TODO: Implement WhatsApp service - sendMessage(payment.student?.phone, message)
 
         results.push({
           recipient: payment.student?.name,

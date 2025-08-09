@@ -253,7 +253,7 @@ import { useToast } from 'vue-toastification'
 import { usePermissions } from '@/composables/usePermissions'
 import RoleManagement from '@/components/RoleManagement.vue'
 import PaymentNotificationTester from '@/components/PaymentNotificationTester.vue'
-// Removed starsender service - WhatsApp integration coming soon
+import starsenderService from '@/services/starsender'
 import { supabase } from '@/lib/supabase'
 import {
   EyeIcon,
@@ -320,8 +320,7 @@ const defaultStudents = [
 
 const checkEdgeFunctionStatus = async () => {
   try {
-    // TODO: Implement WhatsApp service
-    const status = { available: false, message: 'WhatsApp integration coming soon' }
+    const status = await starsenderService.checkEdgeFunctionStatus()
     edgeFunctionStatus.available = status.available
     edgeFunctionStatus.message = status.message
   } catch (error) {
@@ -334,17 +333,17 @@ const testStarSender = async () => {
   try {
     testing.starsender = true
 
-    // TODO: Implement WhatsApp service
-    const result = { success: false, message: 'WhatsApp integration coming soon' }
+    // Test konfigurasi API key
+    const result = await starsenderService.testConnectionSafe()
 
     if (result.success) {
-      toast.success('WhatsApp konfigurasi berhasil!')
+      toast.success('StarSender konfigurasi berhasil! API key valid dan siap digunakan.')
     } else {
-      toast.info('WhatsApp integration coming soon')
+      toast.error('StarSender test gagal: Konfigurasi tidak valid')
     }
 
   } catch (error) {
-    toast.error(`WhatsApp test gagal: ${error.message}`)
+    toast.error(`StarSender test gagal: ${error.message}`)
   } finally {
     testing.starsender = false
   }

@@ -1,5 +1,12 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+    <!-- Global loading overlay -->
+    <div v-if="isLoading" class="fixed inset-0 z-50 bg-white bg-opacity-90 flex items-center justify-center">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+        <p class="text-gray-600">Memuat halaman...</p>
+      </div>
+    </div>
     <!-- Mobile menu overlay -->
     <div 
       v-if="store.sidebarOpen" 
@@ -123,9 +130,18 @@
             <h3 class="text-sm font-medium text-red-800">Database Error</h3>
             <div class="mt-1 text-sm text-red-700">
               <p>{{ store.error }}</p>
-              <router-link to="/settings" class="mt-2 inline-block font-medium underline hover:no-underline">
-                Fix in Settings
-              </router-link>
+              <div class="mt-2 flex gap-2">
+                <button
+                  @click="retryDataLoad"
+                  :disabled="isLoading"
+                  class="text-xs font-medium px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                >
+                  {{ isLoading ? 'Memuat...' : 'Coba Lagi' }}
+                </button>
+                <router-link to="/settings" class="text-xs font-medium px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700">
+                  Pengaturan
+                </router-link>
+              </div>
             </div>
           </div>
           <div class="ml-auto pl-3">
@@ -173,8 +189,8 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, computed, ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores'
 import { usePermissions } from '@/composables/usePermissions'
 import { useToast } from 'vue-toastification'
@@ -196,7 +212,11 @@ import {
 const store = useAppStore()
 const permissions = usePermissions()
 const router = useRouter()
+const route = useRoute()
 const toast = useToast()
+
+// Global loading state
+const isLoading = ref(false)
 
 const navigation = [
   { name: 'Dashboard', label: 'Dashboard', href: '/', icon: HomeIcon, requiresPermission: 'dashboard' },
@@ -239,25 +259,88 @@ const handleLogout = () => {
   }
 }
 
-onMounted(async () => {
-  // Load initial data with error handling
-  try {
-    await Promise.all([
-      store.fetchStudents(),
-      store.fetchTransactions(),
-      store.fetchExpenses(),
-      store.fetchPaymentLinks()
-    ])
+// Watch for route changes to show loading
+watch(() => route.path, (newPath, oldPath) => {
+  if (newPath !== oldPath) {
+    isLoading.value = true
+    // Hide loading after a short delay to allow component to mount
+    const timer = setTimeout(() => {
+      isLoading.value = false
+    }, 300)
 
-    // If we're using mock data successfully, clear any errors
-    if (store.isUsingMockData && !store.error) {
-      console.log('Successfully loaded demo data')
-    }
+    // Clear timer if component unmounts
+    return () => clearTimeout(timer)
+  }
+}, { immediate: false })
+
+// Handle router errors
+router.onError((error) => {
+  console.error('Router error:', error)
+  isLoading.value = false
+  toast.error('Gagal memuat halaman. Silakan coba lagi.')
+})
+
+// Global error handler
+const handleGlobalError = (errorInfo) => {
+  console.error('Global app error:', errorInfo)
+  toast.error('Terjadi kesalahan pada aplikasi')
+}
+
+const retryDataLoad = async () => {
+  try {
+    isLoading.value = true
+    await store.retryLoadAll()
+    toast.success('Data berhasil dimuat')
   } catch (error) {
-    console.error('Error loading initial data:', error)
-    // If we're successfully using mock data, clear the error
-    if (store.isUsingMockData) {
-      store.clearError()
+    toast.error('Gagal memuat data. Silakan coba lagi.')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(async () => {
+  // Initial auth check
+  await permissions.initializeAuth()
+
+  // Load initial data with error handling and retry mechanism
+  let retryCount = 0
+  const maxRetries = 3
+
+  while (retryCount < maxRetries) {
+    try {
+      isLoading.value = true
+
+      await Promise.all([
+        store.fetchStudents(),
+        store.fetchTransactions(),
+        store.fetchExpenses(),
+        store.fetchPaymentLinks()
+      ])
+
+      // If we're using mock data successfully, clear any errors
+      if (store.isUsingMockData && !store.error) {
+        console.log('Successfully loaded demo data')
+      }
+      break // Success, exit retry loop
+    } catch (error) {
+      retryCount++
+      console.error(`Error loading initial data (attempt ${retryCount}):`, error)
+
+      if (retryCount >= maxRetries) {
+        // If we're successfully using mock data, clear the error
+        if (store.isUsingMockData) {
+          store.clearError()
+        } else {
+          toast.error('Gagal memuat data. Silakan refresh halaman.')
+        }
+      } else {
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
+      }
+    } finally {
+      if (retryCount >= maxRetries || !store.error) {
+        isLoading.value = false
+      }
     }
   }
 })

@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { db } from '@/lib/supabase'
 import pakasirService from '@/services/pakasir'
-import starsenderService from '@/services/starsender'
 
 export const useAppStore = defineStore('app', {
   state: () => ({
@@ -19,7 +18,13 @@ export const useAppStore = defineStore('app', {
     paymentLinks: [],
 
     // UI state
-    loading: false,
+    loading: {
+      students: false,
+      transactions: false,
+      expenses: false,
+      paymentLinks: false,
+      global: false
+    },
     error: null,
 
     // Database status
@@ -63,18 +68,24 @@ export const useAppStore = defineStore('app', {
       const paidStudents = state.transactions
         .filter(t => t.type === 'income' && t.status === 'completed')
         .map(t => t.student_id)
-      
+
       return {
         paid: state.students.filter(s => paidStudents.includes(s.id)),
         unpaid: state.students.filter(s => !paidStudents.includes(s.id))
       }
+    },
+
+    // Check if any data is loading
+    isAnyLoading: (state) => {
+      return Object.values(state.loading).some(Boolean)
     }
   },
 
   actions: {
     // Students management
     async fetchStudents() {
-      this.loading = true
+      this.loading.students = true
+      this.loading.global = true
       try {
         const { data, error } = await db.getStudents()
         if (error) {
@@ -90,7 +101,8 @@ export const useAppStore = defineStore('app', {
         this.databaseStatus = 'error'
         console.error('Error fetching students:', this.formatError(error))
       } finally {
-        this.loading = false
+        this.loading.students = false
+        this.loading.global = false
       }
     },
 
@@ -108,7 +120,8 @@ export const useAppStore = defineStore('app', {
 
     // Transactions management
     async fetchTransactions() {
-      this.loading = true
+      this.loading.transactions = true
+      this.loading.global = true
       try {
         const { data, error } = await db.getTransactions()
         if (error) throw error
@@ -117,7 +130,8 @@ export const useAppStore = defineStore('app', {
         this.error = this.formatError(error)
         console.error('Error fetching transactions:', this.formatError(error))
       } finally {
-        this.loading = false
+        this.loading.transactions = false
+        this.loading.global = false
       }
     },
 
@@ -135,6 +149,8 @@ export const useAppStore = defineStore('app', {
 
     // Expenses management
     async fetchExpenses() {
+      this.loading.expenses = true
+      this.loading.global = true
       try {
         const { data, error } = await db.getExpenses()
         if (error) throw error
@@ -142,6 +158,9 @@ export const useAppStore = defineStore('app', {
       } catch (error) {
         this.error = this.formatError(error)
         console.error('Error fetching expenses:', this.formatError(error))
+      } finally {
+        this.loading.expenses = false
+        this.loading.global = false
       }
     },
 
@@ -183,6 +202,8 @@ export const useAppStore = defineStore('app', {
 
     // Payment links management
     async fetchPaymentLinks() {
+      this.loading.paymentLinks = true
+      this.loading.global = true
       try {
         const { data, error } = await db.getPaymentLinks()
         if (error) throw error
@@ -190,6 +211,9 @@ export const useAppStore = defineStore('app', {
       } catch (error) {
         this.error = this.formatError(error)
         console.error('Error fetching payment links:', this.formatError(error))
+      } finally {
+        this.loading.paymentLinks = false
+        this.loading.global = false
       }
     },
 
@@ -301,6 +325,37 @@ export const useAppStore = defineStore('app', {
 
       // Fallback
       return error.toString()
-    }
+    },
+
+    // Clear all loading states
+    clearAllLoading() {
+      this.loading.students = false
+      this.loading.transactions = false
+      this.loading.expenses = false
+      this.loading.paymentLinks = false
+      this.loading.global = false
+    },
+
+    // Clear error
+    clearError() {
+      this.error = null
+    },
+
+    // Retry loading all data
+    async retryLoadAll() {
+      try {
+        this.clearError()
+        await Promise.all([
+          this.fetchStudents(),
+          this.fetchTransactions(),
+          this.fetchExpenses(),
+          this.fetchPaymentLinks()
+        ])
+      } catch (error) {
+        console.error('Error retrying data load:', error)
+        this.error = this.formatError(error)
+      }
+    },
+
   }
 })

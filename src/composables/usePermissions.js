@@ -102,17 +102,17 @@ export function usePermissions() {
   }
 
   // Initialize from localStorage if available
-  const initializeAuth = () => {
-    const stored = localStorage.getItem('currentUser')
-    if (stored) {
-      try {
+  const initializeAuth = async () => {
+    try {
+      const stored = localStorage.getItem('currentUser')
+      if (stored) {
         const user = JSON.parse(stored)
         currentUser.value = user
         return true
-      } catch (error) {
-        console.error('Error parsing stored user:', error)
-        localStorage.removeItem('currentUser')
       }
+    } catch (error) {
+      console.error('Error parsing stored user:', error)
+      localStorage.removeItem('currentUser')
     }
     return false
   }

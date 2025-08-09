@@ -111,6 +111,27 @@ const routes = [
       hideInNav: true,
       requiresAuth: false
     }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: {
+      template: `
+        <div class="flex items-center justify-center min-h-screen">
+          <div class="text-center">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">404</h1>
+            <p class="text-gray-600 mb-4">Halaman tidak ditemukan</p>
+            <router-link to="/" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+              Kembali ke Dashboard
+            </router-link>
+          </div>
+        </div>
+      `
+    },
+    meta: {
+      title: 'Halaman Tidak Ditemukan',
+      requiresAuth: false
+    }
   }
 ]
 
@@ -119,40 +140,55 @@ const router = createRouter({
   routes
 })
 
-// Navigation Guards
+// Navigation Guards with improved error handling
 router.beforeEach(async (to, from, next) => {
-  const permissions = usePermissions()
+  try {
+    const permissions = usePermissions()
 
-  // Initialize auth if not done
-  permissions.initializeAuth()
+    // Initialize auth if not done
+    await permissions.initializeAuth()
 
-  const isAuthenticated = permissions.isAuthenticated.value
-  const requiresAuth = to.meta.requiresAuth !== false
-  const guestOnly = to.meta.guestOnly === true
+    const isAuthenticated = permissions.isAuthenticated.value
+    const requiresAuth = to.meta.requiresAuth !== false
+    const guestOnly = to.meta.guestOnly === true
 
-  // Update page title
-  document.title = to.meta.title ? `${to.meta.title} - Kas Kelas 1B` : 'Kas Kelas 1B'
+    // Update page title
+    document.title = to.meta.title ? `${to.meta.title} - Kas Kelas 1B` : 'Kas Kelas 1B'
 
-  // If route is guest only (like login) and user is authenticated
-  if (guestOnly && isAuthenticated) {
-    return next('/')
-  }
-
-  // If route requires auth and user is not authenticated
-  if (requiresAuth && !isAuthenticated) {
-    return next('/login')
-  }
-
-  // Check permissions for protected routes
-  if (to.meta.permission && isAuthenticated) {
-    const hasAccess = permissions.canAccessPage(to.meta.permission)
-    if (!hasAccess) {
-      // Redirect to dashboard if no permission
+    // If route is guest only (like login) and user is authenticated
+    if (guestOnly && isAuthenticated) {
       return next('/')
     }
-  }
 
-  next()
+    // If route requires auth and user is not authenticated
+    if (requiresAuth && !isAuthenticated) {
+      return next('/login')
+    }
+
+    // Check permissions for protected routes
+    if (to.meta.permission && isAuthenticated) {
+      const hasAccess = permissions.canAccessPage(to.meta.permission)
+      if (!hasAccess) {
+        // Redirect to dashboard if no permission
+        return next('/')
+      }
+    }
+
+    next()
+  } catch (error) {
+    console.error('Navigation guard error:', error)
+    // Fallback navigation
+    if (to.path !== '/login' && to.meta.requiresAuth !== false) {
+      next('/login')
+    } else {
+      next()
+    }
+  }
+})
+
+// Handle route errors
+router.onError((error) => {
+  console.error('Router error:', error)
 })
 
 export default router

@@ -243,9 +243,9 @@ const showFloatingMenuButton = ref(false)
 
 // Scroll detection for floating button
 const handleScroll = () => {
-  // Show floating button if scrolled down more than 100px on mobile
+  // Show floating button if scrolled down more than 80px on mobile and sidebar is closed
   if (window.innerWidth < 1024) {
-    showFloatingMenuButton.value = window.scrollY > 100
+    showFloatingMenuButton.value = window.scrollY > 80 && !store.sidebarOpen
   } else {
     showFloatingMenuButton.value = false
   }

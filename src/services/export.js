@@ -4,8 +4,12 @@ import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 
 // Ensure xlsx is properly loaded for production builds
-if (typeof window !== 'undefined' && !window.XLSX) {
-  window.XLSX = XLSX
+let xlsxLib = XLSX
+if (typeof window !== 'undefined') {
+  if (!window.XLSX) {
+    window.XLSX = XLSX
+  }
+  xlsxLib = window.XLSX || XLSX
 }
 
 class ExportService {
@@ -59,7 +63,7 @@ class ExportService {
 
   // Download Excel utility
   downloadExcel(worksheets, filename) {
-    const wb = XLSX.utils.book_new()
+    const wb = xlsxLib.utils.book_new()
 
     worksheets.forEach(({ name, data, headers }) => {
       let wsData = []
@@ -72,16 +76,16 @@ class ExportService {
       // Add data
       wsData = wsData.concat(data)
 
-      const ws = XLSX.utils.aoa_to_sheet(wsData)
+      const ws = xlsxLib.utils.aoa_to_sheet(wsData)
 
       // Auto-size columns
-      const range = XLSX.utils.decode_range(ws['!ref'])
+      const range = xlsxLib.utils.decode_range(ws['!ref'])
       const colWidths = []
 
       for (let C = range.s.c; C <= range.e.c; ++C) {
         let maxWidth = 10
         for (let R = range.s.r; R <= range.e.r; ++R) {
-          const cellAddress = XLSX.utils.encode_cell({ r: R, c: C })
+          const cellAddress = xlsxLib.utils.encode_cell({ r: R, c: C })
           const cell = ws[cellAddress]
           if (cell && cell.v) {
             const cellLength = cell.v.toString().length
@@ -94,10 +98,10 @@ class ExportService {
       }
 
       ws['!cols'] = colWidths
-      XLSX.utils.book_append_sheet(wb, ws, name)
+      xlsxLib.utils.book_append_sheet(wb, ws, name)
     })
 
-    XLSX.writeFile(wb, `${filename}.xlsx`)
+    xlsxLib.writeFile(wb, `${filename}.xlsx`)
   }
 
   // Export students data

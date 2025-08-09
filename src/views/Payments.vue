@@ -284,6 +284,15 @@
             <option value="completed">Selesai</option>
             <option value="expired">Expired</option>
           </select>
+          <button
+            @click="downloadPaymentsPDF"
+            class="btn-secondary flex items-center"
+            title="Download PDF Report"
+          >
+            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+            <span class="hidden sm:inline">Download PDF</span>
+            <span class="sm:hidden">PDF</span>
+          </button>
         </div>
       </div>
       
@@ -921,7 +930,7 @@ ${payment.payment_url}
 Pembayaran dapat dilakukan melalui QRIS dengan berbagai metode:
 
 ✅ Scan QR Code
-✅ E-Wallet (GoPay, OVO, DANA, ShopeePay)
+��� E-Wallet (GoPay, OVO, DANA, ShopeePay)
 
 Terima kasih atas perhatian dan kerjasamanya.
 

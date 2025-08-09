@@ -1372,17 +1372,20 @@ const downloadPaymentsPDF = async () => {
         <head>
           <title>Laporan Pembayaran - ${new Date().toLocaleDateString('id-ID')}</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            h1 { color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
-            h2 { color: #374151; margin-top: 20px; }
-            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-            th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
-            th { background-color: #f3f4f6; font-weight: bold; }
-            .status-pending { color: #d97706; }
-            .status-completed { color: #059669; }
-            .status-expired { color: #dc2626; }
-            .summary { background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0; }
+            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.4; }
+            h1 { color: #1f2937; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; margin-bottom: 20px; }
+            h2 { color: #374151; margin-top: 30px; margin-bottom: 15px; border-left: 4px solid #3b82f6; padding-left: 10px; }
+            h3 { color: #4b5563; margin-top: 20px; margin-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+            th, td { border: 1px solid #d1d5db; padding: 10px; text-align: left; font-size: 11px; }
+            th { background-color: #f3f4f6; font-weight: bold; color: #374151; }
+            .status-pending { color: #d97706; font-weight: bold; }
+            .status-completed { color: #059669; font-weight: bold; }
+            .status-expired { color: #dc2626; font-weight: bold; }
+            .summary { background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6; }
             .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 12px; }
+            tr:nth-child(even) { background-color: #f9fafb; }
+            tr:hover { background-color: #f3f4f6; }
           </style>
         </head>
         <body>

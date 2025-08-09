@@ -423,28 +423,36 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center space-x-2">
-                  <button 
+                  <button
                     @click="copyPaymentLink(payment)"
                     class="text-primary-600 hover:text-primary-900"
                     title="Copy Link"
                   >
                     <LinkIcon class="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     @click="sendPaymentLink(payment)"
                     class="text-success-600 hover:text-success-900"
                     title="Kirim via WhatsApp"
                   >
                     <ChatBubbleLeftIcon class="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
+                    v-if="payment.status === 'pending'"
+                    @click="markAsPaid(payment)"
+                    class="text-green-600 hover:text-green-900"
+                    title="Tandai Lunas"
+                  >
+                    <CheckCircleIcon class="w-4 h-4" />
+                  </button>
+                  <button
                     @click="checkPaymentStatus(payment)"
                     class="text-warning-600 hover:text-warning-900"
                     title="Cek Status"
                   >
                     <ArrowPathIcon class="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     @click="deletePaymentLink(payment)"
                     class="text-red-600 hover:text-red-900"
                     title="Hapus"

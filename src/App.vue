@@ -275,11 +275,11 @@ watch(() => route.path, (newPath, oldPath) => {
   }
 }, { immediate: false })
 
-// Handle router errors (disabled for debug)
+// Handle router errors
 router.onError((error) => {
   console.error('Router error:', error)
   isLoading.value = false
-  // toast.error('Gagal memuat halaman. Silakan coba lagi.')
+  toast.error('Gagal memuat halaman. Silakan coba lagi.')
 })
 
 // Global error handler

@@ -1340,25 +1340,6 @@ const generateCategoryBreakdown = () => {
     }).join('')
 }
 
-const openPDFWindow = (htmlContent, reportType) => {
-  const printWindow = window.open('', '_blank')
-  if (!printWindow) {
-    throw new Error('Popup blocked. Please allow popups for this site.')
-  }
-
-  printWindow.document.write(htmlContent)
-  printWindow.document.close()
-
-  printWindow.addEventListener('load', () => {
-    setTimeout(() => {
-      printWindow.print()
-      // Close window after printing
-      setTimeout(() => {
-        printWindow.close()
-      }, 1000)
-    }, 500)
-  })
-}
 
 // Close export menu when clicking outside
 const handleClickOutside = (event) => {

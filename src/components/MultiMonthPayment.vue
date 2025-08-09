@@ -347,7 +347,7 @@
 
           <!-- Summary -->
           <div class="bg-gray-50 p-4 rounded-lg">
-            <h4 class="font-medium text-gray-900 mb-2">Ringkasan Pembayaran</h4>
+            <h4 class="font-medium text-gray-900 mb-2">📋 Ringkasan Pembayaran</h4>
             <div class="space-y-1 text-sm">
               <div class="flex justify-between">
                 <span>Periode:</span>
@@ -361,8 +361,21 @@
                 <span>Total Pembayaran:</span>
                 <span>{{ formatCurrency(form.monthlyAmount * form.months) }}</span>
               </div>
-              <div class="text-blue-600 text-xs mt-2">
-                Pembayaran untuk {{ form.months }} bulan kas kelas
+            </div>
+
+            <!-- Link Generation Summary -->
+            <div class="mt-3 pt-3 border-t border-gray-300">
+              <h5 class="font-medium text-gray-900 mb-2">🔗 Link yang akan dibuat:</h5>
+              <div class="space-y-1 text-xs">
+                <div v-if="form.linkType === 'individual' || form.linkType === 'both'" class="text-green-600">
+                  ✅ {{ form.months }} link individual ({{ formatCurrency(form.monthlyAmount) }} per link)
+                </div>
+                <div v-if="form.linkType === 'single' || form.linkType === 'both'" class="text-blue-600">
+                  ✅ 1 link total sekaligus ({{ formatCurrency(form.monthlyAmount * form.months) }})
+                </div>
+                <div v-if="form.linkType === 'both'" class="text-purple-600 font-medium">
+                  💡 Orang tua bisa pilih bayar bertahap atau sekaligus
+                </div>
               </div>
             </div>
           </div>

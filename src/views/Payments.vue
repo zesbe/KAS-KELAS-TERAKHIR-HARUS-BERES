@@ -574,10 +574,11 @@
           >
             Tutup
           </button>
-          <button 
+          <button
             @click="sendWhatsAppMessage(previewPayment)"
             class="btn-success"
           >
+            <ChatBubbleLeftIcon class="w-4 h-4 mr-2" />
             Kirim via WhatsApp
           </button>
         </div>

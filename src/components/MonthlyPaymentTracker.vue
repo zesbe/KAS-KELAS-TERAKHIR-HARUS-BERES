@@ -331,20 +331,7 @@ const loadMonthlyData = () => {
     // Get transactions for this month
     const monthTransactions = store.transactions.filter(t => {
       const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
-      const matches = transactionMonth === monthCode && t.type === 'income' && t.status === 'completed'
-
-      // Debug log for this month
-      if (matches) {
-        console.log(`✅ Transaction matched for ${monthName} ${year}:`, {
-          description: t.description,
-          created_at: t.created_at,
-          transactionMonth,
-          monthCode,
-          amount: t.amount
-        })
-      }
-
-      return matches
+      return transactionMonth === monthCode && t.type === 'income' && t.status === 'completed'
     })
     
     // Get paid student IDs for this month

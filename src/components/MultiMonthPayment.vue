@@ -564,6 +564,9 @@ const multiMonthPayments = ref([
     progress_percentage: 50,
     status: 'partial',
     payment_url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/140000?order_id=NAFI240201ABC123',
+    payment_links: [
+      { id: '1', type: 'total', amount: 300000, order_id: 'NAFI240201TOTAL', url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/300000?order_id=NAFI240201TOTAL' }
+    ],
     month_details: [
       { month: 2, label: 'Februari 2024', amount: 50000, paid: true },
       { month: 3, label: 'Maret 2024', amount: 50000, paid: true },

@@ -86,56 +86,56 @@
 
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="card p-6">
+      <div class="card p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
         <div class="flex items-center">
-          <div class="p-2 bg-success-100 rounded-lg">
-            <BanknotesIcon class="w-6 h-6 text-success-600" />
+          <div class="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl shadow-lg">
+            <BanknotesIcon class="w-7 h-7 text-white" />
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600">Total Pemasukan</p>
-            <p class="text-2xl font-semibold text-gray-900">
+            <p class="text-sm font-medium text-green-700">💰 Total Pemasukan</p>
+            <p class="text-2xl font-bold text-green-800">
               {{ formatCurrency(store.totalIncome) }}
             </p>
           </div>
         </div>
       </div>
 
-      <div class="card p-6">
+      <div class="card p-6 bg-gradient-to-br from-red-50 to-rose-50 border-red-200">
         <div class="flex items-center">
-          <div class="p-2 bg-red-100 rounded-lg">
-            <ReceiptPercentIcon class="w-6 h-6 text-red-600" />
+          <div class="p-3 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl shadow-lg">
+            <ReceiptPercentIcon class="w-7 h-7 text-white" />
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600">Total Pengeluaran</p>
-            <p class="text-2xl font-semibold text-gray-900">
+            <p class="text-sm font-medium text-red-700">📄 Total Pengeluaran</p>
+            <p class="text-2xl font-bold text-red-800">
               {{ formatCurrency(store.totalExpenses) }}
             </p>
           </div>
         </div>
       </div>
 
-      <div class="card p-6">
+      <div class="card p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
         <div class="flex items-center">
-          <div class="p-2 bg-primary-100 rounded-lg">
-            <CreditCardIcon class="w-6 h-6 text-primary-600" />
+          <div class="p-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl shadow-lg">
+            <CreditCardIcon class="w-7 h-7 text-white" />
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600">Saldo Saat Ini</p>
-            <p class="text-2xl font-semibold text-gray-900">
+            <p class="text-sm font-medium text-blue-700">💳 Saldo Saat Ini</p>
+            <p class="text-2xl font-bold text-blue-800">
               {{ formatCurrency(store.currentBalance) }}
             </p>
           </div>
         </div>
       </div>
 
-      <div class="card p-6">
+      <div class="card p-6 bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200">
         <div class="flex items-center">
-          <div class="p-2 bg-warning-100 rounded-lg">
-            <UsersIcon class="w-6 h-6 text-warning-600" />
+          <div class="p-3 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-lg">
+            <UsersIcon class="w-7 h-7 text-white" />
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600">Total Siswa</p>
-            <p class="text-2xl font-semibold text-gray-900">
+            <p class="text-sm font-medium text-orange-700">👥 Total Siswa</p>
+            <p class="text-2xl font-bold text-orange-800">
               {{ store.students.length }}
             </p>
           </div>

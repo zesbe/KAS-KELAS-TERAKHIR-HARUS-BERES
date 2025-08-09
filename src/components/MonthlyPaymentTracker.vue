@@ -327,7 +327,9 @@ const loadMonthlyData = () => {
     const monthCode = monthDate.toISOString().slice(0, 7) // YYYY-MM
     const monthName = monthDate.toLocaleDateString('id-ID', { month: 'long' })
     const now = new Date()
-    const isCurrentMonth = monthCode === now.toISOString().slice(0, 7)
+    const currentMonthCode = now.toISOString().slice(0, 7)
+    // Only highlight current month if we're viewing the current year
+    const isCurrentMonth = monthCode === currentMonthCode && year === now.getFullYear()
     
     // Get transactions for this month
     const monthTransactions = store.transactions.filter(t => {

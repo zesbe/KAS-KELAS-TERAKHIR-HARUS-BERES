@@ -513,7 +513,23 @@ const generateDashboardPDFContent = () => {
       </div>
     </div>
 
-    <h2>📋 Transaksi Terbaru</h2>
+    <h2>👥 Status Pembayaran Semua Siswa (${allStudents.length} Siswa)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Siswa</th>
+          <th>Nickname</th>
+          <th>No. HP</th>
+          <th>Total Bayar</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${studentRows || '<tr><td colspan="5" style="text-align: center; color: #6b7280;">Tidak ada data siswa</td></tr>'}
+      </tbody>
+    </table>
+
+    <h2>📋 Transaksi Terbaru (15 Terakhir)</h2>
     <table>
       <thead>
         <tr>
@@ -525,16 +541,18 @@ const generateDashboardPDFContent = () => {
         </tr>
       </thead>
       <tbody>
-        ${transactionRows || '<tr><td colspan="5" style="text-align: center; color: #6b7280;">Tidak ada transaksi terbaru</td></tr>'}
+        ${transactionRows || '<tr><td colspan="5" style="text-align: center; color: #6b7280;">Tidak ada transaksi</td></tr>'}
       </tbody>
     </table>
 
-    <h2>📈 Ringkasan</h2>
+    <h2>📈 Ringkasan Lengkap</h2>
+    <p><strong>Total Siswa:</strong> ${allStudents.length}</p>
+    <p><strong>Siswa Sudah Bayar:</strong> ${studentsWithStatus.filter(s => s.hasPaid).length}</p>
+    <p><strong>Siswa Belum Bayar:</strong> ${studentsWithStatus.filter(s => !s.hasPaid).length}</p>
     <p><strong>Total Pemasukan:</strong> ${formatCurrency(store.totalIncome)}</p>
     <p><strong>Total Pengeluaran:</strong> ${formatCurrency(store.totalExpenses)}</p>
     <p><strong>Saldo Kas:</strong> ${formatCurrency(store.totalIncome - store.totalExpenses)}</p>
-    <p><strong>Jumlah Siswa:</strong> ${store.students.length}</p>
-    <p><strong>Jumlah Transaksi:</strong> ${store.transactions.length}</p>
+    <p><strong>Total Transaksi:</strong> ${allTransactions.length}</p>
   `
 }
 </script>

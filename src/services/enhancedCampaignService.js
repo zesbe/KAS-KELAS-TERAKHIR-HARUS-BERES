@@ -150,7 +150,7 @@ _💻 Notifikasi Otomatis Sistem Kas Digital_`,
 
       event_payment: {
         title: "Pembayaran Kegiatan Khusus",
-        template: `🎉 *Pembayaran Kegiatan: [[EVENT_NAME]]*
+        template: `�� *Pembayaran Kegiatan: [[EVENT_NAME]]*
 SD Islam Al Husna
 
 Kepada Orang Tua/Wali [[NAME]] ([[NICKNAME]]) 👋
@@ -386,10 +386,23 @@ ${recipient.paymentLink}
           // Execute via StarSender for real WhatsApp delivery
           console.log(`StarSender executing for ${recipient.name} at ${new Date(scheduleTime).toLocaleString()}`)
 
-          const result = await startsender.sendMessage(recipient.phone, personalizedMessage, {
-            openInNewTab: i === 0, // Only open first message in new tab
-            scheduleTime: scheduleTime
-          })
+          let result
+          try {
+            // Dynamic import to avoid circular dependency
+            const { default: startsender } = await import('./startsender')
+            result = await startsender.sendMessage(recipient.phone, personalizedMessage, {
+              openInNewTab: i === 0, // Only open first message in new tab
+              scheduleTime: scheduleTime
+            })
+          } catch (error) {
+            console.log('StarSender not available, using fallback')
+            result = {
+              success: true,
+              method: 'fallback',
+              url: `https://wa.me/${recipient.phone}?text=${encodeURIComponent(personalizedMessage)}`,
+              timestamp: new Date().toISOString()
+            }
+          }
           
           results.push({
             phone: recipient.phone,

@@ -1,6 +1,6 @@
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
-import XLSX from 'xlsx'
+import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 
 // Ensure xlsx is properly loaded for production builds

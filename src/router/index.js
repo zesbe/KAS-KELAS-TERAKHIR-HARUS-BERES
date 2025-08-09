@@ -137,7 +137,15 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    // Better scroll behavior for navigation
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0 }
+    }
+  }
 })
 
 // Navigation Guards with improved error handling
@@ -152,8 +160,10 @@ router.beforeEach(async (to, from, next) => {
     const requiresAuth = to.meta.requiresAuth !== false
     const guestOnly = to.meta.guestOnly === true
 
-    // Update page title
-    document.title = to.meta.title ? `${to.meta.title} - Kas Kelas 1B` : 'Kas Kelas 1B'
+    // Update page title safely
+    if (typeof document !== 'undefined') {
+      document.title = to.meta.title ? `${to.meta.title} - Kas Kelas 1B` : 'Kas Kelas 1B'
+    }
 
     // If route is guest only (like login) and user is authenticated
     if (guestOnly && isAuthenticated) {
@@ -177,18 +187,33 @@ router.beforeEach(async (to, from, next) => {
     next()
   } catch (error) {
     console.error('Navigation guard error:', error)
-    // Fallback navigation
+    // More robust fallback navigation
     if (to.path !== '/login' && to.meta.requiresAuth !== false) {
-      next('/login')
+      // Add delay to prevent navigation loops
+      setTimeout(() => {
+        next('/login')
+      }, 100)
     } else {
       next()
     }
   }
 })
 
-// Handle route errors
+// Handle route errors with better recovery
 router.onError((error) => {
   console.error('Router error:', error)
+  
+  // Handle chunk loading errors
+  if (error.message && (
+    error.message.includes('Loading chunk') ||
+    error.message.includes('ChunkLoadError') ||
+    error.message.includes('Loading CSS chunk')
+  )) {
+    console.info('Chunk loading error detected - reloading page')
+    if (typeof window !== 'undefined') {
+      window.location.reload()
+    }
+  }
 })
 
 export default router

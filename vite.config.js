@@ -12,5 +12,21 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true
-  }
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue', 'vue-router', 'pinia'],
+          ui: ['@headlessui/vue', '@heroicons/vue'],
+          charts: ['chart.js', 'vue-chartjs'],
+          excel: ['xlsx', 'file-saver']
+        }
+      }
+    }
+  },
+  base: './'
 })

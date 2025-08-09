@@ -6,43 +6,47 @@
         <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Laporan Keuangan</h1>
         <p class="text-sm text-gray-500 mt-1">Analisis dan laporan keuangan kas kelas</p>
       </div>
-      <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <!-- CSV Exports -->
-          <button @click="exportSummaryCSV" class="btn-secondary w-full sm:w-auto">
-            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">Export Summary CSV</span>
-            <span class="sm:hidden">Summary</span>
-          </button>
-          <button @click="exportDetailedCSV" class="btn-secondary w-full sm:w-auto">
-            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">Export Detail CSV</span>
-            <span class="sm:hidden">Detail</span>
-          </button>
-          <button @click="exportCompleteReport" class="btn-primary w-full sm:w-auto">
-            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">Export Lengkap</span>
-            <span class="sm:hidden">Lengkap</span>
-          </button>
-        </div>
+      <div class="relative">
+        <button
+          @click="showExportMenu = !showExportMenu"
+          class="btn-primary w-full sm:w-auto"
+        >
+          <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+          <span class="hidden sm:inline">Export & PDF</span>
+          <span class="sm:hidden">Export</span>
+          <ChevronDownIcon class="w-4 h-4 ml-1" />
+        </button>
 
-        <!-- PDF Downloads -->
-        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <button @click="downloadDetailPDF" class="btn-outline w-full sm:w-auto">
-            <PrinterIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">PDF Detail</span>
-            <span class="sm:hidden">Detail PDF</span>
-          </button>
-          <button @click="downloadSummaryPDF" class="btn-outline w-full sm:w-auto">
-            <PrinterIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">PDF Summary</span>
-            <span class="sm:hidden">Summary PDF</span>
-          </button>
-          <button @click="downloadCompletePDF" class="btn-primary w-full sm:w-auto">
-            <PrinterIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">PDF Lengkap</span>
-            <span class="sm:hidden">Lengkap PDF</span>
-          </button>
+        <!-- Export dropdown menu -->
+        <div v-if="showExportMenu" class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 z-10">
+          <div class="py-2">
+            <div class="px-4 py-3 text-xs font-bold text-green-600 uppercase tracking-wider border-b border-gray-100 bg-green-50">
+              📊 Excel Export
+            </div>
+            <button @click="exportSummaryToExcel" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-green-50 flex items-center">
+              📋 Export Summary Excel
+            </button>
+            <button @click="exportDetailToExcel" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-green-50 flex items-center">
+              📈 Export Detail Excel
+            </button>
+            <button @click="exportCompleteToExcel" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-green-50 flex items-center">
+              🔍 Export Lengkap Excel
+            </button>
+            <div class="border-t border-gray-100 mt-1">
+              <div class="px-4 py-3 text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50">
+                📄 PDF Laporan
+              </div>
+              <button @click="showDetailPdfModal = true" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 flex items-center">
+                📄 Laporan PDF Detail
+              </button>
+              <button @click="showSummaryPdfModal = true" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 flex items-center">
+                📋 Summary PDF
+              </button>
+              <button @click="showCompletePdfModal = true" class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 flex items-center">
+                📄 PDF Lengkap
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -288,6 +292,31 @@
         </table>
       </div>
     </div>
+
+    <!-- PDF Action Modals -->
+    <PdfActionModal
+      :show="showDetailPdfModal"
+      @close="showDetailPdfModal = false"
+      @print="handleDetailPrint"
+      @download="handleDetailDownload"
+      @preview="handleDetailPreview"
+    />
+
+    <PdfActionModal
+      :show="showSummaryPdfModal"
+      @close="showSummaryPdfModal = false"
+      @print="handleSummaryPrint"
+      @download="handleSummaryDownload"
+      @preview="handleSummaryPreview"
+    />
+
+    <PdfActionModal
+      :show="showCompletePdfModal"
+      @close="showCompletePdfModal = false"
+      @print="handleCompletePrint"
+      @download="handleCompleteDownload"
+      @preview="handleCompletePreview"
+    />
   </div>
 </template>
 
@@ -300,13 +329,14 @@ import { id } from 'date-fns/locale'
 import exportService from '@/services/export'
 import FinancialCharts from '@/components/FinancialCharts.vue'
 import AnalyticsInsights from '@/components/AnalyticsInsights.vue'
+import PdfActionModal from '@/components/PdfActionModal.vue'
 import {
   BanknotesIcon,
   ReceiptPercentIcon,
   CreditCardIcon,
   UsersIcon,
   DocumentArrowDownIcon,
-  PrinterIcon
+  ChevronDownIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
@@ -315,6 +345,12 @@ const toast = useToast()
 const selectedPeriod = ref('thisMonth')
 const dateFrom = ref('')
 const dateTo = ref('')
+
+// Modal states
+const showExportMenu = ref(false)
+const showDetailPdfModal = ref(false)
+const showSummaryPdfModal = ref(false)
+const showCompletePdfModal = ref(false)
 
 const filteredTransactions = computed(() => {
   if (!dateFrom.value || !dateTo.value) return []
@@ -485,7 +521,9 @@ const filterData = () => {
   })
 }
 
-const exportSummaryCSV = () => {
+// Excel export functions
+const exportSummaryToExcel = () => {
+  showExportMenu.value = false
   const headers = ['Keterangan', 'Jumlah (IDR)', 'Detail']
   const data = [
     ['Total Pemasukan', exportService.formatCurrency(reportData.totalIncome), `${reportData.paidStudents.length} siswa`],
@@ -497,11 +535,25 @@ const exportSummaryCSV = () => {
     ['Periode', `${dateFrom.value} s/d ${dateTo.value}`, 'Filter aktif']
   ]
 
-  exportService.downloadCSV(headers, data, `ringkasan_keuangan_${getPeriodString()}`)
-  toast.success('Ringkasan keuangan berhasil di-export')
+  // Convert to Excel format with UTF-8 BOM
+  const csvContent = [headers, ...data]
+    .map(row => row.map(cell => `"${cell}"`).join(','))
+    .join('\n')
+
+  const BOM = '\uFEFF'
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `ringkasan_keuangan_${getPeriodString()}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+
+  toast.success('📊 Ringkasan Excel berhasil di-export!')
 }
 
-const exportDetailedCSV = () => {
+const exportDetailToExcel = () => {
+  showExportMenu.value = false
   const headers = [
     'Tanggal',
     'Jenis',
@@ -526,18 +578,69 @@ const exportDetailedCSV = () => {
     item.payment_method || ''
   ])
 
-  exportService.downloadCSV(headers, data, `detail_transaksi_${getPeriodString()}`)
-  toast.success('Detail transaksi berhasil di-export')
+  // Convert to Excel format with UTF-8 BOM
+  const csvContent = [headers, ...data]
+    .map(row => row.map(cell => `"${cell}"`).join(','))
+    .join('\n')
+
+  const BOM = '\uFEFF'
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `detail_transaksi_${getPeriodString()}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+
+  toast.success('📈 Detail Excel berhasil di-export!')
 }
 
-const exportCompleteReport = () => {
-  const period = {
-    from: dateFrom.value,
-    to: dateTo.value
-  }
+const exportCompleteToExcel = () => {
+  showExportMenu.value = false
+  const headers = [
+    'Tanggal', 'Jenis', 'Keterangan', 'Pemasukan', 'Pengeluaran', 'Saldo',
+    'Siswa', 'Kategori', 'Status', 'Metode'
+  ]
 
-  exportService.exportComprehensiveReport(reportData, period)
-  toast.success('Laporan lengkap berhasil di-export')
+  const summaryData = [
+    ['RINGKASAN KEUANGAN', '', '', '', '', '', '', '', '', ''],
+    ['Total Pemasukan', '', '', formatCurrency(reportData.totalIncome), '', '', '', '', '', ''],
+    ['Total Pengeluaran', '', '', '', formatCurrency(reportData.totalExpenses), '', '', '', '', ''],
+    ['Saldo Akhir', '', '', '', '', formatCurrency(reportData.balance), '', '', '', ''],
+    ['', '', '', '', '', '', '', '', '', ''],
+    ['DETAIL TRANSAKSI', '', '', '', '', '', '', '', '', '']
+  ]
+
+  const transactionData = reportData.detailedTransactions.map(item => [
+    exportService.formatDate(item.date),
+    item.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+    item.description,
+    item.type === 'income' ? formatCurrency(item.amount) : '',
+    item.type === 'expense' ? formatCurrency(item.amount) : '',
+    formatCurrency(item.balance),
+    item.student_name || '',
+    item.category || '',
+    item.status || '',
+    item.payment_method || ''
+  ])
+
+  const allData = [...summaryData, ...transactionData]
+
+  // Convert to Excel format with UTF-8 BOM
+  const csvContent = [headers, ...allData]
+    .map(row => row.map(cell => `"${cell}"`).join(','))
+    .join('\n')
+
+  const BOM = '\uFEFF'
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `laporan_lengkap_${getPeriodString()}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+
+  toast.success('🔍 Laporan Lengkap Excel berhasil di-export!')
 }
 
 const getExpensesByCategory = () => {
@@ -570,38 +673,219 @@ const getPeriodString = () => {
   return `${from}_${to}`
 }
 
-// Enhanced PDF generation functions with different report types
+// PDF modal handlers
+const handleDetailPrint = () => {
+  showDetailPdfModal.value = false
+  showExportMenu.value = false
+  printDetailPDF()
+}
 
-const downloadDetailPDF = () => {
+const handleDetailDownload = () => {
+  showDetailPdfModal.value = false
+  showExportMenu.value = false
+  downloadDetailPDFFile()
+}
+
+const handleDetailPreview = () => {
+  showDetailPdfModal.value = false
+  showExportMenu.value = false
+  previewDetailPDF()
+}
+
+const handleSummaryPrint = () => {
+  showSummaryPdfModal.value = false
+  showExportMenu.value = false
+  printSummaryPDF()
+}
+
+const handleSummaryDownload = () => {
+  showSummaryPdfModal.value = false
+  showExportMenu.value = false
+  downloadSummaryPDFFile()
+}
+
+const handleSummaryPreview = () => {
+  showSummaryPdfModal.value = false
+  showExportMenu.value = false
+  previewSummaryPDF()
+}
+
+const handleCompletePrint = () => {
+  showCompletePdfModal.value = false
+  showExportMenu.value = false
+  printCompletePDF()
+}
+
+const handleCompleteDownload = () => {
+  showCompletePdfModal.value = false
+  showExportMenu.value = false
+  downloadCompletePDFFile()
+}
+
+const handleCompletePreview = () => {
+  showCompletePdfModal.value = false
+  showExportMenu.value = false
+  previewCompletePDF()
+}
+
+// Print functions
+const printDetailPDF = () => {
   try {
     const htmlContent = generateDetailPDFContent()
-    openPDFWindow(htmlContent, 'Detail')
-    toast.success('PDF Detail berhasil di-generate!')
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(htmlContent)
+      printWindow.document.close()
+      printWindow.onload = () => {
+        printWindow.focus()
+        printWindow.print()
+      }
+      toast.success('🖨️ Dialog printer dibuka!')
+    }
   } catch (error) {
-    console.error('Error generating Detail PDF:', error)
-    toast.error('Gagal generate PDF Detail')
+    console.error('Print error:', error)
+    toast.error('Gagal membuka printer')
   }
 }
 
-const downloadSummaryPDF = () => {
+const printSummaryPDF = () => {
   try {
     const htmlContent = generateSummaryPDFContent()
-    openPDFWindow(htmlContent, 'Summary')
-    toast.success('PDF Summary berhasil di-generate!')
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(htmlContent)
+      printWindow.document.close()
+      printWindow.onload = () => {
+        printWindow.focus()
+        printWindow.print()
+      }
+      toast.success('🖨️ Dialog printer dibuka!')
+    }
   } catch (error) {
-    console.error('Error generating Summary PDF:', error)
-    toast.error('Gagal generate PDF Summary')
+    console.error('Print error:', error)
+    toast.error('Gagal membuka printer')
   }
 }
 
-const downloadCompletePDF = () => {
+const printCompletePDF = () => {
   try {
     const htmlContent = generateCompletePDFContent()
-    openPDFWindow(htmlContent, 'Lengkap')
-    toast.success('PDF Lengkap berhasil di-generate!')
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(htmlContent)
+      printWindow.document.close()
+      printWindow.onload = () => {
+        printWindow.focus()
+        printWindow.print()
+      }
+      toast.success('🖨️ Dialog printer dibuka!')
+    }
   } catch (error) {
-    console.error('Error generating Complete PDF:', error)
-    toast.error('Gagal generate PDF Lengkap')
+    console.error('Print error:', error)
+    toast.error('Gagal membuka printer')
+  }
+}
+
+// Download functions
+const downloadDetailPDFFile = () => {
+  try {
+    const htmlContent = generateDetailPDFContent()
+    const timestamp = new Date().toLocaleDateString('id-ID').replace(/\//g, '_')
+    const fileName = `Laporan_Detail_${timestamp}.html`
+    createDownloadLink(htmlContent, fileName)
+  } catch (error) {
+    console.error('Download error:', error)
+    toast.error('Gagal download laporan')
+  }
+}
+
+const downloadSummaryPDFFile = () => {
+  try {
+    const htmlContent = generateSummaryPDFContent()
+    const timestamp = new Date().toLocaleDateString('id-ID').replace(/\//g, '_')
+    const fileName = `Laporan_Summary_${timestamp}.html`
+    createDownloadLink(htmlContent, fileName)
+  } catch (error) {
+    console.error('Download error:', error)
+    toast.error('Gagal download laporan')
+  }
+}
+
+const downloadCompletePDFFile = () => {
+  try {
+    const htmlContent = generateCompletePDFContent()
+    const timestamp = new Date().toLocaleDateString('id-ID').replace(/\//g, '_')
+    const fileName = `Laporan_Lengkap_${timestamp}.html`
+    createDownloadLink(htmlContent, fileName)
+  } catch (error) {
+    console.error('Download error:', error)
+    toast.error('Gagal download laporan')
+  }
+}
+
+// Preview functions
+const previewDetailPDF = () => {
+  try {
+    const htmlContent = generateDetailPDFContent()
+    const previewWindow = window.open('', '_blank')
+    if (previewWindow) {
+      previewWindow.document.write(htmlContent)
+      previewWindow.document.close()
+      toast.success('👁️ Preview dibuka di tab baru!')
+    }
+  } catch (error) {
+    console.error('Preview error:', error)
+    toast.error('Gagal membuka preview')
+  }
+}
+
+const previewSummaryPDF = () => {
+  try {
+    const htmlContent = generateSummaryPDFContent()
+    const previewWindow = window.open('', '_blank')
+    if (previewWindow) {
+      previewWindow.document.write(htmlContent)
+      previewWindow.document.close()
+      toast.success('👁️ Preview dibuka di tab baru!')
+    }
+  } catch (error) {
+    console.error('Preview error:', error)
+    toast.error('Gagal membuka preview')
+  }
+}
+
+const previewCompletePDF = () => {
+  try {
+    const htmlContent = generateCompletePDFContent()
+    const previewWindow = window.open('', '_blank')
+    if (previewWindow) {
+      previewWindow.document.write(htmlContent)
+      previewWindow.document.close()
+      toast.success('👁️ Preview dibuka di tab baru!')
+    }
+  } catch (error) {
+    console.error('Preview error:', error)
+    toast.error('Gagal membuka preview')
+  }
+}
+
+// Helper function to create downloadable file
+const createDownloadLink = (content, fileName) => {
+  try {
+    const blob = new Blob([content], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    link.style.display = 'none'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    toast.success('✅ File laporan berhasil di-download!')
+  } catch (error) {
+    console.error('Download error:', error)
+    toast.error('Gagal download file. Silakan coba lagi.')
   }
 }
 
@@ -1023,25 +1307,6 @@ const generateCompletePDFContent = () => `
   </html>
 `
 
-const openPDFWindow = (htmlContent, reportType) => {
-  const printWindow = window.open('', '_blank')
-  if (!printWindow) {
-    throw new Error('Popup blocked. Please allow popups for this site.')
-  }
-
-  printWindow.document.write(htmlContent)
-  printWindow.document.close()
-
-  printWindow.addEventListener('load', () => {
-    setTimeout(() => {
-      printWindow.print()
-      // Close window after printing
-      setTimeout(() => {
-        printWindow.close()
-      }, 1000)
-    }, 500)
-  })
-}
 
 onMounted(() => {
   updatePeriod()

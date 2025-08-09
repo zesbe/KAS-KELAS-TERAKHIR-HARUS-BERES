@@ -864,10 +864,34 @@ const createSingleLink = async () => {
 
 const copyPaymentLink = async (payment) => {
   try {
-    await navigator.clipboard.writeText(payment.payment_url)
-    toast.success('Link berhasil disalin')
+    // Try modern clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(payment.payment_url)
+      toast.success('Link berhasil disalin ke clipboard')
+    } else {
+      // Fallback for older browsers or non-secure contexts
+      const textArea = document.createElement('textarea')
+      textArea.value = payment.payment_url
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+
+      try {
+        document.execCommand('copy')
+        toast.success('Link berhasil disalin')
+      } catch (err) {
+        toast.error('Gagal menyalin link - silakan copy manual')
+        console.error('Copy fallback failed:', err)
+      } finally {
+        document.body.removeChild(textArea)
+      }
+    }
   } catch (error) {
-    toast.error('Gagal menyalin link')
+    console.error('Error copying payment link:', error)
+    toast.error('Gagal menyalin link - silakan copy manual')
   }
 }
 

@@ -586,6 +586,17 @@ onMounted(() => {
   font-style: italic;
 }
 
+.quick-setup {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.quick-setup .test-btn {
+  flex: 1;
+  min-width: 140px;
+}
+
 .bulk-test {
   display: grid;
   grid-template-columns: 1fr 1fr;

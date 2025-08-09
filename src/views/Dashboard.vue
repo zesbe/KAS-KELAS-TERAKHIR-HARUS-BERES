@@ -145,48 +145,55 @@
 
     <!-- Payment Status -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="card p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Status Pembayaran Siswa</h3>
+      <div class="card p-6 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+          <span class="text-2xl mr-2">📊</span>
+          Status Pembayaran Siswa
+        </h3>
         <div class="space-y-4">
-          <div class="flex items-center justify-between p-3 bg-success-50 rounded-lg">
+          <div class="flex items-center justify-between p-4 bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl border border-green-200 shadow-sm">
             <div class="flex items-center">
-              <div class="w-3 h-3 bg-success-500 rounded-full"></div>
-              <span class="ml-3 text-sm font-medium text-success-900">Sudah Bayar</span>
+              <div class="w-4 h-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full shadow-md"></div>
+              <span class="ml-3 text-sm font-semibold text-green-800">✅ Sudah Bayar</span>
             </div>
-            <span class="text-sm font-semibold text-success-700">
+            <span class="text-lg font-bold text-green-700 bg-green-200 px-3 py-1 rounded-full">
               {{ store.studentsByPaymentStatus.paid.length }} siswa
             </span>
           </div>
-          <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+          <div class="flex items-center justify-between p-4 bg-gradient-to-r from-red-100 to-rose-100 rounded-xl border border-red-200 shadow-sm">
             <div class="flex items-center">
-              <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-              <span class="ml-3 text-sm font-medium text-red-900">Belum Bayar</span>
+              <div class="w-4 h-4 bg-gradient-to-r from-red-500 to-rose-500 rounded-full shadow-md"></div>
+              <span class="ml-3 text-sm font-semibold text-red-800">❌ Belum Bayar</span>
             </div>
-            <span class="text-sm font-semibold text-red-700">
+            <span class="text-lg font-bold text-red-700 bg-red-200 px-3 py-1 rounded-full">
               {{ store.studentsByPaymentStatus.unpaid.length }} siswa
             </span>
           </div>
         </div>
       </div>
 
-      <div class="card p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Link Pembayaran Pending</h3>
+      <div class="card p-6 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+          <span class="text-2xl mr-2">⏳</span>
+          Link Pembayaran Pending
+        </h3>
         <div class="space-y-3">
-          <div 
-            v-for="payment in store.pendingPayments.slice(0, 5)" 
+          <div
+            v-for="payment in store.pendingPayments.slice(0, 5)"
             :key="payment.id"
-            class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+            class="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-orange-200 shadow-sm hover:shadow-md transition-all duration-300"
           >
             <div>
-              <p class="text-sm font-medium text-gray-900">{{ payment.student?.name }}</p>
-              <p class="text-xs text-gray-500">{{ formatCurrency(payment.amount) }}</p>
+              <p class="text-sm font-semibold text-gray-800">{{ payment.student?.name }}</p>
+              <p class="text-xs text-orange-600 font-medium">{{ formatCurrency(payment.amount) }}</p>
             </div>
-            <span class="text-xs bg-warning-100 text-warning-800 px-2 py-1 rounded-full">
+            <span class="text-xs bg-gradient-to-r from-yellow-400 to-orange-400 text-white font-semibold px-3 py-1 rounded-full shadow-sm">
               Pending
             </span>
           </div>
-          <div v-if="store.pendingPayments.length === 0" class="text-center py-4">
-            <p class="text-sm text-gray-500">Tidak ada pembayaran pending</p>
+          <div v-if="store.pendingPayments.length === 0" class="text-center py-8">
+            <div class="text-4xl mb-2">🎉</div>
+            <p class="text-sm text-gray-600 font-medium">Tidak ada pembayaran pending</p>
           </div>
         </div>
       </div>
@@ -508,7 +515,7 @@ const generateDashboardPDFContent = () => {
 
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">💰 Total Pemasukan</div>
+        <div class="stat-label">�� Total Pemasukan</div>
         <div class="stat-value income">${formatCurrency(store.totalIncome)}</div>
       </div>
       <div class="stat-card">

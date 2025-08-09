@@ -1129,8 +1129,13 @@ const closeModal = () => {
   })
 }
 
+const enableStarSender = () => {
+  startsenderEnabled.value = true
+  toast.info('Enabling StarSender components...')
+}
+
 const retryStarSender = () => {
-  startsenderLoaded.value = true
+  startsenderEnabled.value = true
   toast.info('Retrying StarSender initialization...')
 }
 

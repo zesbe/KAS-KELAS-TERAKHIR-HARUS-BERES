@@ -21,7 +21,7 @@
     <div class="card p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
       <div class="flex items-center justify-between mb-4">
         <h4 class="text-lg font-semibold text-blue-900">
-          📊 {{ currentMonthName }} {{ new Date().getFullYear() }}
+          📊 {{ currentMonthName }} {{ selectedYear }}
         </h4>
         <div class="flex items-center space-x-4">
           <div class="text-center">

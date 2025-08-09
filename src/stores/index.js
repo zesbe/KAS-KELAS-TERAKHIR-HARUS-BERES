@@ -53,9 +53,12 @@ export const useAppStore = defineStore('app', {
       return state.totalIncome - state.totalExpenses
     },
     
-    // Recent transactions
+    // Recent transactions (sorted by date, most recent first)
     recentTransactions: (state) => {
-      return state.transactions.slice(0, 10)
+      return state.transactions
+        .slice() // Create a copy to avoid mutating original array
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 10)
     },
     
     // Pending payments
@@ -70,10 +73,18 @@ export const useAppStore = defineStore('app', {
       // Get paid students for current month
       const paidStudentIds = state.transactions
         .filter(t => {
-          const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
-          return t.type === 'income' &&
-                 t.status === 'completed' &&
-                 transactionMonth === currentMonth
+          // Skip non-income or non-completed transactions
+          if (t.type !== 'income' || t.status !== 'completed') return false
+          
+          // First, try to find the corresponding payment link to get the correct month
+          const paymentLink = state.paymentLinks.find(p => p.order_id === t.order_id)
+          if (paymentLink && paymentLink.month) {
+            return paymentLink.month === currentMonth
+          } else {
+            // Fallback to transaction month or created_at
+            const transactionMonth = t.month || new Date(t.created_at).toISOString().slice(0, 7)
+            return transactionMonth === currentMonth
+          }
         })
         .map(t => t.student_id)
 
@@ -82,7 +93,10 @@ export const useAppStore = defineStore('app', {
       state.transactions
         .filter(t => t.type === 'income' && t.status === 'completed')
         .forEach(t => {
-          const month = new Date(t.created_at).toISOString().slice(0, 7)
+          // First, try to find the corresponding payment link to get the correct month
+          const paymentLink = state.paymentLinks.find(p => p.order_id === t.order_id)
+          const month = paymentLink?.month || t.month || new Date(t.created_at).toISOString().slice(0, 7)
+          
           if (!studentPaymentHistory[t.student_id]) {
             studentPaymentHistory[t.student_id] = {}
           }
@@ -120,10 +134,18 @@ export const useAppStore = defineStore('app', {
       const currentMonth = new Date().toISOString().slice(0, 7)
       const paidStudentIds = state.transactions
         .filter(t => {
-          const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
-          return t.type === 'income' &&
-                 t.status === 'completed' &&
-                 transactionMonth === currentMonth
+          // Skip non-income or non-completed transactions
+          if (t.type !== 'income' || t.status !== 'completed') return false
+          
+          // First, try to find the corresponding payment link to get the correct month
+          const paymentLink = state.paymentLinks.find(p => p.order_id === t.order_id)
+          if (paymentLink && paymentLink.month) {
+            return paymentLink.month === currentMonth
+          } else {
+            // Fallback to transaction month or created_at
+            const transactionMonth = t.month || new Date(t.created_at).toISOString().slice(0, 7)
+            return transactionMonth === currentMonth
+          }
         })
         .map(t => t.student_id)
 
@@ -295,14 +317,14 @@ export const useAppStore = defineStore('app', {
         
         // Check if student already paid for the target month
         const studentAlreadyPaid = this.transactions.some(t => {
+          // Skip non-income or non-completed transactions
+          if (t.type !== 'income' || t.status !== 'completed') return false
+          
           // Check both transaction month and payment link month
           const paymentLink = this.paymentLinks.find(p => p.order_id === t.order_id)
-          const transactionMonth = paymentLink?.month || new Date(t.created_at).toISOString().slice(0, 7)
+          const transactionMonth = paymentLink?.month || t.month || new Date(t.created_at).toISOString().slice(0, 7)
           
-          return t.student_id === studentId &&
-                 t.type === 'income' &&
-                 t.status === 'completed' &&
-                 transactionMonth === paymentMonth
+          return t.student_id === studentId && transactionMonth === paymentMonth
         })
 
         if (studentAlreadyPaid) {

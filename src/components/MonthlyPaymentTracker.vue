@@ -322,15 +322,19 @@ const loadMonthlyData = () => {
     
     // Get transactions for this month
     const monthTransactions = store.transactions.filter(t => {
+      // Skip non-income or non-completed transactions
+      if (t.type !== 'income' || t.status !== 'completed') return false
+      
       // First, try to find the corresponding payment link to get the correct month
       const paymentLink = store.paymentLinks.find(p => p.order_id === t.order_id)
       if (paymentLink && paymentLink.month) {
         // Use the month from payment link (this is the intended payment month)
-        return paymentLink.month === monthCode && t.type === 'income' && t.status === 'completed'
+        return paymentLink.month === monthCode
       } else {
         // Fallback to transaction created_at for transactions without payment links
-        const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
-        return transactionMonth === monthCode && t.type === 'income' && t.status === 'completed'
+        // But only if the transaction has a month field or use created_at
+        const transactionMonth = t.month || new Date(t.created_at).toISOString().slice(0, 7)
+        return transactionMonth === monthCode
       }
     })
     

@@ -1448,11 +1448,14 @@ const unpaidStudentsThisMonth = computed(() => {
   return store.students.filter(student => {
     // Check if student has paid this month
     const hasPaidThisMonth = store.transactions.some(t => {
-      const paymentMonth = t.month || new Date(t.created_at).toISOString().slice(0, 7)
-      return t.student_id === student.id && 
-             t.type === 'income' && 
-             t.status === 'completed' && 
-             paymentMonth === currentMonthCode
+      // Skip non-income or non-completed transactions
+      if (t.type !== 'income' || t.status !== 'completed') return false
+      
+      // First, try to find the corresponding payment link to get the correct month
+      const paymentLink = store.paymentLinks.find(p => p.order_id === t.order_id)
+      const paymentMonth = paymentLink?.month || t.month || new Date(t.created_at).toISOString().slice(0, 7)
+      
+      return t.student_id === student.id && paymentMonth === currentMonthCode
     })
     
     return !hasPaidThisMonth

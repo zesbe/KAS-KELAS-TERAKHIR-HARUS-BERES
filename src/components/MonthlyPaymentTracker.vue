@@ -271,18 +271,8 @@ const selectedMonth = ref(null)
 const monthlyTarget = ref(50000 * store.students.length) // Assuming 50k per student per month
 
 const availableYears = computed(() => {
-  // Show academic years (starting year)
-  const currentYear = new Date().getFullYear()
-  const currentMonth = new Date().getMonth()
-
-  // If current month is before August (0-6), we're in the second half of academic year
-  const academicStartYear = currentMonth < 7 ? currentYear - 1 : currentYear
-
-  return [
-    academicStartYear - 1,
-    academicStartYear,
-    academicStartYear + 1
-  ]
+  // Start from academic year 2025/2026 onwards
+  return [2025, 2026, 2027, 2028, 2029]
 })
 
 const currentMonthName = computed(() => {

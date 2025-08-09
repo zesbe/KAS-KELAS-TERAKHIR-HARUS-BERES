@@ -325,8 +325,6 @@ const loadMonthlyData = () => {
 
     // Only highlight as current month if we're viewing the current year AND it's the current month
     const isCurrentMonth = (year === currentYear) && (monthCode === currentMonthCode)
-
-    console.log(`Month ${monthName} ${year}: monthCode=${monthCode}, currentMonthCode=${currentMonthCode}, isCurrentMonth=${isCurrentMonth}`)
     
     // Get transactions for this month
     const monthTransactions = store.transactions.filter(t => {

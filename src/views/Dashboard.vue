@@ -356,6 +356,122 @@
       </div>
     </div>
 
+    <!-- Quick Payment Actions -->
+    <div class="card p-4 sm:p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">💳 Pembayaran Cepat</h3>
+        <button
+          @click="showQuickPaymentModal = true"
+          class="btn-primary text-sm"
+        >
+          <PlusIcon class="w-4 h-4 mr-2" />
+          Buat Link Pembayaran
+        </button>
+      </div>
+
+      <!-- Quick Payment Options -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <!-- Multi-Month Templates -->
+        <div class="bg-blue-50 rounded-lg p-4">
+          <h4 class="font-semibold text-blue-900 mb-3">🗓️ Kas Bulanan</h4>
+          <div class="space-y-2">
+            <button
+              @click="createMultiMonthPayment(3)"
+              class="w-full btn-outline text-sm py-2"
+            >
+              3 Bulan - {{ formatCurrency(150000) }}
+            </button>
+            <button
+              @click="createMultiMonthPayment(6)"
+              class="w-full btn-outline text-sm py-2"
+            >
+              6 Bulan - {{ formatCurrency(300000) }}
+            </button>
+            <button
+              @click="createMultiMonthPayment(12)"
+              class="w-full btn-outline text-sm py-2"
+            >
+              12 Bulan - {{ formatCurrency(600000) }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Payment Templates -->
+        <div class="bg-green-50 rounded-lg p-4">
+          <h4 class="font-semibold text-green-900 mb-3">🎯 Template Khusus</h4>
+          <div class="space-y-2">
+            <button
+              @click="createCustomPayment('disaster', 'Iuran Bencana Alam', 25000)"
+              class="w-full btn-outline text-sm py-2"
+            >
+              Iuran Bencana - {{ formatCurrency(25000) }}
+            </button>
+            <button
+              @click="createCustomPayment('event', 'Iuran Acara Kelas', 30000)"
+              class="w-full btn-outline text-sm py-2"
+            >
+              Acara Kelas - {{ formatCurrency(30000) }}
+            </button>
+            <button
+              @click="createCustomPayment('equipment', 'Perlengkapan Kelas', 40000)"
+              class="w-full btn-outline text-sm py-2"
+            >
+              Perlengkapan - {{ formatCurrency(40000) }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Mark as Paid -->
+        <div class="bg-yellow-50 rounded-lg p-4">
+          <h4 class="font-semibold text-yellow-900 mb-3">✅ Tandai Lunas</h4>
+          <div class="space-y-2">
+            <select v-model="quickMarkStudent" class="input-field text-sm">
+              <option value="">Pilih Siswa...</option>
+              <option v-for="student in store.students" :key="student.id" :value="student.id">
+                {{ student.name }} ({{ student.nickname }})
+              </option>
+            </select>
+            <button
+              @click="quickMarkAsPaid"
+              :disabled="!quickMarkStudent"
+              class="w-full btn-success text-sm py-2"
+              :class="{ 'opacity-50 cursor-not-allowed': !quickMarkStudent }"
+            >
+              Tandai Sudah Bayar Kas
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Unpaid Students -->
+      <div class="border-t pt-4">
+        <h4 class="font-medium text-gray-900 mb-3">👥 Siswa Belum Bayar Bulan Ini</h4>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          <button
+            v-for="student in unpaidStudentsThisMonth.slice(0, 8)"
+            :key="student.id"
+            @click="quickMarkStudentPaid(student)"
+            class="flex items-center p-2 bg-red-50 rounded-lg hover:bg-red-100 transition-colors text-left"
+          >
+            <div class="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center mr-2">
+              <span class="text-red-700 font-semibold text-xs">
+                {{ student.nickname?.charAt(0)?.toUpperCase() }}
+              </span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium text-red-900 truncate">{{ student.name }}</div>
+              <div class="text-xs text-red-600">Belum bayar</div>
+            </div>
+          </button>
+        </div>
+        <div v-if="unpaidStudentsThisMonth.length > 8" class="text-center mt-2">
+          <span class="text-sm text-gray-500">
+            dan {{ unpaidStudentsThisMonth.length - 8 }} siswa lainnya
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- Monthly Payment Tracking -->
     <MonthlyPaymentTracker />
 
@@ -368,44 +484,327 @@
           class="flex flex-col items-center p-3 sm:p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
         >
           <CreditCardIcon class="w-6 h-6 sm:w-8 sm:h-8 text-primary-600 mb-2" />
-          <span class="text-xs sm:text-sm font-medium text-primary-900 text-center">Buat Link Bayar</span>
+          <span class="text-xs sm:text-sm font-medium text-primary-900">Link Pembayaran</span>
         </router-link>
-        
+
         <router-link
-          to="/campaigns"
+          to="/students"
           class="flex flex-col items-center p-3 sm:p-4 bg-success-50 rounded-lg hover:bg-success-100 transition-colors"
         >
-          <SpeakerWaveIcon class="w-6 h-6 sm:w-8 sm:h-8 text-success-600 mb-2" />
-          <span class="text-xs sm:text-sm font-medium text-success-900 text-center">Kirim Pesan</span>
+          <UsersIcon class="w-6 h-6 sm:w-8 sm:h-8 text-success-600 mb-2" />
+          <span class="text-xs sm:text-sm font-medium text-success-900">Data Siswa</span>
         </router-link>
-        
+
         <router-link
           to="/expenses"
           class="flex flex-col items-center p-3 sm:p-4 bg-warning-50 rounded-lg hover:bg-warning-100 transition-colors"
         >
-          <ReceiptPercentIcon class="w-6 h-6 sm:w-8 sm:h-8 text-warning-600 mb-2" />
-          <span class="text-xs sm:text-sm font-medium text-warning-900 text-center">Catat Pengeluaran</span>
+          <BanknotesIcon class="w-6 h-6 sm:w-8 sm:h-8 text-warning-600 mb-2" />
+          <span class="text-xs sm:text-sm font-medium text-warning-900">Pengeluaran</span>
         </router-link>
-        
+
         <router-link
           to="/reports"
           class="flex flex-col items-center p-3 sm:p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
         >
-          <DocumentChartBarIcon class="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 mb-2" />
-          <span class="text-xs sm:text-sm font-medium text-purple-900 text-center">Lihat Laporan</span>
+          <ChartBarIcon class="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 mb-2" />
+          <span class="text-xs sm:text-sm font-medium text-purple-900">Laporan</span>
         </router-link>
+      </div>
+    </div>
+
+    <!-- Quick Payment Modal -->
+    <div
+      v-if="showQuickPaymentModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    >
+      <div class="bg-white rounded-lg max-w-4xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-semibold text-gray-900">🚀 Buat Link Pembayaran</h3>
+          <button
+            @click="showQuickPaymentModal = false"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <XMarkIcon class="w-6 h-6" />
+          </button>
+        </div>
+
+        <!-- Payment Type Selection -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          <!-- Monthly Payment -->
+          <div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+            <div class="flex items-center mb-3">
+              <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+                <CalendarIcon class="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 class="font-semibold text-blue-900">Kas Bulanan</h4>
+                <p class="text-sm text-blue-600">Rp 50.000/bulan</p>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <button
+                @click="openPaymentForm('monthly', 3, 150000)"
+                class="w-full btn-outline text-sm py-2 border-blue-300 text-blue-700 hover:bg-blue-100"
+              >
+                3 Bulan - {{ formatCurrency(150000) }}
+              </button>
+              <button
+                @click="openPaymentForm('monthly', 6, 300000)"
+                class="w-full btn-outline text-sm py-2 border-blue-300 text-blue-700 hover:bg-blue-100"
+              >
+                6 Bulan - {{ formatCurrency(300000) }}
+              </button>
+              <button
+                @click="openPaymentForm('monthly', 12, 600000)"
+                class="w-full btn-outline text-sm py-2 border-blue-300 text-blue-700 hover:bg-blue-100"
+              >
+                12 Bulan - {{ formatCurrency(600000) }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Emergency Fund -->
+          <div class="border-2 border-red-200 rounded-lg p-4 bg-red-50">
+            <div class="flex items-center mb-3">
+              <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center mr-3">
+                <ExclamationTriangleIcon class="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 class="font-semibold text-red-900">Iuran Darurat</h4>
+                <p class="text-sm text-red-600">Untuk keperluan mendesak</p>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <button
+                @click="openPaymentForm('emergency', 1, 25000, 'Iuran Bencana Alam')"
+                class="w-full btn-outline text-sm py-2 border-red-300 text-red-700 hover:bg-red-100"
+              >
+                Bencana Alam - {{ formatCurrency(25000) }}
+              </button>
+              <button
+                @click="openPaymentForm('emergency', 1, 30000, 'Bantuan Siswa Sakit')"
+                class="w-full btn-outline text-sm py-2 border-red-300 text-red-700 hover:bg-red-100"
+              >
+                Bantuan Sakit - {{ formatCurrency(30000) }}
+              </button>
+              <button
+                @click="openPaymentForm('emergency', 1, 20000, 'Dana Darurat Kelas')"
+                class="w-full btn-outline text-sm py-2 border-red-300 text-red-700 hover:bg-red-100"
+              >
+                Dana Darurat - {{ formatCurrency(20000) }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Event Fund -->
+          <div class="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+            <div class="flex items-center mb-3">
+              <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-3">
+                <GiftIcon class="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 class="font-semibold text-green-900">Acara & Kegiatan</h4>
+                <p class="text-sm text-green-600">Event kelas & sekolah</p>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <button
+                @click="openPaymentForm('event', 1, 50000, 'Acara Perpisahan Kelas')"
+                class="w-full btn-outline text-sm py-2 border-green-300 text-green-700 hover:bg-green-100"
+              >
+                Perpisahan - {{ formatCurrency(50000) }}
+              </button>
+              <button
+                @click="openPaymentForm('event', 1, 35000, 'Perayaan Hari Guru')"
+                class="w-full btn-outline text-sm py-2 border-green-300 text-green-700 hover:bg-green-100"
+              >
+                Hari Guru - {{ formatCurrency(35000) }}
+              </button>
+              <button
+                @click="openPaymentForm('event', 1, 40000, 'Field Trip Kelas')"
+                class="w-full btn-outline text-sm py-2 border-green-300 text-green-700 hover:bg-green-100"
+              >
+                Field Trip - {{ formatCurrency(40000) }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Equipment Fund -->
+          <div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">
+            <div class="flex items-center mb-3">
+              <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
+                <CogIcon class="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 class="font-semibold text-purple-900">Perlengkapan</h4>
+                <p class="text-sm text-purple-600">Fasilitas & alat kelas</p>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <button
+                @click="openPaymentForm('equipment', 1, 45000, 'Perlengkapan Kebersihan')"
+                class="w-full btn-outline text-sm py-2 border-purple-300 text-purple-700 hover:bg-purple-100"
+              >
+                Kebersihan - {{ formatCurrency(45000) }}
+              </button>
+              <button
+                @click="openPaymentForm('equipment', 1, 60000, 'Alat Tulis Kelas')"
+                class="w-full btn-outline text-sm py-2 border-purple-300 text-purple-700 hover:bg-purple-100"
+              >
+                Alat Tulis - {{ formatCurrency(60000) }}
+              </button>
+              <button
+                @click="openPaymentForm('equipment', 1, 35000, 'Dekorasi Kelas')"
+                class="w-full btn-outline text-sm py-2 border-purple-300 text-purple-700 hover:bg-purple-100"
+              >
+                Dekorasi - {{ formatCurrency(35000) }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Custom Payment -->
+          <div class="border-2 border-gray-200 rounded-lg p-4 bg-gray-50">
+            <div class="flex items-center mb-3">
+              <div class="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center mr-3">
+                <PencilIcon class="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 class="font-semibold text-gray-900">Custom</h4>
+                <p class="text-sm text-gray-600">Buat sendiri</p>
+              </div>
+            </div>
+            <button
+              @click="openPaymentForm('custom', 1, 0, '')"
+              class="w-full btn-outline text-sm py-2 border-gray-300 text-gray-700 hover:bg-gray-100"
+            >
+              Buat Custom
+            </button>
+          </div>
+        </div>
+
+        <!-- Payment Form -->
+        <div v-if="showPaymentForm" class="border-t pt-6">
+          <h4 class="text-lg font-semibold text-gray-900 mb-4">📝 Detail Pembayaran</h4>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Pembayaran</label>
+                <input
+                  v-model="paymentForm.type"
+                  type="text"
+                  readonly
+                  class="input-field bg-gray-100"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                <input
+                  v-model="paymentForm.description"
+                  type="text"
+                  class="input-field"
+                  placeholder="Masukkan keterangan pembayaran"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah (IDR)</label>
+                <input
+                  v-model.number="paymentForm.amount"
+                  type="number"
+                  min="1000"
+                  class="input-field"
+                  placeholder="50000"
+                />
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Target Siswa</label>
+                <select v-model="paymentForm.target" class="input-field">
+                  <option value="all">Semua Siswa</option>
+                  <option value="unpaid">Siswa Belum Bayar</option>
+                  <option value="selected">Pilih Manual</option>
+                </select>
+              </div>
+              
+              <div v-if="paymentForm.type === 'monthly'">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Durasi (Bulan)</label>
+                <input
+                  v-model.number="paymentForm.months"
+                  type="number"
+                  min="1"
+                  max="12"
+                  class="input-field"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Catatan (Opsional)</label>
+                <textarea
+                  v-model="paymentForm.notes"
+                  rows="3"
+                  class="input-field"
+                  placeholder="Catatan tambahan untuk pembayaran ini"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Student Selection -->
+          <div v-if="paymentForm.target === 'selected'" class="mt-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Siswa</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 max-h-48 overflow-y-auto">
+              <label
+                v-for="student in store.students"
+                :key="student.id"
+                class="flex items-center space-x-2 p-2 border rounded-lg hover:bg-gray-50"
+              >
+                <input
+                  type="checkbox"
+                  :value="student.id"
+                  v-model="paymentForm.selectedStudents"
+                  class="rounded"
+                />
+                <span class="text-sm">{{ student.name }} ({{ student.nickname }})</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-between mt-6 pt-4 border-t">
+            <button
+              @click="resetPaymentForm"
+              class="btn-secondary"
+            >
+              Reset
+            </button>
+            <button
+              @click="createPaymentLinks"
+              :disabled="!paymentForm.description || !paymentForm.amount"
+              class="btn-primary"
+              :class="{ 'opacity-50 cursor-not-allowed': !paymentForm.description || !paymentForm.amount }"
+            >
+              Buat Link Pembayaran
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores'
+import { useToast } from 'vue-toastification'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { runDatabaseDiagnostics, generateSetupRecommendation } from '@/utils/databaseDiagnostics'
 import MonthlyPaymentTracker from '@/components/MonthlyPaymentTracker.vue'
+import { runDatabaseDiagnostics, generateSetupRecommendation } from '@/utils/databaseDiagnostics'
 import {
   BanknotesIcon,
   ReceiptPercentIcon,
@@ -419,10 +818,18 @@ import {
   PrinterIcon,
   EyeIcon,
   ArrowDownTrayIcon,
-  ShareIcon
+  ShareIcon,
+  PlusIcon,
+  CalendarIcon,
+  GiftIcon,
+  CogIcon,
+  PencilIcon,
+  ChartBarIcon,
+  XMarkIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
+const toast = useToast()
 
 // Check if Supabase is configured
 const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL &&
@@ -436,6 +843,24 @@ const setupRecommendation = ref(null)
 
 // Download options dropdown
 const showDownloadOptions = ref(false)
+
+// Quick Payment Modal
+const showQuickPaymentModal = ref(false)
+const quickMarkStudent = ref('')
+const quickMarkAmount = ref(0)
+const quickMarkDuration = ref(0)
+
+// Quick Payment Form Modal
+const showPaymentForm = ref(false)
+const paymentForm = ref({
+  type: '',
+  description: '',
+  amount: 0,
+  target: 'all',
+  months: 0,
+  notes: '',
+  selectedStudents: []
+})
 
 // Check if database setup is needed (no data loaded despite being configured)
 const needsDatabaseSetup = computed(() => {
@@ -871,5 +1296,180 @@ const generateDashboardPDFContent = () => {
     <p><strong>Saldo Kas:</strong> ${formatCurrency(store.totalIncome - store.totalExpenses)}</p>
     <p><strong>Total Transaksi:</strong> ${allTransactions.length}</p>
   `
+}
+
+// Quick Mark as Paid
+const quickMarkAsPaid = async () => {
+  if (!quickMarkStudent.value) return
+
+  const amount = prompt('Masukkan jumlah pembayaran (IDR):', '50000')
+  if (!amount || amount === '') return
+
+  try {
+    await store.markPaymentAsPaid(quickMarkStudent.value, parseInt(amount), 0)
+    quickMarkStudent.value = ''
+    toast.success('Siswa berhasil ditandai sudah bayar!')
+  } catch (error) {
+    console.error('Error marking payment as paid:', error)
+    toast.error('Gagal menandai pembayaran: ' + error.message)
+  }
+}
+
+// Create multi-month payment link
+const createMultiMonthPayment = async (months) => {
+  const totalAmount = months * 50000 // 50k per month
+  
+  if (!confirm(`Buat link pembayaran ${months} bulan (${formatCurrency(totalAmount)}) untuk semua siswa?`)) {
+    return
+  }
+
+  try {
+    const studentIds = store.students.map(s => s.id)
+    const results = await store.createMultiMonthPayment(studentIds, totalAmount, months)
+    
+    const successful = results.filter(r => r.success).length
+    const failed = results.filter(r => !r.success).length
+    
+    if (successful > 0) {
+      toast.success(`✅ ${successful} link pembayaran ${months} bulan berhasil dibuat!`)
+    }
+    if (failed > 0) {
+      toast.warning(`⚠️ ${failed} link gagal dibuat`)
+    }
+  } catch (error) {
+    console.error('Error creating multi-month payment:', error)
+    toast.error('Gagal membuat link pembayaran: ' + error.message)
+  }
+}
+
+// Create custom payment link
+const createCustomPayment = async (type, description, amount) => {
+  if (!confirm(`Buat link pembayaran "${description}" (${formatCurrency(amount)}) untuk semua siswa?`)) {
+    return
+  }
+
+  try {
+    const studentIds = store.students.map(s => s.id)
+    const results = await store.createCustomPayment(studentIds, 1, type, description, amount)
+    
+    const successful = results.filter(r => r.success).length
+    const failed = results.filter(r => !r.success).length
+    
+    if (successful > 0) {
+      toast.success(`✅ ${successful} link "${description}" berhasil dibuat!`)
+    }
+    if (failed > 0) {
+      toast.warning(`⚠️ ${failed} link gagal dibuat`)
+    }
+  } catch (error) {
+    console.error('Error creating custom payment:', error)
+    toast.error('Gagal membuat link pembayaran: ' + error.message)
+  }
+}
+
+// Open payment form for creating custom payment links
+const openPaymentForm = (type, months, amount, description = '') => {
+  paymentForm.value.type = type
+  paymentForm.value.months = months
+  paymentForm.value.amount = amount
+  paymentForm.value.description = description
+  paymentForm.value.target = 'all' // Default to all students
+  paymentForm.value.selectedStudents = []
+  paymentForm.value.notes = ''
+  showPaymentForm.value = true
+}
+
+// Reset payment form
+const resetPaymentForm = () => {
+  paymentForm.value = {
+    type: '',
+    description: '',
+    amount: 0,
+    target: 'all',
+    months: 0,
+    notes: '',
+    selectedStudents: []
+  }
+}
+
+// Create payment links based on form data
+const createPaymentLinks = async () => {
+  if (!paymentForm.value.description || paymentForm.value.amount <= 0) {
+    toast.error('Keterangan dan jumlah pembayaran harus diisi.')
+    return
+  }
+
+  let selectedStudentIds = []
+  if (paymentForm.value.target === 'all') {
+    selectedStudentIds = store.students.map(s => s.id)
+  } else if (paymentForm.value.target === 'unpaid') {
+    selectedStudentIds = unpaidStudentsThisMonth.value.map(s => s.id)
+  } else if (paymentForm.value.target === 'selected') {
+    selectedStudentIds = paymentForm.value.selectedStudents
+  }
+
+  if (selectedStudentIds.length === 0) {
+    toast.error('Tidak ada siswa yang dipilih.')
+    return
+  }
+
+  try {
+    let results = []
+    
+    if (paymentForm.value.type === 'monthly') {
+      results = await store.createMultiMonthPayment(selectedStudentIds, paymentForm.value.amount, paymentForm.value.months)
+    } else {
+      results = await store.createCustomPayment(selectedStudentIds, 1, paymentForm.value.type, paymentForm.value.description, paymentForm.value.amount)
+    }
+    
+    const successful = results.filter(r => r.success).length
+    const failed = results.filter(r => !r.success).length
+    
+    if (successful > 0) {
+      toast.success(`✅ ${successful} link "${paymentForm.value.description}" berhasil dibuat!`)
+    }
+    if (failed > 0) {
+      toast.warning(`⚠️ ${failed} link gagal dibuat`)
+    }
+    
+    showPaymentForm.value = false
+    showQuickPaymentModal.value = false
+    resetPaymentForm()
+  } catch (error) {
+    console.error('Error creating payment links:', error)
+    toast.error('Gagal membuat link pembayaran: ' + error.message)
+  }
+}
+
+// Get unpaid students for the current month
+const unpaidStudentsThisMonth = computed(() => {
+  const currentMonthCode = new Date().toISOString().slice(0, 7)
+  
+  return store.students.filter(student => {
+    // Check if student has paid this month
+    const hasPaidThisMonth = store.transactions.some(t => {
+      const paymentMonth = t.month || new Date(t.created_at).toISOString().slice(0, 7)
+      return t.student_id === student.id && 
+             t.type === 'income' && 
+             t.status === 'completed' && 
+             paymentMonth === currentMonthCode
+    })
+    
+    return !hasPaidThisMonth
+  })
+})
+
+// Quick mark a specific student as paid
+const quickMarkStudentPaid = async (student) => {
+  const amount = prompt(`Masukkan jumlah pembayaran untuk ${student.name} (IDR):`, '50000')
+  if (!amount || amount === '') return
+
+  try {
+    await store.markPaymentAsPaid(student.id, parseInt(amount), 0)
+    toast.success(`✅ ${student.name} berhasil ditandai sudah bayar!`)
+  } catch (error) {
+    console.error('Error marking payment as paid:', error)
+    toast.error('Gagal menandai pembayaran: ' + error.message)
+  }
 }
 </script>

@@ -486,5 +486,125 @@ export const useAppStore = defineStore('app', {
       }
     },
 
+    // Create multi-month payment for multiple students
+    async createMultiMonthPayment(studentIds, totalAmount, months) {
+      try {
+        const monthlyAmount = Math.round(totalAmount / months)
+        const results = []
+        
+        // Ensure studentIds is an array
+        const targetStudents = Array.isArray(studentIds) ? studentIds : [studentIds]
+        
+        for (const studentId of targetStudents) {
+          const student = this.students.find(s => s.id === studentId)
+          if (!student) continue
+          
+          // Create single payment link for the total amount
+          const description = `Kas Kelas ${months} Bulan (${monthlyAmount.toLocaleString('id-ID')}/bulan)`
+          
+          try {
+            const paymentData = pakasirService.createPaymentLink(student, totalAmount, description)
+            
+            const { data, error } = await db.addPaymentLink({
+              ...paymentData,
+              student_id: studentId,
+              status: 'pending',
+              amount: totalAmount,
+              description: description,
+              months: months,
+              monthly_amount: monthlyAmount,
+              payment_type: 'multi_month',
+              notes: `Pembayaran kas ${months} bulan dengan cicilan ${monthlyAmount.toLocaleString('id-ID')}/bulan`
+            })
+            
+            if (error) throw error
+            results.push({ student: student.name, success: true })
+          } catch (error) {
+            results.push({ student: student.name, success: false, error: error.message })
+          }
+        }
+        
+        await this.fetchPaymentLinks()
+        return results
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
+    },
+
+    // Create custom payment (disaster fund, events, etc.)
+    async createCustomPayment(studentIds, months, type, description, amount) {
+      try {
+        const results = []
+        
+        // Ensure studentIds is an array
+        const targetStudents = Array.isArray(studentIds) ? studentIds : [studentIds]
+        
+        for (const studentId of targetStudents) {
+          const student = this.students.find(s => s.id === studentId)
+          if (!student) continue
+          
+          try {
+            const paymentData = pakasirService.createPaymentLink(student, amount, description)
+            
+            const { data, error } = await db.addPaymentLink({
+              ...paymentData,
+              student_id: studentId,
+              status: 'pending',
+              amount: amount,
+              description: description,
+              payment_type: type,
+              notes: `Pembayaran khusus: ${description}`
+            })
+            
+            if (error) throw error
+            results.push({ student: student.name, success: true })
+          } catch (error) {
+            results.push({ student: student.name, success: false, error: error.message })
+          }
+        }
+        
+        await this.fetchPaymentLinks()
+        return results
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
+    },
+
+    // Quick mark payment as paid (for dashboard)
+    async markPaymentAsPaid(studentId, amount, duration) {
+      try {
+        const student = this.students.find(s => s.id === studentId)
+        if (!student) throw new Error('Student not found')
+
+        const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+        const currentMonthCode = new Date().toISOString().slice(0, 7)
+        
+        let description = `Kas Kelas ${currentMonth}`
+        if (duration > 1) {
+          description = `Kas Kelas ${duration} Bulan - ${currentMonth}`
+        }
+
+        // Create transaction record directly
+        await this.addTransaction({
+          type: 'income',
+          amount: amount,
+          description: description,
+          student_id: studentId,
+          payment_method: 'manual_dashboard',
+          status: 'completed',
+          month: currentMonthCode,
+          created_at: new Date().toISOString(),
+          notes: `Pembayaran manual dari dashboard untuk ${currentMonth}`
+        })
+
+        return { success: true, student: student.name }
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
+    },
+
   }
 })

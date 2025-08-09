@@ -455,32 +455,76 @@ async function loadFromOrderId(orderId) {
 }
 
 async function loadFromStudentId(studentId) {
-  // Get student data
+  let student = null
+
+  // Try to get student data from multiple sources
   const studentsData = localStorage.getItem('students')
   if (studentsData) {
     const students = JSON.parse(studentsData)
-    const student = students.find(s => s.id === studentId)
-    
-    if (student) {
-      const orderId = `KAS${Date.now()}`
-      invoice.value = {
-        id: `inv_${Date.now()}`,
-        invoiceNumber: `INV-${orderId.slice(-8)}`,
-        orderId: orderId,
-        student: student,
-        description: 'Kas Kelas',
-        amount: 50000,
-        period: getCurrentMonth(),
-        paymentMethod: 'qris',
-        paidAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        reference: orderId.slice(-8),
-        status: 'completed'
-      }
-      return
+    student = students.find(s => s.id === studentId)
+  }
+
+  // If not found, try demo students
+  if (!student) {
+    const demoData = localStorage.getItem('demo_students')
+    if (demoData) {
+      const demoStudents = JSON.parse(demoData)
+      student = demoStudents.find(s => s.id === studentId)
     }
   }
-  
+
+  if (student) {
+    // Look for the latest payment for this student
+    let latestPayment = null
+
+    // Check payment links
+    const paymentLinksData = localStorage.getItem('paymentLinks')
+    if (paymentLinksData) {
+      const paymentLinks = JSON.parse(paymentLinksData)
+      const studentPayments = paymentLinks.filter(p => p.student_id === studentId)
+      if (studentPayments.length > 0) {
+        latestPayment = studentPayments.sort((a, b) =>
+          new Date(b.created_at || b.completed_at || 0) - new Date(a.created_at || a.completed_at || 0)
+        )[0]
+      }
+    }
+
+    // Check transactions
+    if (!latestPayment) {
+      const transactionsData = localStorage.getItem('transactions')
+      if (transactionsData) {
+        const transactions = JSON.parse(transactionsData)
+        const studentTransactions = transactions.filter(t => t.student_id === studentId)
+        if (studentTransactions.length > 0) {
+          latestPayment = studentTransactions.sort((a, b) =>
+            new Date(b.created_at || 0) - new Date(a.created_at || 0)
+          )[0]
+        }
+      }
+    }
+
+    const orderId = latestPayment?.order_id || `KAS${Date.now()}`
+    invoice.value = {
+      id: latestPayment?.id || `inv_${Date.now()}`,
+      invoiceNumber: `INV-${orderId.slice(-8).toUpperCase()}`,
+      orderId: orderId,
+      student: {
+        name: student.name,
+        nickname: student.nickname || '',
+        phone: student.phone || student.parent_phone || ''
+      },
+      description: latestPayment?.description || `Kas Kelas Bulan ${getCurrentMonth()}`,
+      amount: latestPayment?.amount || 50000,
+      period: latestPayment?.period || getCurrentMonth(),
+      paymentMethod: latestPayment?.payment_method || 'qris',
+      paidAt: latestPayment?.completed_at || latestPayment?.paid_at || new Date().toISOString(),
+      createdAt: latestPayment?.created_at || new Date().toISOString(),
+      reference: latestPayment?.reference || orderId.slice(-8).toUpperCase(),
+      status: 'completed'
+    }
+    return
+  }
+
   loadDemoData()
 }
 

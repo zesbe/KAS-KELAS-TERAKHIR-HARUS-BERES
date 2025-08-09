@@ -1019,6 +1019,72 @@ Wassalamu'alaikum Wr. Wb.
   }
 }
 
+const sendAllPaymentLinks = async (payment) => {
+  if (!payment.payment_links || payment.payment_links.length === 0) {
+    toast.warning('Tidak ada link pembayaran untuk dikirim')
+    return
+  }
+
+  try {
+    const student = payment.student
+    const studentName = student?.name || 'Siswa'
+    const phone = student?.phone || ''
+
+    // Create comprehensive message with all payment options
+    let message = `Assalamu'alaikum Wr. Wb.
+
+Selamat pagi orang tua dari ${studentName}
+
+Dengan hormat, kami menyediakan beberapa opsi pembayaran kas kelas untuk kemudahan Bapak/Ibu:
+
+📋 **OPSI PEMBAYARAN TERSEDIA**
+
+`
+
+    // Add each payment link option
+    payment.payment_links.forEach((link, index) => {
+      message += `${index + 1}. ${link.type === 'total' ? '💰' : '📅'} **${link.description}**
+   Jumlah: ${formatCurrency(link.amount)}
+   Link: ${link.url}
+   Order ID: ${link.order_id}
+
+`
+    })
+
+    message += `Bapak/Ibu dapat memilih opsi yang paling sesuai:
+
+${payment.payment_links.find(l => l.type === 'total') ? '✅ Bayar sekaligus (lebih praktis)\n' : ''}${payment.payment_links.find(l => l.type === 'individual') ? '✅ Bayar bertahap per bulan (lebih fleksibel)\n' : ''}
+Pembayaran dapat dilakukan melalui QRIS dengan berbagai metode:
+
+✅ Scan QR Code
+✅ E-Wallet (GoPay, OVO, DANA, ShopeePay)
+
+Terima kasih atas perhatian dan kerjasamanya.
+
+Wassalamu'alaikum Wr. Wb.
+
+---
+*Sistem Kas Kelas Otomatis*`
+
+    // Clean phone number for WhatsApp (Indonesian format)
+    const cleanPhone = phone.replace(/\D/g, '').replace(/^0/, '62')
+
+    // Create WhatsApp URL
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
+
+    // Open WhatsApp directly
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+
+    toast.success(`📱 WhatsApp terbuka untuk ${studentName}\n${payment.payment_links.length} opsi pembayaran dikirim`, {
+      timeout: 4000
+    })
+
+  } catch (error) {
+    console.error('Error opening WhatsApp:', error)
+    toast.error('Gagal membuka WhatsApp')
+  }
+}
+
 const editPayment = (payment) => {
   // Populate form with payment data for editing
   const student = payment.student

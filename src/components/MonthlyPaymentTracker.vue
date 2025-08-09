@@ -324,7 +324,8 @@ const loadMonthlyData = () => {
     const currentMonthCode = currentDate.toISOString().slice(0, 7)
 
     // Only highlight as current month if we're viewing the current year AND it's the current month
-    const isCurrentMonth = (year === currentYear) && (monthCode === currentMonthCode)
+    // Disable highlighting for 2025 since it's a future year
+    const isCurrentMonth = (year === currentYear) && (monthCode === currentMonthCode) && (year <= 2024)
     
     // Get transactions for this month
     const monthTransactions = store.transactions.filter(t => {

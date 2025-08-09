@@ -7,116 +7,216 @@
         <p class="text-gray-600">Memuat halaman...</p>
       </div>
     </div>
-    <!-- Mobile menu overlay -->
-    <div 
-      v-if="store.sidebarOpen" 
-      @click="store.toggleSidebar()"
-      class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
-    ></div>
 
-    <!-- Sidebar -->
-    <div 
-      :class="[
-        'fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0',
-        store.sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      ]"
-    >
-      <div class="flex flex-col h-full">
-        <!-- Logo -->
-        <div class="flex items-center px-4 sm:px-6 py-4 border-b border-gray-200">
-          <div class="flex items-center">
-            <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span class="text-white font-bold text-sm">K</span>
-            </div>
-            <div class="ml-3">
-              <h1 class="text-base sm:text-lg font-semibold text-gray-900">Kas Kelas 1B</h1>
-              <p class="text-xs text-gray-500">SD Islam Al Husna</p>
-            </div>
-          </div>
-        </div>
+    <!-- Mobile Layout -->
+    <div class="lg:hidden">
+      <!-- Mobile menu overlay -->
+      <div 
+        v-if="store.sidebarOpen" 
+        @click="store.toggleSidebar()"
+        class="fixed inset-0 z-40 bg-black bg-opacity-50"
+      ></div>
 
-        <!-- Navigation -->
-        <nav class="flex-1 px-4 py-4 space-y-1">
-          <router-link
-            v-for="item in filteredNavigation"
-            :key="item.name"
-            :to="item.href"
-            @click="closeMobileSidebar"
-            :class="[
-              'sidebar-link rounded-lg',
-              $route.name === item.name ? 'active' : ''
-            ]"
-          >
-            <component :is="item.icon" class="w-5 h-5 mr-3" />
-            {{ item.label }}
-          </router-link>
-        </nav>
-
-        <!-- User info -->
-        <div class="px-4 py-4 border-t border-gray-200">
-          <div class="flex items-center justify-between">
+      <!-- Mobile Sidebar -->
+      <div 
+        :class="[
+          'fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out',
+          store.sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        ]"
+      >
+        <div class="flex flex-col h-full">
+          <!-- Logo -->
+          <div class="flex items-center px-6 py-4 border-b border-gray-200">
             <div class="flex items-center">
-              <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                <span class="text-primary-600 font-medium text-sm">
-                  {{ (permissions.currentUser?.name || 'U').charAt(0).toUpperCase() }}
-                </span>
+              <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                <span class="text-white font-bold text-sm">K</span>
               </div>
               <div class="ml-3">
-                <p class="text-sm font-medium text-gray-900">{{ permissions.currentUser?.name || 'User' }}</p>
-                <p class="text-xs text-gray-500">{{ permissions.getRoleDisplayInfo(permissions.currentUser?.role || 'viewer').name }}</p>
+                <h1 class="text-lg font-semibold text-gray-900">Kas Kelas 1B</h1>
+                <p class="text-xs text-gray-500">SD Islam Al Husna</p>
               </div>
             </div>
-            <button
-              @click="handleLogout"
-              class="p-1 text-gray-400 hover:text-gray-600"
-              title="Logout"
+          </div>
+
+          <!-- Navigation -->
+          <nav class="flex-1 px-4 py-4 space-y-1">
+            <router-link
+              v-for="item in filteredNavigation"
+              :key="item.name"
+              :to="item.href"
+              @click="closeMobileSidebar"
+              :class="[
+                'sidebar-link rounded-lg',
+                $route.name === item.name ? 'active' : ''
+              ]"
             >
-              <ArrowRightOnRectangleIcon class="w-5 h-5" />
-            </button>
+              <component :is="item.icon" class="w-5 h-5 mr-3" />
+              {{ item.label }}
+            </router-link>
+          </nav>
+
+          <!-- User info -->
+          <div class="px-4 py-4 border-t border-gray-200">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                  <span class="text-primary-600 font-medium text-sm">
+                    {{ (permissions.currentUser?.name || 'U').charAt(0).toUpperCase() }}
+                  </span>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-gray-900">{{ permissions.currentUser?.name || 'User' }}</p>
+                  <p class="text-xs text-gray-500">{{ permissions.getRoleDisplayInfo(permissions.currentUser?.role || 'viewer').name }}</p>
+                </div>
+              </div>
+              <button
+                @click="handleLogout"
+                class="p-1 text-gray-400 hover:text-gray-600"
+                title="Logout"
+              >
+                <ArrowRightOnRectangleIcon class="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Main content -->
-    <div class="lg:pl-64">
-      <!-- Top bar -->
-      <header class="bg-white shadow-sm border-b border-gray-200">
-        <div class="flex items-center justify-between px-4 py-3">
-          <div class="flex items-center min-w-0 flex-1">
-            <button
-              @click="store.toggleSidebar()"
-              class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 mr-2"
-            >
-              <Bars3Icon class="w-6 h-6" />
-            </button>
-            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 truncate">
-              {{ $route.meta.title || 'Dashboard' }}
-            </h2>
-          </div>
-
-          <div class="flex items-center space-x-2 sm:space-x-4">
-            <!-- Database status indicator -->
-            <div v-if="store.isUsingMockData" class="flex items-center space-x-1 px-2 py-1 bg-yellow-50 rounded-lg">
-              <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
-              <span class="text-xs text-yellow-700 font-medium">Demo Mode</span>
+      <!-- Mobile Main Content -->
+      <div>
+        <!-- Mobile Top bar -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+          <div class="flex items-center justify-between px-4 py-3">
+            <div class="flex items-center min-w-0 flex-1">
+              <button
+                @click="store.toggleSidebar()"
+                class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 mr-2"
+              >
+                <Bars3Icon class="w-6 h-6" />
+              </button>
+              <h2 class="text-lg font-semibold text-gray-900 truncate">
+                {{ $route.meta.title || 'Dashboard' }}
+              </h2>
             </div>
 
-            <!-- Balance indicator -->
-            <div class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 bg-success-50 rounded-lg">
-              <span class="text-xs sm:text-sm text-success-600 font-medium">Saldo:</span>
-              <span class="text-xs sm:text-sm font-semibold text-success-700">
-                {{ formatCurrency(store.currentBalance) }}
-              </span>
+            <div class="flex items-center space-x-2">
+              <!-- Database status indicator -->
+              <div v-if="store.isUsingMockData" class="flex items-center space-x-1 px-2 py-1 bg-yellow-50 rounded-lg">
+                <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                <span class="text-xs text-yellow-700 font-medium">Demo</span>
+              </div>
+
+              <!-- Balance indicator -->
+              <div class="flex items-center space-x-1 px-2 py-1 bg-success-50 rounded-lg">
+                <span class="text-xs text-success-600 font-medium">Saldo:</span>
+                <span class="text-xs font-semibold text-success-700">
+                  {{ formatCurrency(store.currentBalance) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Mobile Page content -->
+        <main class="p-4">
+          <router-view />
+        </main>
+      </div>
+    </div>
+
+    <!-- Desktop Layout -->
+    <div class="hidden lg:flex desktop-layout">
+      <!-- Desktop Sidebar -->
+      <div class="desktop-sidebar">
+        <div class="flex flex-col h-full">
+          <!-- Logo -->
+          <div class="flex items-center px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                <span class="text-white font-bold text-sm">K</span>
+              </div>
+              <div class="ml-3">
+                <h1 class="text-lg font-semibold text-gray-900">Kas Kelas 1B</h1>
+                <p class="text-xs text-gray-500">SD Islam Al Husna</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation -->
+          <nav class="flex-1 px-4 py-4 space-y-1">
+            <router-link
+              v-for="item in filteredNavigation"
+              :key="item.name"
+              :to="item.href"
+              :class="[
+                'sidebar-link rounded-lg',
+                $route.name === item.name ? 'active' : ''
+              ]"
+            >
+              <component :is="item.icon" class="w-5 h-5 mr-3" />
+              {{ item.label }}
+            </router-link>
+          </nav>
+
+          <!-- User info -->
+          <div class="px-4 py-4 border-t border-gray-200">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                  <span class="text-primary-600 font-medium text-sm">
+                    {{ (permissions.currentUser?.name || 'U').charAt(0).toUpperCase() }}
+                  </span>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-gray-900">{{ permissions.currentUser?.name || 'User' }}</p>
+                  <p class="text-xs text-gray-500">{{ permissions.getRoleDisplayInfo(permissions.currentUser?.role || 'viewer').name }}</p>
+                </div>
+              </div>
+              <button
+                @click="handleLogout"
+                class="p-1 text-gray-400 hover:text-gray-600"
+                title="Logout"
+              >
+                <ArrowRightOnRectangleIcon class="w-5 h-5" />
+              </button>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      <!-- Page content -->
-      <main class="p-4 sm:p-6">
-        <router-view />
-      </main>
+      <!-- Desktop Main Content -->
+      <div class="desktop-main">
+        <!-- Desktop Header -->
+        <header class="desktop-header">
+          <div class="flex items-center justify-between px-6 py-4">
+            <div class="flex items-center min-w-0 flex-1">
+              <h2 class="text-xl font-semibold text-gray-900 truncate">
+                {{ $route.meta.title || 'Dashboard' }}
+              </h2>
+            </div>
+
+            <div class="flex items-center space-x-4">
+              <!-- Database status indicator -->
+              <div v-if="store.isUsingMockData" class="flex items-center space-x-2 px-3 py-1 bg-yellow-50 rounded-lg">
+                <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                <span class="text-sm text-yellow-700 font-medium">Demo Mode</span>
+              </div>
+
+              <!-- Balance indicator -->
+              <div class="flex items-center space-x-2 px-3 py-1 bg-success-50 rounded-lg">
+                <span class="text-sm text-success-600 font-medium">Saldo:</span>
+                <span class="text-sm font-semibold text-success-700">
+                  {{ formatCurrency(store.currentBalance) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Desktop Page Content -->
+        <main class="desktop-content">
+          <router-view />
+        </main>
+      </div>
     </div>
 
     <!-- Error toast -->

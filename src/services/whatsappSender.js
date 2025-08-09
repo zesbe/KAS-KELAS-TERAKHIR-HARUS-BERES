@@ -133,80 +133,124 @@ class WhatsAppSender {
 
   // Kirim ke multiple nomor dengan delay
   async sendBulkMessages(recipients, message, delaySeconds = 3) {
+    if (!recipients || recipients.length === 0) {
+      console.warn('No recipients provided for bulk messaging')
+      return {
+        success: false,
+        error: 'No recipients provided',
+        total: 0,
+        sent: 0,
+        failed: 0,
+        results: []
+      }
+    }
+
     this.isActive = true
     this.stats.total = recipients.length
     this.stats.sent = 0
     this.stats.failed = 0
-    
+
     const results = []
-    
-    for (let i = 0; i < recipients.length; i++) {
+
+    console.log(`🚀 Starting bulk WhatsApp campaign to ${recipients.length} recipients`)
+
+    for (let i = 0; i < recipients.length && this.isActive; i++) {
       const recipient = recipients[i]
-      
+
       try {
+        console.log(`📤 Processing ${i + 1}/${recipients.length}: ${recipient.name} (${recipient.phone})`)
+
         // Personalize message
         const personalizedMessage = this.personalizeMessage(message, recipient)
-        
+
         // Send message
         const result = await this.sendMessage(recipient.phone, personalizedMessage, {
           openInNewTab: i === 0 // Only open first message in new tab
         })
-        
-        results.push({
+
+        const resultRecord = {
           name: recipient.name,
           phone: recipient.phone,
           success: result.success,
           method: result.method,
-          timestamp: result.timestamp
-        })
-        
-        console.log(`📤 ${i + 1}/${recipients.length} - ${recipient.name}: ${result.success ? '✅' : '❌'}`)
-        
+          timestamp: result.timestamp,
+          error: result.error || null
+        }
+
+        results.push(resultRecord)
+
+        const statusIcon = result.success ? '✅' : '❌'
+        console.log(`${statusIcon} ${i + 1}/${recipients.length} - ${recipient.name}: ${result.success ? 'Success' : result.error}`)
+
         // Emit progress event
         window.dispatchEvent(new CustomEvent('whatsapp:progress', {
           detail: {
             current: i + 1,
             total: recipients.length,
             sent: this.stats.sent,
-            failed: this.stats.failed
+            failed: this.stats.failed,
+            currentRecipient: recipient,
+            lastResult: result
           }
         }))
-        
+
         // Delay before next message (except for last one)
-        if (i < recipients.length - 1) {
+        if (i < recipients.length - 1 && this.isActive) {
+          console.log(`⏱️ Waiting ${delaySeconds} seconds before next message...`)
           await this.delay(delaySeconds * 1000)
         }
-        
+
       } catch (error) {
         console.error(`❌ Error sending to ${recipient.name}:`, error)
         this.stats.failed++
-        results.push({
+
+        const errorRecord = {
           name: recipient.name,
           phone: recipient.phone,
           success: false,
           error: error.message,
           timestamp: new Date().toISOString()
-        })
+        }
+
+        results.push(errorRecord)
+
+        // Emit progress even for errors
+        window.dispatchEvent(new CustomEvent('whatsapp:progress', {
+          detail: {
+            current: i + 1,
+            total: recipients.length,
+            sent: this.stats.sent,
+            failed: this.stats.failed,
+            currentRecipient: recipient,
+            lastResult: { success: false, error: error.message }
+          }
+        }))
       }
     }
-    
+
     this.isActive = false
-    
-    // Emit completion event
-    window.dispatchEvent(new CustomEvent('whatsapp:complete', {
-      detail: {
-        total: recipients.length,
-        sent: this.stats.sent,
-        failed: this.stats.failed,
-        results: results
-      }
-    }))
-    
-    return {
-      success: true,
+
+    const finalStats = {
       total: recipients.length,
       sent: this.stats.sent,
       failed: this.stats.failed,
+      successRate: recipients.length > 0 ? Math.round((this.stats.sent / recipients.length) * 100) : 0
+    }
+
+    console.log(`🎉 Bulk campaign completed:`, finalStats)
+
+    // Emit completion event
+    window.dispatchEvent(new CustomEvent('whatsapp:complete', {
+      detail: {
+        ...finalStats,
+        results: results,
+        completedAt: new Date().toISOString()
+      }
+    }))
+
+    return {
+      success: true,
+      ...finalStats,
       results: results
     }
   }

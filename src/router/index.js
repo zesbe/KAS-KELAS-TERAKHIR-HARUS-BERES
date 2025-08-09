@@ -65,7 +65,7 @@ const routes = [
   {
     path: '/campaigns',
     name: 'Campaigns',
-    component: () => import('@/views/CampaignsBasic.vue'),
+    component: () => import('@/views/Campaigns.vue'),
     meta: {
       title: 'Campaign WhatsApp',
       requiresAuth: true,

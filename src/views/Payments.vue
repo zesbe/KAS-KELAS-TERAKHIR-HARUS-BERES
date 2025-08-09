@@ -529,12 +529,15 @@
       v-if="showCreateModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white rounded-lg max-w-md w-full mx-4 p-4 sm:p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Buat Link Pembayaran</h3>
-        
+      <div class="bg-white rounded-2xl max-w-lg w-full mx-4 p-6 shadow-2xl">
+        <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+          <span class="text-2xl mr-2">💳</span>
+          Buat Link Pembayaran
+        </h3>
+
         <form @submit.prevent="createSingleLink" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Siswa</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">👤 Siswa</label>
             <select v-model="singleLink.studentId" required class="input-field">
               <option value="">Pilih Siswa</option>
               <option v-for="student in store.students" :key="student.id" :value="student.id">
@@ -542,9 +545,9 @@
               </option>
             </select>
           </div>
-          
+
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">💰 Jumlah</label>
             <input
               v-model.number="singleLink.amount"
               type="number"
@@ -554,32 +557,48 @@
               placeholder="Masukkan jumlah"
             />
           </div>
-          
+
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
-            <input 
-              v-model="singleLink.description"
-              type="text" 
-              required
-              class="input-field"
-              placeholder="Contoh: Kas bulanan Februari"
-            />
+            <label class="block text-sm font-semibold text-gray-700 mb-2">📅 Bulan Pembayaran</label>
+            <select v-model="singleLink.paymentMonth" required class="input-field">
+              <option v-for="month in availableMonths" :key="month.value" :value="month.value">
+                {{ month.label }}
+              </option>
+            </select>
           </div>
-          
-          <div class="flex justify-end space-x-3 pt-4">
-            <button 
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">📝 Keterangan</label>
+            <input
+              v-model="singleLink.description"
+              type="text"
+              class="input-field"
+              :placeholder="singleLink.autoDescription"
+            />
+            <p class="text-xs text-gray-500 mt-1">Kosongkan untuk menggunakan keterangan otomatis</p>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-6">
+            <button
               type="button"
               @click="showCreateModal = false"
               class="btn-secondary"
             >
               Batal
             </button>
-            <button 
+            <button
               type="submit"
               :disabled="creating"
-              class="btn-primary"
+              class="btn-primary flex items-center"
             >
-              {{ creating ? 'Membuat...' : 'Buat Link' }}
+              <span v-if="creating" class="flex items-center">
+                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Membuat...
+              </span>
+              <span v-else class="flex items-center">
+                <span class="mr-1">💳</span>
+                Buat Link
+              </span>
             </button>
           </div>
         </form>
@@ -1495,7 +1514,7 @@ const sendBulkMessages = async () => {
           error: error.message
         })
 
-        toast.error(`❌ Gagal membuka WhatsApp untuk ${student?.name}`)
+        toast.error(`�� Gagal membuka WhatsApp untuk ${student?.name}`)
       }
     }
 

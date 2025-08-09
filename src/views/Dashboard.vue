@@ -186,56 +186,68 @@
 
     <!-- Payment Status -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="card p-6 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
-        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-          <span class="text-2xl mr-2">📊</span>
-          Status Pembayaran Siswa
-        </h3>
+      <div class="card">
+        <div class="card-header">
+          <h3 class="heading-3 flex items-center">
+            <div class="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+            Payment Status
+          </h3>
+        </div>
+        <div class="card-body">
         <div class="space-y-4">
-          <div class="flex items-center justify-between p-4 bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl border border-green-200 shadow-sm">
+          <div class="flex items-center justify-between p-4 bg-emerald-50 rounded-lg border border-emerald-100">
             <div class="flex items-center">
-              <div class="w-4 h-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full shadow-md"></div>
-              <span class="ml-3 text-sm font-semibold text-green-800">✅ Sudah Bayar</span>
+              <div class="w-3 h-3 bg-emerald-500 rounded-full mr-3"></div>
+              <span class="text-sm font-semibold text-slate-700">Paid</span>
             </div>
-            <span class="text-lg font-bold text-green-700 bg-green-200 px-3 py-1 rounded-full">
-              {{ store.studentsByPaymentStatus.paid.length }} siswa
+            <span class="badge-success">
+              {{ store.studentsByPaymentStatus.paid.length }} students
             </span>
           </div>
-          <div class="flex items-center justify-between p-4 bg-gradient-to-r from-red-100 to-rose-100 rounded-xl border border-red-200 shadow-sm">
+          <div class="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100">
             <div class="flex items-center">
-              <div class="w-4 h-4 bg-gradient-to-r from-red-500 to-rose-500 rounded-full shadow-md"></div>
-              <span class="ml-3 text-sm font-semibold text-red-800">❌ Belum Bayar</span>
+              <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+              <span class="text-sm font-semibold text-slate-700">Unpaid</span>
             </div>
-            <span class="text-lg font-bold text-red-700 bg-red-200 px-3 py-1 rounded-full">
-              {{ store.studentsByPaymentStatus.unpaid.length }} siswa
+            <span class="badge-danger">
+              {{ store.studentsByPaymentStatus.unpaid.length }} students
             </span>
           </div>
         </div>
+        </div>
       </div>
 
-      <div class="card p-6 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
-        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-          <span class="text-2xl mr-2">⏳</span>
-          Link Pembayaran Pending
-        </h3>
+      <div class="card">
+        <div class="card-header">
+          <h3 class="heading-3 flex items-center">
+            <div class="w-2 h-2 bg-amber-500 rounded-full mr-3"></div>
+            Pending Payments
+          </h3>
+        </div>
+        <div class="card-body">
         <div class="space-y-3">
           <div
             v-for="payment in store.pendingPayments.slice(0, 5)"
             :key="payment.id"
-            class="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-orange-200 shadow-sm hover:shadow-md transition-all duration-300"
+            class="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-100 hover:bg-slate-100 transition-colors duration-200"
           >
             <div>
-              <p class="text-sm font-semibold text-gray-800">{{ payment.student?.name }}</p>
-              <p class="text-xs text-orange-600 font-medium">{{ formatCurrency(payment.amount) }}</p>
+              <p class="text-sm font-semibold text-slate-900">{{ payment.student?.name }}</p>
+              <p class="text-xs text-slate-500 font-medium">{{ formatCurrency(payment.amount) }}</p>
             </div>
-            <span class="text-xs bg-gradient-to-r from-yellow-400 to-orange-400 text-white font-semibold px-3 py-1 rounded-full shadow-sm">
+            <span class="badge-warning">
               Pending
             </span>
           </div>
           <div v-if="store.pendingPayments.length === 0" class="text-center py-8">
-            <div class="text-4xl mb-2">🎉</div>
-            <p class="text-sm text-gray-600 font-medium">Tidak ada pembayaran pending</p>
+            <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <p class="text-sm text-slate-600 font-medium">No pending payments</p>
           </div>
+        </div>
         </div>
       </div>
     </div>

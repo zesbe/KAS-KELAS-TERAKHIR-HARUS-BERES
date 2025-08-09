@@ -1060,6 +1060,17 @@ const deletePaymentLink = async (payment) => {
   }
 }
 
+const viewInvoice = (payment) => {
+  // Navigate to invoice page with specific order ID for targeted invoice
+  if (payment.order_id) {
+    router.push({ path: '/invoice', query: { orderId: payment.order_id } })
+  } else if (payment.student_id) {
+    router.push({ path: '/invoice', query: { studentId: payment.student_id } })
+  } else {
+    toast.warning('Data pembayaran tidak lengkap untuk membuat invoice')
+  }
+}
+
 const copyToClipboard = async (text) => {
   try {
     // Try modern clipboard API first

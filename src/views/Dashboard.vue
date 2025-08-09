@@ -420,6 +420,9 @@ const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL &&
 const diagnostics = ref(null)
 const setupRecommendation = ref(null)
 
+// Mobile download toggle
+const showMobileDownload = ref(false)
+
 // Check if database setup is needed (no data loaded despite being configured)
 const needsDatabaseSetup = computed(() => {
   return isSupabaseConfigured &&

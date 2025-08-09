@@ -913,16 +913,29 @@ const generateBulkLinks = async () => {
     generating.value = true
 
     let targetStudents = []
-    const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+    const selectedMonth = availableMonths.value.find(m => m.value === quickGenerate.paymentMonth)
+    const monthDisplay = selectedMonth ? `${selectedMonth.name} ${selectedMonth.year}` : 'Bulan terpilih'
+
+    // Use description or auto-generated description
+    const finalDescription = quickGenerate.description || autoDescription.value
 
     if (quickGenerate.target === 'all') {
       targetStudents = store.students
     } else if (quickGenerate.target === 'unpaid') {
-      // Use the new getter that excludes students who already paid this month
-      targetStudents = store.unpaidStudentsThisMonth
+      // Filter students who haven't paid for the selected month
+      const paidStudentIds = store.transactions
+        .filter(t => {
+          const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
+          return t.type === 'income' &&
+                 t.status === 'completed' &&
+                 transactionMonth === quickGenerate.paymentMonth
+        })
+        .map(t => t.student_id)
+
+      targetStudents = store.students.filter(s => !paidStudentIds.includes(s.id))
 
       if (targetStudents.length === 0) {
-        toast.info(`Semua siswa sudah membayar untuk bulan ${currentMonth}! 🎉`)
+        toast.info(`🎉 Semua siswa sudah membayar untuk ${monthDisplay}!`)
         return
       }
     } else if (quickGenerate.target === 'selected') {
@@ -931,34 +944,33 @@ const generateBulkLinks = async () => {
 
     // Show confirmation for bulk generation
     if (targetStudents.length > 5) {
-      const confirmed = confirm(`Generate link pembayaran untuk ${targetStudents.length} siswa?\n\nBulan: ${currentMonth}\nJumlah: ${formatCurrency(quickGenerate.amount)}\nKeterangan: ${quickGenerate.description}`)
+      const confirmed = confirm(`Generate link pembayaran untuk ${targetStudents.length} siswa?\n\n📅 Bulan: ${monthDisplay}\n💰 Jumlah: ${formatCurrency(quickGenerate.amount)}\n📝 Keterangan: ${finalDescription}`)
       if (!confirmed) return
     }
 
-    // Use the new bulk generation method
-    try {
-      const results = await store.generateBulkPaymentLinks(
-        quickGenerate.amount,
-        quickGenerate.description,
-        quickGenerate.target === 'unpaid'
-      )
-
-      const successful = results.filter(r => r.success).length
-      const failed = results.filter(r => !r.success).length
-
-      if (successful > 0) {
-        toast.success(`✅ Berhasil generate ${successful} link pembayaran untuk bulan ${currentMonth}`)
+    // Generate payment links for each student
+    const results = []
+    for (const student of targetStudents) {
+      try {
+        await store.generatePaymentLink(
+          student.id,
+          quickGenerate.amount,
+          finalDescription
+        )
+        results.push({ success: true, student: student.name })
+      } catch (error) {
+        results.push({ success: false, student: student.name, error: error.message })
       }
-      if (failed > 0) {
-        toast.warning(`⚠️ ${failed} link gagal dibuat (mungkin siswa sudah bayar)`)
-      }
+    }
 
-    } catch (error) {
-      if (error.message.includes('sudah membayar')) {
-        toast.info(error.message)
-      } else {
-        throw error
-      }
+    const successful = results.filter(r => r.success).length
+    const failed = results.filter(r => !r.success).length
+
+    if (successful > 0) {
+      toast.success(`✅ Berhasil generate ${successful} link pembayaran untuk ${monthDisplay}`)
+    }
+    if (failed > 0) {
+      toast.warning(`⚠️ ${failed} link gagal dibuat (mungkin siswa sudah bayar)`)
     }
 
     // Reset form

@@ -534,7 +534,8 @@ const form = reactive({
   startMonth: new Date().getMonth() + 1,
   year: new Date().getFullYear(),
   months: 6,
-  monthlyAmount: 50000
+  monthlyAmount: 50000,
+  linkType: 'both' // 'individual', 'single', or 'both'
 })
 
 // Sample data for demo

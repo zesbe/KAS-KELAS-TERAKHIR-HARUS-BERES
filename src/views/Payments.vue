@@ -119,11 +119,14 @@
     </div>
 
     <!-- Quick Generate -->
-    <div class="card p-4 sm:p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Generate Link Cepat</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="card p-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200">
+      <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+        <span class="text-2xl mr-2">⚡</span>
+        Generate Link Pembayaran Cepat
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">💰 Jumlah</label>
           <input
             v-model.number="quickGenerate.amount"
             type="number"
@@ -132,33 +135,49 @@
             placeholder="Contoh: 50000"
           />
         </div>
-        
+
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
-          <input 
+          <label class="block text-sm font-semibold text-gray-700 mb-2">📅 Bulan Pembayaran</label>
+          <select v-model="quickGenerate.paymentMonth" class="input-field">
+            <option v-for="month in availableMonths" :key="month.value" :value="month.value">
+              {{ month.label }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">📝 Keterangan</label>
+          <input
             v-model="quickGenerate.description"
             type="text"
             class="input-field"
-            placeholder="Contoh: Kas Bulanan Februari"
+            :placeholder="quickGenerate.autoDescription"
           />
         </div>
-        
+
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Target Siswa</label>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">👥 Target Siswa</label>
           <select v-model="quickGenerate.target" class="input-field">
             <option value="all">Semua Siswa</option>
             <option value="unpaid">Siswa Belum Bayar</option>
             <option value="selected">Pilih Manual</option>
           </select>
         </div>
-        
+
         <div class="flex items-end">
-          <button 
+          <button
             @click="generateBulkLinks"
-            :disabled="!quickGenerate.amount || !quickGenerate.description || generating"
-            class="btn-primary w-full"
+            :disabled="!quickGenerate.amount || (!quickGenerate.description && !quickGenerate.autoDescription) || generating"
+            class="btn-primary w-full flex items-center justify-center"
           >
-            {{ generating ? 'Generating...' : 'Generate Links' }}
+            <span v-if="generating" class="flex items-center">
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Generating...
+            </span>
+            <span v-else class="flex items-center">
+              <span class="mr-1">⚡</span>
+              Generate Links
+            </span>
           </button>
         </div>
       </div>

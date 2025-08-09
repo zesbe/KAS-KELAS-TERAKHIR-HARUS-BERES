@@ -243,6 +243,19 @@ export const useAppStore = defineStore('app', {
       }
     },
 
+    // Update payment link with better status tracking
+    async updatePaymentLink(id, updates) {
+      try {
+        const { data, error } = await db.updatePaymentLink(id, updates)
+        if (error) throw error
+        await this.fetchPaymentLinks()
+        return data
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
+    },
+
     async deleteExpense(id) {
       try {
         const { data, error } = await db.deleteExpense(id)

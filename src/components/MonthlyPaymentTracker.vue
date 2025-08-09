@@ -1,21 +1,23 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-      <div>
-        <h3 class="text-lg font-semibold text-gray-900">📅 Tracking Pembayaran Bulanan</h3>
-        <p class="text-sm text-gray-500 mt-1">Kelola pembayaran kas kelas per bulan dengan mudah</p>
-      </div>
-      <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-        <select v-model="selectedYear" @change="loadMonthlyData" class="input-field w-full sm:w-auto">
-          <option v-for="year in availableYears" :key="year" :value="year">
-            {{ year }}/{{ year + 1 }}
-          </option>
-        </select>
-        <button @click="exportMonthlyReport" class="btn-secondary w-full sm:w-auto">
-          <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-          Export Bulanan
-        </button>
+    <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl p-6 shadow-2xl">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+        <div>
+          <h3 class="text-2xl font-bold text-white">📅 Tracking Pembayaran Bulanan</h3>
+          <p class="text-indigo-100 mt-2">Kelola pembayaran kas kelas per bulan dengan mudah</p>
+        </div>
+        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+          <select v-model="selectedYear" @change="loadMonthlyData" class="bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder-white/70 rounded-xl px-4 py-2 focus:ring-2 focus:ring-white/50 outline-none w-full sm:w-auto">
+            <option v-for="year in availableYears" :key="year" :value="year" class="text-gray-900">
+              {{ year }}/{{ year + 1 }}
+            </option>
+          </select>
+          <button @click="exportMonthlyReport" class="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 flex items-center border border-white/30 shadow-lg hover:shadow-xl w-full sm:w-auto">
+            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
+            Export Bulanan
+          </button>
+        </div>
       </div>
     </div>
 

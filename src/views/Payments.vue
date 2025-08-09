@@ -665,6 +665,15 @@
       </div>
     </div>
 
+    <!-- PDF Action Modal -->
+    <PdfActionModal
+      :show="showPaymentsPdfModal"
+      @close="showPaymentsPdfModal = false"
+      @print="handlePaymentsPrint"
+      @download="handlePaymentsDownload"
+      @preview="handlePaymentsPreview"
+    />
+
     <!-- CORS Error Modal -->
     <div
       v-if="showCorsErrorModal"

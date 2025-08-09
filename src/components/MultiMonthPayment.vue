@@ -655,9 +655,9 @@ const multiMonthPayments = ref([
       { id: '1', type: 'total', amount: 300000, order_id: 'NAFI240201TOTAL', url: 'https://pakasir.zone.id/pay/uang-kas-kelas-1-ibnu-sina/300000?order_id=NAFI240201TOTAL' }
     ],
     month_details: [
-      { month: 2, label: 'Februari 2024', amount: 50000, paid: true },
-      { month: 3, label: 'Maret 2024', amount: 50000, paid: true },
-      { month: 4, label: 'April 2024', amount: 50000, paid: true },
+      { month: 2, label: 'Februari 2024', amount: 50000, paid: true, paid_at: '2024-02-15T10:30:00Z' },
+      { month: 3, label: 'Maret 2024', amount: 50000, paid: true, paid_at: '2024-03-10T09:15:00Z' },
+      { month: 4, label: 'April 2024', amount: 50000, paid: true, paid_at: '2024-04-05T14:20:00Z' },
       { month: 5, label: 'Mei 2024', amount: 50000, paid: false },
       { month: 6, label: 'Juni 2024', amount: 50000, paid: false },
       { month: 7, label: 'Juli 2024', amount: 50000, paid: false }

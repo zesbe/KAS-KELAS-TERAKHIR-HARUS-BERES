@@ -319,6 +319,15 @@ const loadMonthlyData = () => {
     const monthDate = new Date(year, i, 1)
     const monthCode = monthDate.toISOString().slice(0, 7) // YYYY-MM
     const monthName = monthDate.toLocaleDateString('id-ID', { month: 'long' })
+
+    // Debug logging for 2025
+    if (year === 2025 && (i === 7 || i === 8)) { // August (7) and September (8)
+      console.log(`📅 Month ${i} (${monthName}):`, {
+        monthDate: monthDate.toISOString(),
+        monthCode,
+        monthName
+      })
+    }
     const currentDate = new Date()
     const currentYear = currentDate.getFullYear()
     const currentMonthCode = currentDate.toISOString().slice(0, 7)

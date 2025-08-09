@@ -1264,9 +1264,10 @@ const sendAllPaymentLinks = async (payment) => {
     const phone = student?.phone || ''
 
     // Create comprehensive message with all payment options
+    const greeting = getIndonesianTimeGreeting()
     let message = `Assalamu'alaikum Wr. Wb.
 
-Selamat pagi orang tua dari ${studentName}
+${greeting} orang tua dari ${studentName}
 
 Dengan hormat, kami menyediakan beberapa opsi pembayaran kas kelas untuk kemudahan Bapak/Ibu:
 

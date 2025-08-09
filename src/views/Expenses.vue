@@ -19,17 +19,31 @@
           </button>
 
           <!-- Export dropdown menu -->
-          <div v-if="showExportMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+          <div v-if="showExportMenu" class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-10">
             <div class="py-1">
+              <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                CSV Export
+              </div>
               <button @click="exportExpenses" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                Export Pengeluaran
+                📊 Export Pengeluaran
               </button>
               <button @click="exportByCategory" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                Export per Kategori
+                📈 Export per Kategori
               </button>
               <button @click="exportFiltered" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                Export Data Terfilter
+                🔍 Export Data Terfilter
               </button>
+              <div class="border-t border-gray-100 mt-1">
+                <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  PDF Download
+                </div>
+                <button @click="downloadExpensesPDF" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  📄 Download PDF Lengkap
+                </button>
+                <button @click="downloadExpensesSummaryPDF" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  📋 Download PDF Summary
+                </button>
+              </div>
             </div>
           </div>
         </div>

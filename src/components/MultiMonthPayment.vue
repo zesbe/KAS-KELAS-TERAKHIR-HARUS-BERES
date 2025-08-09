@@ -247,11 +247,10 @@
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah per Bulan</label>
-            <input 
+            <input
               v-model.number="form.monthlyAmount"
-              type="number" 
-              min="1000"
-              step="1000"
+              type="number"
+              min="1"
               required
               class="input-field"
               @input="calculateTotal"

@@ -433,6 +433,9 @@ const setupRecommendation = ref(null)
 // Mobile download toggle
 const showMobileDownload = ref(false)
 
+// PDF action modal
+const showPdfModal = ref(false)
+
 // Check if database setup is needed (no data loaded despite being configured)
 const needsDatabaseSetup = computed(() => {
   return isSupabaseConfigured &&

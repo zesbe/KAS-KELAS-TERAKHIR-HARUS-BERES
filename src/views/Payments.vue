@@ -1003,17 +1003,32 @@ const generateMessageTemplate = (payment) => {
       .replace('{link}', payment.payment_url)
   }
 
-  // Default reminder template using StarSender service
-  const paymentData = {
-    studentName: payment.student?.name,
-    amount: payment.amount,
-    description: payment.description,
-    orderId: payment.order_id,
-    paymentUrl: payment.payment_url,
-    dueDate: new Date(payment.expires_at).toLocaleDateString('id-ID')
-  }
+  // Default professional reminder template
+  const student = payment.student
+  const studentName = student?.name || 'Siswa'
 
-  return // TODO: Implement WhatsApp service - generatePaymentMessage(paymentData)
+  return `Assalamu'alaikum Wr. Wb.
+
+Selamat pagi orang tua dari ${studentName}
+
+Dengan hormat, kami ingin mengingatkan mengenai pembayaran uang kas kelas untuk bulan ini sebesar ${formatCurrency(payment.amount)}
+
+Untuk kemudahan pembayaran, Bapak/Ibu dapat menggunakan link pembayaran berikut:
+
+${payment.payment_url}
+
+Pembayaran dapat dilakukan melalui QRIS dengan berbagai metode:
+
+✅ Scan QR Code
+✅ E-Wallet (GoPay, OVO, DANA, ShopeePay)
+
+Terima kasih atas perhatian dan kerjasamanya.
+
+Wassalamu'alaikum Wr. Wb.
+
+---
+*Order ID: ${payment.order_id}*
+*Sistem Kas Kelas Otomatis*`
 }
 
 const sendBulkMessages = async () => {

@@ -1414,53 +1414,158 @@ const downloadPaymentsPDF = async () => {
 const generatePaymentsPDFContent = () => {
   const payments = filteredPayments.value
   const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0)
+  const totalCollected = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0)
+  const totalPending = payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0)
   const pendingCount = payments.filter(p => p.status === 'pending').length
   const completedCount = payments.filter(p => p.status === 'completed').length
+  const expiredCount = payments.filter(p => p.status === 'expired').length
 
   let tableRows = ''
   payments.forEach(payment => {
     const statusClass = `status-${payment.status}`
+    const notes = payment.notes || payment.month || '-'
+    const paymentMethod = payment.payment_method || '-'
+    const completedAt = payment.completed_at ? formatDate(payment.completed_at) : '-'
+
     tableRows += `
       <tr>
         <td>${payment.student?.name || '-'}</td>
         <td>${payment.student?.nickname || '-'}</td>
+        <td>${payment.student?.phone || '-'}</td>
         <td>${formatCurrency(payment.amount)}</td>
         <td>${payment.description}</td>
         <td class="${statusClass}">${getStatusLabel(payment.status)}</td>
+        <td>${paymentMethod}</td>
         <td>${formatDate(payment.created_at)}</td>
-        <td style="font-family: monospace; font-size: 11px;">${payment.order_id}</td>
+        <td>${completedAt}</td>
+        <td style="font-family: monospace; font-size: 10px;">${payment.order_id}</td>
+        <td style="font-size: 11px; max-width: 200px; word-wrap: break-word;">${notes}</td>
+      </tr>
+    `
+  })
+
+  // Generate student payment summary
+  const studentSummary = {}
+  payments.forEach(payment => {
+    const studentId = payment.student_id
+    const studentName = payment.student?.name || 'Unknown'
+
+    if (!studentSummary[studentId]) {
+      studentSummary[studentId] = {
+        name: studentName,
+        nickname: payment.student?.nickname || '-',
+        phone: payment.student?.phone || '-',
+        totalAmount: 0,
+        paidAmount: 0,
+        pendingAmount: 0,
+        paymentCount: 0,
+        completedCount: 0,
+        pendingCount: 0
+      }
+    }
+
+    studentSummary[studentId].totalAmount += payment.amount
+    studentSummary[studentId].paymentCount += 1
+
+    if (payment.status === 'completed') {
+      studentSummary[studentId].paidAmount += payment.amount
+      studentSummary[studentId].completedCount += 1
+    } else if (payment.status === 'pending') {
+      studentSummary[studentId].pendingAmount += payment.amount
+      studentSummary[studentId].pendingCount += 1
+    }
+  })
+
+  let studentSummaryRows = ''
+  Object.values(studentSummary).forEach(student => {
+    const paymentRate = student.totalAmount > 0 ? Math.round((student.paidAmount / student.totalAmount) * 100) : 0
+    studentSummaryRows += `
+      <tr>
+        <td>${student.name}</td>
+        <td>${student.nickname}</td>
+        <td>${student.phone}</td>
+        <td>${student.paymentCount}</td>
+        <td>${formatCurrency(student.totalAmount)}</td>
+        <td style="color: #059669;">${formatCurrency(student.paidAmount)}</td>
+        <td style="color: #d97706;">${formatCurrency(student.pendingAmount)}</td>
+        <td style="color: ${paymentRate >= 80 ? '#059669' : paymentRate >= 50 ? '#d97706' : '#dc2626'};">${paymentRate}%</td>
       </tr>
     `
   })
 
   return `
     <h1>📊 Laporan Pembayaran Kas Kelas</h1>
+    <p style="color: #6b7280; margin-bottom: 20px;">Generated on ${new Date().toLocaleString('id-ID')}</p>
 
     <div class="summary">
-      <h2>📈 Ringkasan</h2>
-      <p><strong>Total Link Pembayaran:</strong> ${payments.length}</p>
-      <p><strong>Pending:</strong> ${pendingCount} | <strong>Selesai:</strong> ${completedCount}</p>
-      <p><strong>Total Amount:</strong> ${formatCurrency(totalAmount)}</p>
-      <p><strong>Filter Status:</strong> ${statusFilter.value || 'Semua Status'}</p>
+      <h2>📈 Ringkasan Keuangan</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 15px 0;">
+        <div>
+          <p><strong>📋 Total Link Pembayaran:</strong> ${payments.length}</p>
+          <p><strong>✅ Selesai:</strong> ${completedCount} link</p>
+          <p><strong>⏳ Pending:</strong> ${pendingCount} link</p>
+          <p><strong>❌ Expired:</strong> ${expiredCount} link</p>
+        </div>
+        <div>
+          <p><strong>💰 Total Nominal:</strong> ${formatCurrency(totalAmount)}</p>
+          <p><strong>💚 Sudah Terkumpul:</strong> ${formatCurrency(totalCollected)}</p>
+          <p><strong>🔸 Belum Terkumpul:</strong> ${formatCurrency(totalPending)}</p>
+          <p><strong>📊 Filter Status:</strong> ${statusFilter.value || 'Semua Status'}</p>
+        </div>
+      </div>
     </div>
 
-    <h2>📋 Detail Pembayaran</h2>
+    <h2>👥 Ringkasan Per Siswa</h2>
+    <table style="margin-bottom: 30px;">
+      <thead>
+        <tr>
+          <th>Nama Siswa</th>
+          <th>Nickname</th>
+          <th>No. HP</th>
+          <th>Jumlah Link</th>
+          <th>Total Nominal</th>
+          <th>Sudah Bayar</th>
+          <th>Belum Bayar</th>
+          <th>Rate Bayar</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${studentSummaryRows || '<tr><td colspan="8" style="text-align: center; color: #6b7280;">Tidak ada data siswa</td></tr>'}
+      </tbody>
+    </table>
+
+    <h2>📋 Detail Pembayaran Lengkap</h2>
     <table>
       <thead>
         <tr>
           <th>Nama Siswa</th>
           <th>Nickname</th>
+          <th>No. HP</th>
           <th>Jumlah</th>
           <th>Keterangan</th>
           <th>Status</th>
-          <th>Tanggal Dibuat</th>
+          <th>Metode</th>
+          <th>Dibuat</th>
+          <th>Selesai</th>
           <th>Order ID</th>
+          <th>Catatan</th>
         </tr>
       </thead>
       <tbody>
-        ${tableRows || '<tr><td colspan="7" style="text-align: center; color: #6b7280;">Tidak ada data pembayaran</td></tr>'}
+        ${tableRows || '<tr><td colspan="11" style="text-align: center; color: #6b7280;">Tidak ada data pembayaran</td></tr>'}
       </tbody>
     </table>
+
+    <div style="margin-top: 30px; padding: 15px; background-color: #f9fafb; border-radius: 8px;">
+      <h3 style="color: #374151; margin-bottom: 10px;">📝 Catatan Laporan</h3>
+      <ul style="margin: 0; padding-left: 20px; color: #6b7280; font-size: 12px;">
+        <li>Laporan ini dibuat secara otomatis dari sistem Kas Kelas</li>
+        <li>Data yang ditampilkan sesuai dengan filter yang dipilih: <strong>${statusFilter.value || 'Semua Status'}</strong></li>
+        <li>Kolom "Catatan" berisi informasi tambahan seperti bulan pembayaran atau notes dari admin</li>
+        <li>Rate bayar dihitung dari: (Jumlah sudah bayar / Total nominal) × 100%</li>
+        <li>Untuk pertanyaan atau klarifikasi, hubungi admin sistem kas kelas</li>
+      </ul>
+    </div>
   `
 }
 

@@ -179,37 +179,67 @@
             <h4 class="font-medium text-gray-900 border-b border-gray-200 pb-2">🚀 Quick Actions</h4>
 
             <div class="space-y-3">
-              <button class="w-full text-left p-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors duration-200 border border-indigo-200">
+              <button 
+                @click="exportData" 
+                :disabled="isExporting"
+                class="w-full text-left p-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors duration-200 border border-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <div class="flex items-center">
-                  <svg class="w-5 h-5 text-indigo-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg v-if="isExporting" class="animate-spin w-5 h-5 text-indigo-600 mr-3" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <svg v-else class="w-5 h-5 text-indigo-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                   </svg>
                   <div>
-                    <div class="text-sm font-medium text-indigo-900">Export Data</div>
+                    <div class="text-sm font-medium text-indigo-900">
+                      {{ isExporting ? 'Exporting...' : 'Export Data' }}
+                    </div>
                     <div class="text-xs text-indigo-600">Backup semua data sistem</div>
                   </div>
                 </div>
               </button>
 
-              <button class="w-full text-left p-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors duration-200 border border-orange-200">
+              <button 
+                @click="syncData" 
+                :disabled="isSyncing"
+                class="w-full text-left p-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors duration-200 border border-orange-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <div class="flex items-center">
-                  <svg class="w-5 h-5 text-orange-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg v-if="isSyncing" class="animate-spin w-5 h-5 text-orange-600 mr-3" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <svg v-else class="w-5 h-5 text-orange-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                   </svg>
                   <div>
-                    <div class="text-sm font-medium text-orange-900">Sync Data</div>
+                    <div class="text-sm font-medium text-orange-900">
+                      {{ isSyncing ? 'Syncing...' : 'Sync Data' }}
+                    </div>
                     <div class="text-xs text-orange-600">Sinkronisasi dengan server</div>
                   </div>
                 </div>
               </button>
 
-              <button class="w-full text-left p-3 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200 border border-red-200">
+              <button 
+                @click="clearCache" 
+                :disabled="isClearing"
+                class="w-full text-left p-3 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200 border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <div class="flex items-center">
-                  <svg class="w-5 h-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg v-if="isClearing" class="animate-spin w-5 h-5 text-red-600 mr-3" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <svg v-else class="w-5 h-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                   </svg>
                   <div>
-                    <div class="text-sm font-medium text-red-900">Clear Cache</div>
+                    <div class="text-sm font-medium text-red-900">
+                      {{ isClearing ? 'Clearing...' : 'Clear Cache' }}
+                    </div>
                     <div class="text-xs text-red-600">Bersihkan cache aplikasi</div>
                   </div>
                 </div>
@@ -236,6 +266,9 @@ const toast = useToast()
 
 const isTestingPayment = ref(false)
 const showTester = ref(false)
+const isExporting = ref(false)
+const isSyncing = ref(false)
+const isClearing = ref(false)
 
 const currentBalance = computed(() => store.currentBalance || 0)
 
@@ -262,6 +295,95 @@ const testPaymentNotification = async () => {
     console.error('Error:', error)
   } finally {
     isTestingPayment.value = false
+  }
+}
+
+const exportData = async () => {
+  isExporting.value = true
+
+  try {
+    // Get all data from store
+    const data = {
+      students: store.students,
+      transactions: store.transactions,
+      expenses: store.expenses,
+      paymentLinks: store.paymentLinks,
+      exportDate: new Date().toISOString(),
+      version: '1.0.0'
+    }
+
+    // Create and download JSON file
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `kas-kelas-backup-${new Date().toISOString().slice(0, 10)}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    toast.success('✅ Data berhasil diekspor!')
+  } catch (error) {
+    toast.error('❌ Gagal mengekspor data')
+    console.error('Export error:', error)
+  } finally {
+    isExporting.value = false
+  }
+}
+
+const syncData = async () => {
+  isSyncing.value = true
+
+  try {
+    // Refresh all data from store
+    await Promise.all([
+      store.fetchStudents(),
+      store.fetchTransactions(),
+      store.fetchExpenses(),
+      store.fetchPaymentLinks()
+    ])
+
+    toast.success('🔄 Data berhasil disinkronisasi!')
+  } catch (error) {
+    toast.error('❌ Gagal menyinkronkan data')
+    console.error('Sync error:', error)
+  } finally {
+    isSyncing.value = false
+  }
+}
+
+const clearCache = async () => {
+  isClearing.value = true
+
+  try {
+    // Clear localStorage cache (except important settings)
+    const keysToKeep = ['user_session', 'user_preferences']
+    const allKeys = Object.keys(localStorage)
+    
+    allKeys.forEach(key => {
+      if (!keysToKeep.includes(key)) {
+        localStorage.removeItem(key)
+      }
+    })
+
+    // Clear sessionStorage
+    sessionStorage.clear()
+
+    // Simulate clearing process
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    toast.success('🗑️ Cache berhasil dibersihkan!')
+    
+    // Refresh page after a short delay
+    setTimeout(() => {
+      window.location.reload()
+    }, 1500)
+  } catch (error) {
+    toast.error('❌ Gagal membersihkan cache')
+    console.error('Clear cache error:', error)
+  } finally {
+    isClearing.value = false
   }
 }
 </script>

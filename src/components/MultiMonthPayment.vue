@@ -669,7 +669,8 @@ import {
   LinkIcon,
   DocumentDuplicateIcon,
   PencilIcon,
-  TrashIcon
+  TrashIcon,
+  DocumentArrowDownIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()

@@ -290,17 +290,72 @@ export const useAppStore = defineStore('app', {
         const student = this.students.find(s => s.id === studentId)
         if (!student) throw new Error('Student not found')
 
+        // Check if student already paid this month
+        const currentMonth = new Date().toISOString().slice(0, 7)
+        const studentAlreadyPaid = this.transactions.some(t => {
+          const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
+          return t.student_id === studentId &&
+                 t.type === 'income' &&
+                 t.status === 'completed' &&
+                 transactionMonth === currentMonth
+        })
+
+        if (studentAlreadyPaid) {
+          throw new Error(`${student.name} sudah membayar untuk bulan ini`)
+        }
+
         const paymentData = pakasirService.createPaymentLink(student, amount, description)
 
         const { data, error } = await db.addPaymentLink({
           ...paymentData,
           student_id: studentId,
-          status: 'pending'
+          status: 'pending',
+          month: currentMonth // Track which month this payment is for
         })
 
         if (error) throw error
         await this.fetchPaymentLinks()
         return data
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
+    },
+
+    // Bulk generate payment links for unpaid students only
+    async generateBulkPaymentLinks(amount, description, excludePaidStudents = true) {
+      try {
+        const targetStudents = excludePaidStudents ?
+          this.unpaidStudentsThisMonth :
+          this.students
+
+        if (targetStudents.length === 0) {
+          throw new Error('Semua siswa sudah membayar untuk bulan ini')
+        }
+
+        const results = []
+        const currentMonth = new Date().toISOString().slice(0, 7)
+
+        for (const student of targetStudents) {
+          try {
+            const paymentData = pakasirService.createPaymentLink(student, amount, description)
+
+            const { data, error } = await db.addPaymentLink({
+              ...paymentData,
+              student_id: student.id,
+              status: 'pending',
+              month: currentMonth
+            })
+
+            if (error) throw error
+            results.push({ student: student.name, success: true, data })
+          } catch (error) {
+            results.push({ student: student.name, success: false, error: error.message })
+          }
+        }
+
+        await this.fetchPaymentLinks()
+        return results
       } catch (error) {
         this.error = error.message
         throw error

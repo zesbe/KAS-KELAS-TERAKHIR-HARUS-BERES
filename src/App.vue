@@ -374,7 +374,6 @@ onMounted(async () => {
 })
 
 // Cleanup on unmount
-const { onUnmounted } = require('vue')
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
   window.removeEventListener('resize', handleScroll)

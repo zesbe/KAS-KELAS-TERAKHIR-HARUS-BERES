@@ -1045,6 +1045,56 @@ Wassalamu'alaikum Wr. Wb.
   }
 }
 
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const markMonthAsPaid = async (payment, month) => {
+  if (!confirm(`Tandai ${month.label} untuk ${payment.student?.name} sebagai LUNAS?\n\nJumlah: ${formatCurrency(month.amount)}`)) {
+    return
+  }
+
+  try {
+    // Update month as paid
+    month.paid = true
+    month.paid_at = new Date().toISOString()
+
+    // Recalculate payment progress
+    const paidMonths = payment.month_details.filter(m => m.paid).length
+    const totalMonths = payment.month_details.length
+    const newPaidAmount = paidMonths * payment.monthly_amount
+    const newProgressPercentage = Math.round((paidMonths / totalMonths) * 100)
+
+    // Update payment object
+    payment.paid_amount = newPaidAmount
+    payment.progress_percentage = newProgressPercentage
+
+    // Update status based on progress
+    if (newProgressPercentage === 100) {
+      payment.status = 'completed'
+    } else if (newProgressPercentage > 0) {
+      payment.status = 'partial'
+    }
+
+    // Save to localStorage (in a real app, this would be API call)
+    localStorage.setItem('multiMonthPayments', JSON.stringify(multiMonthPayments.value))
+
+    toast.success(`✅ ${month.label} berhasil ditandai LUNAS!\nProgress: ${newProgressPercentage}%`, {
+      timeout: 4000
+    })
+
+  } catch (error) {
+    console.error('Error marking month as paid:', error)
+    toast.error('Gagal menandai bulan sebagai lunas')
+  }
+}
+
 const sendAllPaymentLinks = async (payment) => {
   if (!payment.payment_links || payment.payment_links.length === 0) {
     toast.warning('Tidak ada link pembayaran untuk dikirim')

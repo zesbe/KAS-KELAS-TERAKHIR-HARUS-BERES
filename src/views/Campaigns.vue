@@ -243,8 +243,7 @@
                   <input
                     v-model="paymentConfig.amount"
                     type="number"
-                    min="1000"
-                    step="1000"
+                    min="1"
                     class="input-field"
                     placeholder="50000"
                   />

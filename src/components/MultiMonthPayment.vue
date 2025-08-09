@@ -619,8 +619,64 @@ const viewDetails = (payment) => {
   showDetailModal.value = true
 }
 
-const sendReminder = (payment) => {
-  toast.success(`Reminder dikirim ke ${payment.student.name}`)
+const sendReminder = async (payment) => {
+  try {
+    // Create comprehensive reminder message
+    const student = payment.student
+    const remainingAmount = payment.total_amount - payment.paid_amount
+    const progressPercent = payment.progress_percentage
+
+    let message = `🔔 *REMINDER PEMBAYARAN KAS KELAS* 🔔
+
+Halo ${student.name} (${student.nickname})! 👋
+
+📋 *Detail Pembayaran Multi-Bulan:*
+• Periode: ${payment.period_label}
+• Total Pembayaran: ${formatCurrency(payment.total_amount)}
+• Sudah Dibayar: ${formatCurrency(payment.paid_amount)}
+• Sisa Pembayaran: ${formatCurrency(remainingAmount)}
+• Progress: ${progressPercent}%
+
+`
+
+    if (payment.status === 'pending') {
+      message += `⚠️ *Status: Belum Ada Pembayaran*
+Mohon segera lakukan pembayaran untuk periode ${payment.period_label}.
+
+`
+    } else if (payment.status === 'partial') {
+      message += `⏳ *Status: Pembayaran Sebagian*
+Terima kasih sudah melakukan pembayaran sebagian. Mohon lanjutkan pembayaran untuk bulan-bulan berikutnya.
+
+`
+    }
+
+    message += `💳 *Link Pembayaran:*
+${payment.payment_url}
+
+📞 *Bantuan:*
+Jika ada pertanyaan atau kesulitan, silakan hubungi bendahara kelas.
+
+Terima kasih atas kerjasamanya! 🙏
+
+---
+*Sistem Kas Kelas Otomatis*
+_Pesan ini dikirim secara otomatis_`
+
+    // Simulate sending WhatsApp message
+    const whatsappUrl = `https://wa.me/${student.phone?.replace(/\D/g, '').replace(/^0/, '62')}?text=${encodeURIComponent(message)}`
+
+    // Open WhatsApp in new tab
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+
+    toast.success(`📤 Reminder lengkap dikirim ke ${student.name}`, {
+      timeout: 4000
+    })
+
+  } catch (error) {
+    console.error('Error sending reminder:', error)
+    toast.error('Gagal mengirim reminder')
+  }
 }
 
 const copyPaymentLink = async (payment) => {

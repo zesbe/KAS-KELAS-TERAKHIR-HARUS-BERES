@@ -537,7 +537,7 @@
 
         <form @submit.prevent="createSingleLink" class="space-y-4">
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">👤 Siswa</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">�� Siswa</label>
             <select v-model="singleLink.studentId" required class="input-field">
               <option value="">Pilih Siswa</option>
               <option v-for="student in store.students" :key="student.id" :value="student.id">
@@ -852,9 +852,19 @@ quickGenerate.autoDescription = autoDescription
 
 const singleLink = reactive({
   studentId: '',
-  amount: 0,
+  amount: 50000,
+  paymentMonth: getCurrentMonth(),
   description: ''
 })
+
+// Auto-generate description for single link based on selected month
+const singleAutoDescription = computed(() => {
+  const selectedMonth = availableMonths.value.find(m => m.value === singleLink.paymentMonth)
+  return selectedMonth ? `Kas Kelas ${selectedMonth.name} ${selectedMonth.year}` : 'Kas Bulanan'
+})
+
+// Add auto description to singleLink
+singleLink.autoDescription = singleAutoDescription
 
 const bulkMessage = reactive({
   target: 'pending',
@@ -1514,7 +1524,7 @@ const sendBulkMessages = async () => {
           error: error.message
         })
 
-        toast.error(`�� Gagal membuka WhatsApp untuk ${student?.name}`)
+        toast.error(`❌ Gagal membuka WhatsApp untuk ${student?.name}`)
       }
     }
 

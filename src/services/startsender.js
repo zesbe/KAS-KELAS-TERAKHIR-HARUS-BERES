@@ -2,6 +2,8 @@
 // Bypasses CORS and provides beautiful music experience
 // Made with ❤️ for smooth broadcasting
 
+import musicManager from './musicManager.js'
+
 class StarSender {
   constructor() {
     this.isPlaying = false
@@ -492,7 +494,7 @@ class StarSender {
         })
         
         if (result.success) {
-          console.log(`✅ Message sent via ${result.method} method`)
+          console.log(`�� Message sent via ${result.method} method`)
           
           // Open WhatsApp in new tab (user will need to click send)
           if (options.openInNewTab !== false) {

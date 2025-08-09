@@ -405,6 +405,7 @@ import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { runDatabaseDiagnostics, generateSetupRecommendation } from '@/utils/databaseDiagnostics'
 import MonthlyPaymentTracker from '@/components/MonthlyPaymentTracker.vue'
+import PdfActionModal from '@/components/PdfActionModal.vue'
 import {
   BanknotesIcon,
   ReceiptPercentIcon,

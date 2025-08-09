@@ -17,7 +17,7 @@
                 </div>
               </div>
               <div class="text-sm text-blue-100 space-y-1">
-                <p>📍 Jl. Pendidikan No. 123, Jakarta Selatan</p>
+                <p>📍 Komplek Keuangan, Jl. Guntur I</p>
                 <p>📞 (021) 7654-321 | 📧 admin@sdislamalhusnakelas1b.sch.id</p>
               </div>
             </div>

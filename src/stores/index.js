@@ -63,16 +63,71 @@ export const useAppStore = defineStore('app', {
       return state.paymentLinks.filter(p => p.status === 'pending')
     },
     
-    // Students by payment status
+    // Students by payment status with monthly tracking
     studentsByPaymentStatus: (state) => {
-      const paidStudents = state.transactions
-        .filter(t => t.type === 'income' && t.status === 'completed')
+      const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM format
+
+      // Get paid students for current month
+      const paidStudentIds = state.transactions
+        .filter(t => {
+          const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
+          return t.type === 'income' &&
+                 t.status === 'completed' &&
+                 transactionMonth === currentMonth
+        })
         .map(t => t.student_id)
 
-      return {
-        paid: state.students.filter(s => paidStudents.includes(s.id)),
-        unpaid: state.students.filter(s => !paidStudents.includes(s.id))
-      }
+      // Get all payment history by student
+      const studentPaymentHistory = {}
+      state.transactions
+        .filter(t => t.type === 'income' && t.status === 'completed')
+        .forEach(t => {
+          const month = new Date(t.created_at).toISOString().slice(0, 7)
+          if (!studentPaymentHistory[t.student_id]) {
+            studentPaymentHistory[t.student_id] = {}
+          }
+          if (!studentPaymentHistory[t.student_id][month]) {
+            studentPaymentHistory[t.student_id][month] = []
+          }
+          studentPaymentHistory[t.student_id][month].push(t)
+        })
+
+      const paid = state.students.filter(s => paidStudentIds.includes(s.id))
+        .map(s => ({
+          ...s,
+          paymentHistory: studentPaymentHistory[s.id] || {},
+          totalPaid: Object.values(studentPaymentHistory[s.id] || {})
+            .flat()
+            .reduce((sum, t) => sum + t.amount, 0),
+          paidThisMonth: !!studentPaymentHistory[s.id]?.[currentMonth]
+        }))
+
+      const unpaid = state.students.filter(s => !paidStudentIds.includes(s.id))
+        .map(s => ({
+          ...s,
+          paymentHistory: studentPaymentHistory[s.id] || {},
+          totalPaid: Object.values(studentPaymentHistory[s.id] || {})
+            .flat()
+            .reduce((sum, t) => sum + t.amount, 0),
+          paidThisMonth: false
+        }))
+
+      return { paid, unpaid }
+    },
+
+    // Students eligible for payment link generation (not paid this month)
+    unpaidStudentsThisMonth: (state) => {
+      const currentMonth = new Date().toISOString().slice(0, 7)
+      const paidStudentIds = state.transactions
+        .filter(t => {
+          const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
+          return t.type === 'income' &&
+                 t.status === 'completed' &&
+                 transactionMonth === currentMonth
+        })
+        .map(t => t.student_id)
+
+      return state.students.filter(s => !paidStudentIds.includes(s.id))
     },
 
     // Check if any data is loading

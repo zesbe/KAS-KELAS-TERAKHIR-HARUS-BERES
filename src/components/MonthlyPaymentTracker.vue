@@ -313,22 +313,6 @@ const loadMonthlyData = () => {
   const months = []
   const year = selectedYear.value
 
-  // Debug: Log current date and selected year
-  console.log('🔍 Debug MonthlyPaymentTracker:')
-  console.log('Current date:', new Date())
-  console.log('Current year:', new Date().getFullYear())
-  console.log('Selected year:', year)
-  console.log('Current month code:', new Date().toISOString().slice(0, 7))
-  console.log('Total transactions:', store.transactions.length)
-
-  // Log sample transactions if any exist
-  if (store.transactions.length > 0) {
-    console.log('Sample transactions:', store.transactions.slice(0, 3).map(t => ({
-      date: t.created_at,
-      month: new Date(t.created_at).toISOString().slice(0, 7),
-      description: t.description
-    })))
-  }
 
   // Generate 12 months for the selected year
   for (let i = 0; i < 12; i++) {

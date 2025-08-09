@@ -613,7 +613,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, defineAsyncComponent } from 'vue'
 import { useToast } from 'vue-toastification'
 import { useAppStore } from '@/stores'
 import campaignService from '@/services/campaignService'

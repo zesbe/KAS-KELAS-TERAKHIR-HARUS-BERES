@@ -4,28 +4,7 @@ const mockStudents = []
 
 const mockTransactions = []
 
-const mockExpenses = [
-  {
-    id: '1',
-    category: 'perlengkapan',
-    amount: 15000,
-    description: 'Pembelian spidol dan kertas',
-    notes: 'Untuk kegiatan belajar',
-    status: 'approved',
-    approved_by: 'Admin',
-    approved_at: '2024-01-26T08:00:00Z',
-    created_at: '2024-01-25T14:00:00Z'
-  },
-  {
-    id: '2',
-    category: 'kegiatan',
-    amount: 30000,
-    description: 'Snack untuk acara kelas',
-    notes: 'Acara perpisahan semester',
-    status: 'pending',
-    created_at: '2024-01-28T10:00:00Z'
-  }
-]
+const mockExpenses = []
 
 const mockPaymentLinks = [
   {

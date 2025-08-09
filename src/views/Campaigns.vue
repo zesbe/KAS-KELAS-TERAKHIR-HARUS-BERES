@@ -18,10 +18,24 @@
     </div>
 
     <!-- StarSender Control Panel -->
-    <StarSenderPanel />
+    <div v-if="startsenderLoaded">
+      <StarSenderPanel />
 
-    <!-- StarSender Test Console -->
-    <StarSenderTest />
+      <!-- StarSender Test Console -->
+      <StarSenderTest />
+    </div>
+
+    <!-- Fallback if StarSender not loaded -->
+    <div v-else class="startsender-fallback">
+      <div class="card p-6 text-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <h3 class="font-semibold text-gray-900">Loading StarSender...</h3>
+        <p class="text-sm text-gray-500 mt-2">Initializing advanced broadcasting system</p>
+        <button @click="retryStarSender" class="btn-primary mt-4">
+          Retry
+        </button>
+      </div>
+    </div>
 
     <!-- Campaign Stats -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">

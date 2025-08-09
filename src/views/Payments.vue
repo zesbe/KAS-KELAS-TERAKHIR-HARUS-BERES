@@ -896,22 +896,29 @@ const generateBulkLinks = async () => {
 const createSingleLink = async () => {
   try {
     creating.value = true
-    
+
+    const student = store.students.find(s => s.id === singleLink.studentId)
+    const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+
     await store.generatePaymentLink(
       singleLink.studentId,
       singleLink.amount,
       singleLink.description
     )
-    
-    toast.success('Link pembayaran berhasil dibuat')
+
+    toast.success(`✅ Link pembayaran berhasil dibuat untuk ${student?.name} - ${currentMonth}`)
     showCreateModal.value = false
-    
+
     // Reset form
     singleLink.studentId = ''
     singleLink.amount = 0
     singleLink.description = ''
   } catch (error) {
-    toast.error('Gagal membuat link pembayaran')
+    if (error.message.includes('sudah membayar')) {
+      toast.warning(error.message)
+    } else {
+      toast.error('Gagal membuat link pembayaran: ' + error.message)
+    }
     console.error('Error creating payment link:', error)
   } finally {
     creating.value = false

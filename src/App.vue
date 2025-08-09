@@ -25,12 +25,19 @@
         <!-- Logo -->
         <div class="flex items-center px-4 sm:px-6 py-4 border-b border-gray-200">
           <div class="flex items-center">
-            <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span class="text-white font-bold text-sm">K</span>
+            <div class="relative w-10 h-10 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+              <!-- Book icon -->
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7 19H5V5h2v14zm4-12h6v2h-6V7zm0 4h6v2h-6v-2zm0 4h4v2h-4v-2z"/>
+              </svg>
+              <!-- Small sparkle -->
+              <div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full flex items-center justify-center">
+                <span class="text-xs">✨</span>
+              </div>
             </div>
             <div class="ml-3">
-              <h1 class="text-base sm:text-lg font-semibold text-gray-900">Kas Kelas 1B</h1>
-              <p class="text-xs text-gray-500">SD Islam Al Husna</p>
+              <h1 class="text-base sm:text-lg font-bold text-gray-900 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Kas Kelas 1B</h1>
+              <p class="text-xs text-gray-500 font-medium">📚 SD Islam Al Husna</p>
             </div>
           </div>
         </div>

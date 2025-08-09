@@ -477,6 +477,142 @@ const downloadDashboardPDF = () => {
   handleDashboardDownload()
 }
 
+// Handle PDF actions from modal
+const handleDashboardPrint = () => {
+  showPdfModal.value = false
+  printDashboardPDF()
+}
+
+const handleDashboardDownload = () => {
+  showPdfModal.value = false
+  downloadDashboardPDFFile()
+}
+
+const handleDashboardPreview = () => {
+  showPdfModal.value = false
+  previewDashboardPDF()
+}
+
+// Print function - opens print dialog
+const printDashboardPDF = () => {
+  try {
+    const pdfContent = generateDashboardPDFContent()
+    const printWindow = window.open('', '_blank', 'width=800,height=600')
+
+    if (printWindow) {
+      const printContent = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Dashboard Kas Kelas</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.5; }
+h1 { color: #1f2937; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; }
+h2 { color: #374151; margin-top: 30px; border-left: 4px solid #3b82f6; padding-left: 10px; }
+table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+th, td { border: 1px solid #d1d5db; padding: 10px; text-align: left; font-size: 12px; }
+th { background-color: #f3f4f6; font-weight: bold; }
+.income { color: #059669; font-weight: bold; }
+.expense { color: #dc2626; font-weight: bold; }
+tr:nth-child(even) { background-color: #f9fafb; }
+@media print { body { margin: 0; } }
+</style></head><body>${pdfContent}</body></html>`
+
+      printWindow.document.write(printContent)
+      printWindow.document.close()
+
+      printWindow.onload = () => {
+        printWindow.focus()
+        printWindow.print()
+      }
+
+      toast.success('🖨️ Dialog printer dibuka!')
+    }
+  } catch (error) {
+    console.error('Print error:', error)
+    toast.error('Gagal membuka printer')
+  }
+}
+
+// Download function - saves file
+const downloadDashboardPDFFile = () => {
+  try {
+    const pdfContent = generateDashboardPDFContent()
+    const timestamp = new Date().toLocaleDateString('id-ID').replace(/\//g, '_')
+    const fileName = `Dashboard_Kas_Kelas_${timestamp}.html`
+
+    const htmlContent = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Kas Kelas - ${new Date().toLocaleDateString('id-ID')}</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.5; }
+h1 { color: #1f2937; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; }
+h2 { color: #374151; margin-top: 30px; border-left: 4px solid #3b82f6; padding-left: 10px; }
+table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+th, td { border: 1px solid #d1d5db; padding: 10px; text-align: left; font-size: 12px; }
+th { background-color: #f3f4f6; font-weight: bold; }
+.income { color: #059669; font-weight: bold; }
+.expense { color: #dc2626; font-weight: bold; }
+tr:nth-child(even) { background-color: #f9fafb; }
+.download-info { background-color: #ecfdf5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
+@media print { .download-info { display: none; } }
+</style></head><body>
+<div class="download-info">
+<h3 style="color: #065f46;">💾 File Berhasil Didownload!</h3>
+<p style="color: #047857;">Gunakan Ctrl+P untuk print atau share via browser.</p>
+</div>
+${pdfContent}
+</body></html>`
+
+    createDownloadLink(htmlContent, fileName)
+  } catch (error) {
+    console.error('Download error:', error)
+    toast.error('Gagal download laporan')
+  }
+}
+
+// Preview function - opens in new tab for viewing
+const previewDashboardPDF = () => {
+  try {
+    const pdfContent = generateDashboardPDFContent()
+
+    const htmlContent = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview - Dashboard Kas Kelas</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.5; }
+h1 { color: #1f2937; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; }
+h2 { color: #374151; margin-top: 30px; border-left: 4px solid #3b82f6; padding-left: 10px; }
+table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+th, td { border: 1px solid #d1d5db; padding: 10px; text-align: left; font-size: 12px; }
+th { background-color: #f3f4f6; font-weight: bold; }
+.income { color: #059669; font-weight: bold; }
+.expense { color: #dc2626; font-weight: bold; }
+tr:nth-child(even) { background-color: #f9fafb; }
+.preview-info { background-color: #dbeafe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6; }
+.action-buttons { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
+.btn { padding: 10px 15px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; text-decoration: none; }
+.btn-print { background: #059669; color: white; }
+</style></head><body>
+<div class="action-buttons">
+<button onclick="window.print()" class="btn btn-print">🖨️ Print</button>
+</div>
+<div class="preview-info">
+<h3 style="color: #1e40af;">👁️ Preview Mode</h3>
+<p style="color: #1d4ed8;">Ini adalah preview laporan. Gunakan tombol Print di atas atau Ctrl+P.</p>
+</div>
+${pdfContent}
+</body></html>`
+
+    const previewWindow = window.open('', '_blank')
+    if (previewWindow) {
+      previewWindow.document.write(htmlContent)
+      previewWindow.document.close()
+      toast.success('👁️ Preview dibuka di tab baru!')
+    }
+  } catch (error) {
+    console.error('Preview error:', error)
+    toast.error('Gagal membuka preview')
+  }
+}
+
 // Helper function to create downloadable file
 const createDownloadLink = (content, fileName) => {
   try {

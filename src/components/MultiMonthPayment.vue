@@ -941,7 +941,10 @@ Jika ada pertanyaan atau kesulitan, silakan hubungi bendahara kelas.
 
 Terima kasih atas kerjasamanya! 🙏
 
+Wassalamu'alaikum Wr. Wb.
+
 ---
+*Dikirim: ${greeting} (${getIndonesianTime()})*
 *Sistem Kas Kelas Otomatis*
 _Pesan ini dikirim secara otomatis_`
 

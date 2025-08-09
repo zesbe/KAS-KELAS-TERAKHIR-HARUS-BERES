@@ -33,22 +33,11 @@ class StarSender {
 
   // Initialize beautiful music system
   initializeMusic() {
-    this.songs = [
-      {
-        name: "Smooth Operator",
-        url: "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfEJ3Z9MFyJgUvgL3s3Y1EChoVbLjo4p9MEQ1JouTxtWMfDzmUz+3KeCwELhqO4+qxUgs1fbnr3YpABRgGdM3w34pD..."
-      },
-      {
-        name: "Broadcasting Blues",
-        url: "data:audio/wav;base64,UklGRhQEAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YfADAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMfEJ3Z9MFyJgUvgL3s3Y1EChoVbLjo4p9MEQ1JouTxtWUfEjCN0fDNfSsELIDA6+OOOQcRbLHo3qBSEAhGn+X1xWgmBjWW2+/AdSMFl7vs5YdAGgxMo+PzvmEgETyH1PDJfToGN3vF8OJSEAoUbsPk5qNMDQxJpuC6WV08AAAAAA=="
-      },
-      {
-        name: "Success Celebration",
-        url: "data:audio/wav;base64,UklGRuQDAABXQVZFZm10IBAAAAABAAEARKwAAEAfAAABAAgAZGF0YcADAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMfEJ3Z9MFyJgUvgL3s3Y1EChoVbLjo4p9MEQ1JouTxtWMfDzGL0O/OfSsFLHzB6+OOOgYQa7Dn4qBVEAhHneP1vGomEjGM0vHJfToGNnbD8eJUEAoSb8Hm5qNKDQxKpuK5WV09AAAAAA=="
-      }
-    ]
-    
+    this.musicManager = musicManager
     this.currentSongIndex = 0
+
+    console.log('🎵 StarSender Music System Ready!')
+    console.log('🎼 Connected to advanced Music Manager')
   }
 
   // Play beautiful music during sending
@@ -655,7 +644,7 @@ ${recipient.paymentLink}
 
 ✅ Klik link di atas untuk pembayaran instan
 ⚡ Konfirmasi otomatis
-📱 Aman & Terpercaya`
+�� Aman & Terpercaya`
 
       message = message.replace(/\[\[PAYMENT_LINK\]\]/g, formattedLink)
     } else {

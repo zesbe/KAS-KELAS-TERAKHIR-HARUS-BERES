@@ -325,6 +325,84 @@ const formatTime = (timestamp) => {
   return timestamp.toLocaleTimeString('id-ID')
 }
 
+// Demo setup methods
+const setupDemo = () => {
+  addLog('🌟 Setting up StarSender demo environment...', 'info')
+
+  try {
+    const demoData = setupDemoEnvironment()
+
+    addLog(`✅ Demo setup complete!`, 'success')
+    addLog(`📱 ${demoData.students.length} demo students loaded`, 'info')
+    addLog(`📋 ${demoData.campaigns.length} demo campaigns ready`, 'info')
+    addLog('🎵 Music system armed and ready', 'info')
+    addLog('🛡️ CORS bypass methods activated', 'info')
+
+    // Auto-fill test form with demo data
+    testForm.phone = demoData.students[0].phone
+    testForm.message = demoMessageTemplates.startsender_demo.template
+
+    addLog('📝 Test form auto-filled with demo data', 'info')
+
+  } catch (error) {
+    addLog(`❌ Demo setup failed: ${error.message}`, 'error')
+  }
+}
+
+const quickTest = async () => {
+  addLog('⚡ Launching instant force test...', 'info')
+
+  try {
+    const testMessage = createInstantTestMessage()
+    const testPhone = '628123456789'
+
+    addLog('🎵 Starting epic music...', 'info')
+    startsender.playMusic()
+
+    addLog('🚀 Sending instant test message...', 'info')
+
+    const result = await startsender.sendMessage(testPhone, testMessage, {
+      openInNewTab: true
+    })
+
+    if (result.success) {
+      addLog(`✅ FORCE MODE SUCCESS! Method: ${result.method}`, 'success')
+      addLog('🎉 Message delivered via extreme CORS bypass!', 'success')
+    }
+
+  } catch (error) {
+    addLog(`❌ Force test failed: ${error.message}`, 'error')
+  }
+}
+
+const musicDemo = () => {
+  addLog('🎵 Starting music system demonstration...', 'info')
+
+  try {
+    // Play different tracks in sequence
+    const tracks = ['epic', 'chill', 'victory', 'technical', 'battle']
+    let currentTrack = 0
+
+    const playNextTrack = () => {
+      if (currentTrack < tracks.length) {
+        const mood = tracks[currentTrack]
+        startsender.musicManager.setMoodMusic(mood)
+        addLog(`🎼 Now playing: ${mood} music`, 'info')
+
+        currentTrack++
+        setTimeout(playNextTrack, 3000) // 3 seconds per track
+      } else {
+        addLog('🎵 Music demo completed!', 'success')
+      }
+    }
+
+    playNextTrack()
+
+  } catch (error) {
+    addLog(`❌ Music demo failed: ${error.message}`, 'error')
+  }
+}
+
 // Initialize
 onMounted(() => {
   addLog('🌟 StarSender Test Console initialized', 'info')

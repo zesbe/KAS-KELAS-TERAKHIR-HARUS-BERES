@@ -606,11 +606,22 @@ class StarSender {
     }
     
     // Campaign completed
-    console.log('🎊 Campaign Completed!')
-    console.log(`📊 Results: ${this.progress.sent} sent, ${this.progress.failed} failed`)
-    
+  console.log('🎊 Campaign Completed!')
+  console.log(`📊 Results: ${this.progress.sent} sent, ${this.progress.failed} failed`)
+
+  // Epic completion celebration
+  this.musicManager.setMoodMusic('victory')
+  this.musicManager.playSuccessSound()
+
+  // Confetti effect simulation
+  console.log('🎉'.repeat(20))
+  console.log('🎊 MISSION ACCOMPLISHED! 🎊')
+  console.log('🎉'.repeat(20))
+
+  setTimeout(() => {
     this.stopMusic()
     this.clearProgress()
+  }, 5000)
     
     return {
       success: true,

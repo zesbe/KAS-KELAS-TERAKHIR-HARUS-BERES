@@ -1042,10 +1042,34 @@ const deletePaymentLink = async (payment) => {
 
 const copyToClipboard = async (text) => {
   try {
-    await navigator.clipboard.writeText(text)
-    toast.success('Berhasil disalin')
+    // Try modern clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+      toast.success('Berhasil disalin ke clipboard')
+    } else {
+      // Fallback for older browsers or non-secure contexts
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+
+      try {
+        document.execCommand('copy')
+        toast.success('Berhasil disalin')
+      } catch (err) {
+        toast.warning('Silakan copy manual dari text yang ditampilkan')
+        console.error('Copy fallback failed:', err)
+      } finally {
+        document.body.removeChild(textArea)
+      }
+    }
   } catch (error) {
-    toast.error('Gagal menyalin')
+    console.error('Error copying to clipboard:', error)
+    toast.error('Gagal menyalin - silakan copy manual')
   }
 }
 

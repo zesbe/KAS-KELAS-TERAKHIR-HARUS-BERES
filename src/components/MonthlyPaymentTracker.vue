@@ -343,8 +343,24 @@ const loadMonthlyData = () => {
     
     // Get transactions for this month
     const monthTransactions = store.transactions.filter(t => {
-      const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
-      return transactionMonth === monthCode && t.type === 'income' && t.status === 'completed'
+      const transactionDate = new Date(t.created_at)
+      const transactionMonth = transactionDate.toISOString().slice(0, 7)
+      const matches = transactionMonth === monthCode && t.type === 'income' && t.status === 'completed'
+
+      // Debug for August 2025 specifically
+      if (monthName === 'Agustus' && monthYear === 2025) {
+        console.log(`🔍 Agustus 2025 filter check:`, {
+          transaction: t.description,
+          created_at: t.created_at,
+          transactionDate: transactionDate.toISOString(),
+          transactionMonth,
+          monthCode,
+          matches,
+          student: t.student?.name
+        })
+      }
+
+      return matches
     })
     
     // Get paid student IDs for this month

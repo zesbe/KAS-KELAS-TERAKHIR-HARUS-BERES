@@ -283,6 +283,9 @@
       </div>
     </div>
 
+    <!-- Monthly Payment Tracking -->
+    <MonthlyPaymentTracker />
+
     <!-- Quick Actions -->
     <div class="card p-4 sm:p-6">
       <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>

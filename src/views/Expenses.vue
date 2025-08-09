@@ -350,6 +350,23 @@
         </form>
       </div>
     </div>
+
+    <!-- PDF Action Modals -->
+    <PdfActionModal
+      :show="showExpensesPdfModal"
+      @close="showExpensesPdfModal = false"
+      @print="handleExpensesPrint"
+      @download="handleExpensesDownload"
+      @preview="handleExpensesPreview"
+    />
+
+    <PdfActionModal
+      :show="showExpensesSummaryPdfModal"
+      @close="showExpensesSummaryPdfModal = false"
+      @print="handleExpensesSummaryPrint"
+      @download="handleExpensesSummaryDownload"
+      @preview="handleExpensesSummaryPreview"
+    />
   </div>
 </template>
 

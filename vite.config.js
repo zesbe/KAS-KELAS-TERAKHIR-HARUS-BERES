@@ -17,10 +17,12 @@ export default defineConfig({
       }
     },
     commonjsOptions: {
-      include: [/xlsx/, /file-saver/, /node_modules/]
+      include: [/xlsx/, /file-saver/, /node_modules/],
+      transformMixedEsModules: true
     },
     assetsInclude: ['**/*.xlsx'],
-    target: 'esnext'
+    target: 'esnext',
+    minify: 'terser'
   },
   optimizeDeps: {
     include: ['xlsx', 'file-saver'],

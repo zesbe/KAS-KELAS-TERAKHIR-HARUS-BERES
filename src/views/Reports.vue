@@ -28,21 +28,37 @@
 
         <!-- PDF Downloads -->
         <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <button @click="downloadDetailPDF" class="btn-outline w-full sm:w-auto">
-            <PrinterIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">PDF Detail</span>
-            <span class="sm:hidden">Detail PDF</span>
-          </button>
-          <button @click="downloadSummaryPDF" class="btn-outline w-full sm:w-auto">
-            <PrinterIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">PDF Summary</span>
-            <span class="sm:hidden">Summary PDF</span>
-          </button>
-          <button @click="downloadCompletePDF" class="btn-primary w-full sm:w-auto">
-            <PrinterIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">PDF Lengkap</span>
-            <span class="sm:hidden">Lengkap PDF</span>
-          </button>
+          <div class="relative group">
+            <button @click="downloadDetailPDF" class="btn-outline w-full sm:w-auto">
+              <PrinterIcon class="w-4 h-4 mr-2" />
+              <span class="hidden sm:inline">PDF Detail</span>
+              <span class="sm:hidden">Detail PDF</span>
+            </button>
+            <!-- Tooltip -->
+            <div class="absolute invisible group-hover:visible bg-gray-800 text-white text-xs rounded py-1 px-2 bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-10">
+              Buka di window baru untuk print/save
+            </div>
+          </div>
+          <div class="relative group">
+            <button @click="downloadSummaryPDF" class="btn-outline w-full sm:w-auto">
+              <PrinterIcon class="w-4 h-4 mr-2" />
+              <span class="hidden sm:inline">PDF Summary</span>
+              <span class="sm:hidden">Summary PDF</span>
+            </button>
+            <div class="absolute invisible group-hover:visible bg-gray-800 text-white text-xs rounded py-1 px-2 bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-10">
+              Ringkasan keuangan dalam PDF
+            </div>
+          </div>
+          <div class="relative group">
+            <button @click="downloadCompletePDF" class="btn-primary w-full sm:w-auto">
+              <PrinterIcon class="w-4 h-4 mr-2" />
+              <span class="hidden sm:inline">PDF Lengkap</span>
+              <span class="sm:hidden">Lengkap PDF</span>
+            </button>
+            <div class="absolute invisible group-hover:visible bg-gray-800 text-white text-xs rounded py-1 px-2 bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-10">
+              Laporan lengkap dengan semua detail
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -575,8 +591,14 @@ const getPeriodString = () => {
 const downloadDetailPDF = () => {
   try {
     const htmlContent = generateDetailPDFContent()
+    
+    // Opsi 1: Buka di window baru (lebih stabil)
     openPDFWindow(htmlContent, 'Detail')
-    toast.success('PDF Detail berhasil di-generate!')
+    
+    // Opsi 2: Download sebagai HTML yang bisa di-print
+    // downloadAsHTML(htmlContent, 'Detail')
+    
+    toast.success('PDF Detail berhasil di-generate! Window baru terbuka.')
   } catch (error) {
     console.error('Error generating Detail PDF:', error)
     toast.error('Gagal generate PDF Detail')
@@ -587,7 +609,7 @@ const downloadSummaryPDF = () => {
   try {
     const htmlContent = generateSummaryPDFContent()
     openPDFWindow(htmlContent, 'Summary')
-    toast.success('PDF Summary berhasil di-generate!')
+    toast.success('PDF Summary berhasil di-generate! Window baru terbuka.')
   } catch (error) {
     console.error('Error generating Summary PDF:', error)
     toast.error('Gagal generate PDF Summary')
@@ -598,7 +620,7 @@ const downloadCompletePDF = () => {
   try {
     const htmlContent = generateCompletePDFContent()
     openPDFWindow(htmlContent, 'Lengkap')
-    toast.success('PDF Lengkap berhasil di-generate!')
+    toast.success('PDF Lengkap berhasil di-generate! Window baru terbuka.')
   } catch (error) {
     console.error('Error generating Complete PDF:', error)
     toast.error('Gagal generate PDF Lengkap')
@@ -614,6 +636,15 @@ const generatePDFStyles = () => `
       color: #333;
       background: white;
       margin: 20px;
+      min-height: 100vh;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    /* Improved print styles */
+    @page {
+      size: A4;
+      margin: 1.5cm;
     }
     .header {
       text-align: center;
@@ -1032,15 +1063,81 @@ const openPDFWindow = (htmlContent, reportType) => {
   printWindow.document.write(htmlContent)
   printWindow.document.close()
 
+  // Beri nama window yang lebih deskriptif
+  printWindow.document.title = `Laporan ${reportType} - Kas Kelas 1B`
+
+  // Tunggu hingga window benar-benar loaded
   printWindow.addEventListener('load', () => {
+    // Beri waktu lebih untuk render content
     setTimeout(() => {
-      printWindow.print()
-      // Close window after printing
+      // Focus ke window baru
+      printWindow.focus()
+      
+      // Tidak auto-print, biarkan user yang memutuskan
+      // printWindow.print()
+      
+      // Tampilkan instruksi di console window baru
+      printWindow.console.log('PDF siap! Gunakan Ctrl+P untuk print atau Ctrl+S untuk save as PDF')
+      
+      // Tambahkan tombol download di window
+      const downloadBtn = printWindow.document.createElement('div')
+      downloadBtn.innerHTML = `
+        <div style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: #2563eb; color: white; padding: 10px 15px; border-radius: 8px; font-family: Arial; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="window.print()">
+          🖨️ Print / Save PDF
+        </div>
+        <div style="position: fixed; top: 60px; right: 10px; z-index: 9999; background: #059669; color: white; padding: 8px 12px; border-radius: 6px; font-family: Arial; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 12px;" onclick="window.close()">
+          ✕ Tutup
+        </div>
+      `
+      printWindow.document.body.appendChild(downloadBtn)
+      
+    }, 1000) // Beri waktu lebih lama untuk render
+  })
+
+  // Jangan auto-close window
+  // User bisa close sendiri setelah selesai
+}
+
+// Fungsi alternatif: Download sebagai HTML file
+const downloadAsHTML = (htmlContent, reportType) => {
+  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `Laporan_${reportType}_${getPeriodString()}.html`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+// Fungsi untuk download PDF menggunakan browser print
+const downloadPDFViaBrowser = (htmlContent, reportType) => {
+  // Buat iframe tersembunyi
+  const iframe = document.createElement('iframe')
+  iframe.style.position = 'absolute'
+  iframe.style.top = '-10000px'
+  iframe.style.left = '-10000px'
+  iframe.style.width = '1px'
+  iframe.style.height = '1px'
+  document.body.appendChild(iframe)
+  
+  // Tulis content ke iframe
+  iframe.contentDocument.write(htmlContent)
+  iframe.contentDocument.close()
+  
+  // Tunggu load kemudian print
+  iframe.onload = () => {
+    setTimeout(() => {
+      iframe.contentWindow.focus()
+      iframe.contentWindow.print()
+      
+      // Cleanup setelah print
       setTimeout(() => {
-        printWindow.close()
+        document.body.removeChild(iframe)
       }, 1000)
     }, 500)
-  })
+  }
 }
 
 onMounted(() => {

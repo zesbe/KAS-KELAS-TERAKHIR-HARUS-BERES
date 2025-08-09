@@ -592,8 +592,9 @@ import { useToast } from 'vue-toastification'
 import { useAppStore } from '@/stores'
 import campaignService from '@/services/campaignService'
 import enhancedCampaignService from '@/services/enhancedCampaignService'
-import { 
-  PlusIcon, 
+import StarSenderPanel from '@/components/StarSenderPanel.vue'
+import {
+  PlusIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
   ClockIcon,

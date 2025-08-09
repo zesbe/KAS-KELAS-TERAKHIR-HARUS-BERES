@@ -458,7 +458,9 @@ const generateDashboardPDFContent = () => {
     ).length
   }))
 
+  // Generate recent transactions table (show latest 15)
   let transactionRows = ''
+  const recentTransactions = allTransactions.slice(0, 15)
   recentTransactions.forEach(transaction => {
     const amountClass = transaction.type === 'income' ? 'income' : 'expense'
     const amountSign = transaction.type === 'income' ? '+' : '-'
@@ -469,6 +471,22 @@ const generateDashboardPDFContent = () => {
         <td class="${amountClass}">${amountSign}${formatCurrency(transaction.amount)}</td>
         <td>${transaction.status === 'completed' ? 'Selesai' : 'Pending'}</td>
         <td>${formatDate(transaction.created_at)}</td>
+      </tr>
+    `
+  })
+
+  // Generate ALL students payment status table
+  let studentRows = ''
+  studentsWithStatus.forEach(student => {
+    const statusClass = student.hasPaid ? 'income' : 'expense'
+    const statusText = student.hasPaid ? '✅ Sudah Bayar' : '❌ Belum Bayar'
+    studentRows += `
+      <tr>
+        <td>${student.name}</td>
+        <td>${student.nickname}</td>
+        <td>${student.phone || '-'}</td>
+        <td>${student.paymentCount}</td>
+        <td class="${statusClass}">${statusText}</td>
       </tr>
     `
   })

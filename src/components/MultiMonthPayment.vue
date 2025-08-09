@@ -309,9 +309,9 @@
           </div>
           
           <div class="flex justify-end space-x-3 pt-4">
-            <button 
+            <button
               type="button"
-              @click="showCreateModal = false"
+              @click="closeCreateModal"
               class="btn-secondary"
             >
               Batal

@@ -5,7 +5,7 @@
       <div>
         <h1 class="text-2xl font-bold text-gray-900">Campaign WhatsApp</h1>
         <p class="mt-1 text-sm text-gray-500">
-          Kelola campaign pengiriman pesan terjadwal ke multiple nomor
+          Broadcast pesan otomatis ke multiple nomor WhatsApp
         </p>
       </div>
       <button 
@@ -17,33 +17,94 @@
       </button>
     </div>
 
-    <!-- StarSender Control Panel (Temporarily Disabled for Debug) -->
-    <div class="startsender-info card p-6 mb-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900">🌟 StarSender System</h3>
-          <p class="text-sm text-gray-600">Advanced WhatsApp Broadcasting with CORS Bypass</p>
-        </div>
-        <button @click="enableStarSender" class="btn-primary">
-          🚀 Enable StarSender
-        </button>
-      </div>
-    </div>
-
-    <!-- StarSender Components (Loaded dynamically) -->
-    <div v-if="startsenderEnabled">
-      <Suspense>
-        <template #default>
-          <StarSenderPanel />
-          <StarSenderTest />
-        </template>
-        <template #fallback>
-          <div class="card p-6 text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p class="text-sm text-gray-500">Loading StarSender...</p>
+    <!-- StarSender Status & Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- StarSender Status -->
+      <div class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+              🌟 StarSender Status
+            </h3>
+            <p class="text-sm text-gray-600">Sistem broadcast WhatsApp</p>
           </div>
-        </template>
-      </Suspense>
+          <div :class="starSenderReady ? 'text-green-600' : 'text-red-600'">
+            <CheckCircleIcon v-if="starSenderReady" class="w-6 h-6" />
+            <XCircleIcon v-else class="w-6 h-6" />
+          </div>
+        </div>
+        
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-600">Status:</span>
+            <span :class="starSenderReady ? 'text-green-600' : 'text-red-600'">
+              {{ starSenderReady ? 'Ready' : 'Not Configured' }}
+            </span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-600">Total Sent:</span>
+            <span class="text-gray-900">{{ broadcastStats.totalSent }}</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-600">Success Rate:</span>
+            <span class="text-green-600">{{ broadcastStats.successRate }}%</span>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          <button 
+            @click="testBroadcast"
+            :disabled="!starSenderReady || testing"
+            class="btn-sm btn-secondary w-full"
+          >
+            {{ testing ? 'Testing...' : '🧪 Test Broadcast' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Broadcast -->
+      <div class="card p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">⚡ Quick Broadcast</h3>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Target</label>
+            <select v-model="quickBroadcast.target" class="input-field">
+              <option value="all">Semua Siswa ({{ students.length }})</option>
+              <option value="unpaid">Belum Bayar ({{ unpaidStudents.length }})</option>
+              <option value="paid">Sudah Bayar ({{ paidStudents.length }})</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Pesan Cepat</label>
+            <select v-model="quickBroadcast.template" @change="applyQuickTemplate" class="input-field">
+              <option value="">-- Pilih Template --</option>
+              <option value="reminder">💰 Reminder Pembayaran</option>
+              <option value="urgent">🚨 Urgent - Pembayaran Segera</option>
+              <option value="announcement">📢 Pengumuman Penting</option>
+              <option value="custom">✏️ Custom Message</option>
+            </select>
+          </div>
+
+          <div>
+            <textarea 
+              v-model="quickBroadcast.message"
+              rows="3"
+              class="input-field"
+              placeholder="Ketik pesan atau pilih template..."
+            ></textarea>
+          </div>
+
+          <button 
+            @click="sendQuickBroadcast"
+            :disabled="!quickBroadcast.message || broadcasting"
+            class="btn-primary w-full"
+          >
+            {{ broadcasting ? 'Mengirim...' : '🚀 Kirim Sekarang' }}
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Campaign Stats -->
@@ -94,11 +155,61 @@
             <PaperAirplaneIcon class="w-6 h-6 text-purple-600" />
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600">Sedang Kirim</p>
-            <p class="text-2xl font-semibold text-gray-900">
-              {{ campaigns.filter(c => c.status === 'sending').length }}
-            </p>
+            <p class="text-sm font-medium text-gray-600">Broadcast Hari Ini</p>
+            <p class="text-2xl font-semibold text-gray-900">{{ todayBroadcasts }}</p>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Broadcasting Progress -->
+    <div v-if="broadcasting || broadcastProgress.active" class="card p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">📤 Broadcasting Progress</h3>
+        <button 
+          v-if="broadcasting"
+          @click="stopBroadcast"
+          class="btn-sm btn-secondary"
+        >
+          🛑 Stop
+        </button>
+      </div>
+      
+      <div class="space-y-4">
+        <!-- Progress Bar -->
+        <div>
+          <div class="flex justify-between text-sm text-gray-600 mb-2">
+            <span>Progress: {{ broadcastProgress.current }}/{{ broadcastProgress.total }}</span>
+            <span>{{ Math.round((broadcastProgress.current / broadcastProgress.total) * 100) }}%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+              :style="{ width: (broadcastProgress.current / broadcastProgress.total) * 100 + '%' }"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Live Stats -->
+        <div class="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <div class="text-2xl font-bold text-green-600">{{ broadcastProgress.sent }}</div>
+            <div class="text-sm text-gray-500">Berhasil</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-red-600">{{ broadcastProgress.failed }}</div>
+            <div class="text-sm text-gray-500">Gagal</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-blue-600">{{ broadcastProgress.remaining }}</div>
+            <div class="text-sm text-gray-500">Sisa</div>
+          </div>
+        </div>
+
+        <!-- Current Message -->
+        <div v-if="broadcastProgress.currentRecipient" class="text-sm text-gray-600 text-center">
+          Mengirim ke: <strong>{{ broadcastProgress.currentRecipient.name }}</strong> 
+          ({{ broadcastProgress.currentRecipient.phone }})
         </div>
       </div>
     </div>
@@ -120,9 +231,6 @@
                 Target
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Jadwal
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Status
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -138,20 +246,12 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <div>
                   <div class="text-sm font-medium text-gray-900">{{ campaign.title }}</div>
-                  <div class="text-sm text-gray-500 truncate max-w-xs">{{ campaign.message }}</div>
+                  <div class="text-sm text-gray-500 truncate max-w-xs">{{ campaign.message.substring(0, 50) }}...</div>
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">{{ getTargetLabel(campaign.target) }}</div>
-                <div class="text-sm text-gray-500">{{ getRecipientCount(campaign) }} nomor</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">
-                  {{ campaign.scheduled_at ? formatDate(campaign.scheduled_at) : '-' }}
-                </div>
-                <div class="text-sm text-gray-500">
-                  Delay: {{ campaign.delay_minutes || 1 }} menit
-                </div>
+                <div class="text-sm text-gray-500">{{ campaign.totalRecipients || 0 }} nomor</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span :class="getStatusClass(campaign.status)" class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
@@ -179,13 +279,12 @@
                   </button>
                   <button 
                     v-if="campaign.status === 'draft'"
-                    @click="editCampaign(campaign)"
+                    @click="executeCampaign(campaign)"
                     class="text-green-600 hover:text-green-900"
                   >
-                    Edit
+                    Jalankan
                   </button>
                   <button 
-                    v-if="['draft', 'scheduled'].includes(campaign.status)"
                     @click="deleteCampaign(campaign.id)"
                     class="text-red-600 hover:text-red-900"
                   >
@@ -200,29 +299,21 @@
         <div v-if="campaigns.length === 0" class="text-center py-12">
           <CalendarDaysIcon class="mx-auto h-12 w-12 text-gray-400" />
           <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada campaign</h3>
-          <p class="mt-1 text-sm text-gray-500">Mulai dengan membuat campaign pertama Anda.</p>
-          <div class="mt-6">
-            <button @click="showCreateModal = true" class="btn-primary">
-              <PlusIcon class="w-5 h-5 mr-2" />
-              Buat Campaign Baru
-            </button>
-          </div>
+          <p class="mt-1 text-sm text-gray-500">Mulai dengan membuat campaign pertama atau gunakan Quick Broadcast.</p>
         </div>
       </div>
     </div>
 
-    <!-- Create/Edit Campaign Modal -->
+    <!-- Create Campaign Modal -->
     <div v-if="showCreateModal"
-         class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-start justify-center pt-4 pb-20 px-4"
+         class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
          @click="closeModal">
-      <div class="relative w-full max-w-2xl mx-auto bg-white rounded-lg shadow-xl my-8 max-h-full overflow-y-auto"
+      <div class="relative w-full max-w-2xl bg-white rounded-lg shadow-xl max-h-full overflow-y-auto"
            @click.stop>
-        <div class="p-4 sm:p-6">
+        <div class="p-6">
           <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg sm:text-xl font-medium text-gray-900">
-              {{ editingCampaign ? 'Edit Campaign' : 'Buat Campaign Baru' }}
-            </h3>
-            <button @click="closeModal" class="text-gray-400 hover:text-gray-600 p-2 -mr-2">
+            <h3 class="text-xl font-medium text-gray-900">Buat Campaign Baru</h3>
+            <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
               <XMarkIcon class="w-6 h-6" />
             </button>
           </div>
@@ -230,7 +321,7 @@
           <form @submit.prevent="saveCampaign" class="space-y-6">
             <!-- Campaign Title -->
             <div>
-              <label class="block text-sm font-medium text-gray-700">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
                 Judul Campaign
               </label>
               <input
@@ -242,98 +333,31 @@
               />
             </div>
 
-            <!-- Template Selector -->
+            <!-- Message Template -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Template Pesan Profesional
+                Template Pesan
               </label>
-              <select v-model="selectedTemplate" @change="applyTemplate" class="input-field mb-3">
+              <select v-model="campaignForm.template" @change="applyTemplate" class="input-field mb-3">
                 <option value="">-- Pilih Template --</option>
                 <option value="payment_reminder">💰 Reminder Pembayaran Kas</option>
                 <option value="payment_urgent">🚨 Urgent - Pembayaran Terlambat</option>
-                <option value="payment_first_notice">📋 Pemberitahuan Pembayaran</option>
-                <option value="info_announcement">📢 Pengumuman Kelas</option>
-                <option value="payment_confirmation">✅ Konfirmasi Pembayaran</option>
-                <option value="event_payment">🎉 Pembayaran Kegiatan</option>
-                <option value="thank_you">🙏 Terima Kasih & Apresiasi</option>
+                <option value="announcement">📢 Pengumuman Kelas</option>
+                <option value="event">🎉 Informasi Kegiatan</option>
+                <option value="thanks">🙏 Terima Kasih</option>
                 <option value="custom">✏️ Custom Message</option>
               </select>
-            </div>
-
-            <!-- Auto Payment Link Generator -->
-            <div v-if="needsPaymentLink" class="border rounded-lg p-4 bg-blue-50">
-              <h4 class="font-medium text-blue-900 mb-3">💳 Auto Generate Payment Links</h4>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">
-                    Jumlah Pembayaran
-                  </label>
-                  <input
-                    v-model="paymentConfig.amount"
-                    type="number"
-                    min="1"
-                    class="input-field"
-                    placeholder="50000"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">
-                    Jatuh Tempo
-                  </label>
-                  <input
-                    v-model="paymentConfig.dueDate"
-                    type="date"
-                    class="input-field"
-                  />
-                </div>
-              </div>
-
-              <div class="mt-3">
-                <label class="block text-sm font-medium text-gray-700">
-                  Keterangan Pembayaran
-                </label>
-                <input
-                  v-model="paymentConfig.description"
-                  type="text"
-                  class="input-field"
-                  placeholder="Kas Kelas Januari 2024"
-                />
-              </div>
-
-              <div class="mt-3 p-3 bg-white rounded border">
-                <p class="text-sm text-blue-700">
-                  ✅ Link PakaSir akan otomatis dibuat untuk setiap siswa<br>
-                  ✅ Variable [[PAYMENT_LINK]] akan diganti dengan link unik<br>
-                  ✅ Payment tracking otomatis terintegrasi
-                </p>
-              </div>
-            </div>
-
-            <!-- Message Template Editor -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700">
-                Template Pesan
-              </label>
+              
               <textarea
                 v-model="campaignForm.message"
-                rows="12"
+                rows="8"
                 required
-                class="input-field font-mono text-sm"
-                placeholder="Ketik pesan Anda di sini atau pilih template di atas..."
+                class="input-field"
+                placeholder="Ketik pesan Anda di sini..."
               ></textarea>
+              
               <div class="mt-2 text-sm text-gray-500">
-                <p><strong>Variable tersedia:</strong></p>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-1 mt-1">
-                  <span class="px-2 py-1 bg-gray-100 rounded text-xs">[[NAME]]</span>
-                  <span class="px-2 py-1 bg-gray-100 rounded text-xs">[[NICKNAME]]</span>
-                  <span class="px-2 py-1 bg-gray-100 rounded text-xs">[[PHONE]]</span>
-                  <span class="px-2 py-1 bg-blue-100 rounded text-xs">[[TIME_GREETING]]</span>
-                  <span class="px-2 py-1 bg-blue-100 rounded text-xs">[[MONTH]]</span>
-                  <span class="px-2 py-1 bg-green-100 rounded text-xs">[[PAYMENT_LINK]]</span>
-                  <span class="px-2 py-1 bg-green-100 rounded text-xs">[[AMOUNT]]</span>
-                  <span class="px-2 py-1 bg-green-100 rounded text-xs">[[DUE_DATE]]</span>
-                </div>
+                <p><strong>Variable tersedia:</strong> [[NAME]], [[NICKNAME]], [[PHONE]]</p>
               </div>
             </div>
 
@@ -344,166 +368,41 @@
               </label>
               <div class="space-y-2">
                 <label class="flex items-center">
-                  <input
-                    v-model="campaignForm.target"
-                    type="radio"
-                    value="all"
-                    class="mr-2"
-                  />
+                  <input v-model="campaignForm.target" type="radio" value="all" class="mr-2" />
                   Semua Siswa ({{ students.length }} siswa)
                 </label>
                 <label class="flex items-center">
-                  <input
-                    v-model="campaignForm.target"
-                    type="radio"
-                    value="unpaid"
-                    class="mr-2"
-                  />
-                  Siswa Belum Bayar ({{ getUnpaidStudents().length }} siswa)
+                  <input v-model="campaignForm.target" type="radio" value="unpaid" class="mr-2" />
+                  Siswa Belum Bayar ({{ unpaidStudents.length }} siswa)
                 </label>
                 <label class="flex items-center">
-                  <input
-                    v-model="campaignForm.target"
-                    type="radio"
-                    value="paid"
-                    class="mr-2"
-                  />
-                  Siswa Sudah Bayar ({{ getPaidStudents().length }} siswa)
-                </label>
-                <label class="flex items-center">
-                  <input
-                    v-model="campaignForm.target"
-                    type="radio"
-                    value="selected"
-                    class="mr-2"
-                  />
-                  Pilih Manual
+                  <input v-model="campaignForm.target" type="radio" value="paid" class="mr-2" />
+                  Siswa Sudah Bayar ({{ paidStudents.length }} siswa)
                 </label>
               </div>
             </div>
 
-            <!-- Manual Selection -->
-            <div v-if="campaignForm.target === 'selected'" class="border rounded-lg p-4">
+            <!-- Delay Setting -->
+            <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Pilih Siswa ({{ campaignForm.selectedStudents.length }} dipilih)
+                Jeda Antar Pesan (detik)
               </label>
-              <div class="max-h-48 overflow-y-auto space-y-2">
-                <label 
-                  v-for="student in students" 
-                  :key="student.id"
-                  class="flex items-center"
-                >
-                  <input
-                    v-model="campaignForm.selectedStudents"
-                    type="checkbox"
-                    :value="student.id"
-                    class="mr-2"
-                  />
-                  {{ student.name }} ({{ student.nickname }}) - {{ student.phone }}
-                </label>
-              </div>
-            </div>
-
-            <!-- Scheduling Options -->
-            <div class="border rounded-lg p-4">
-              <h4 class="font-medium text-gray-900 mb-3">⏰ Pengaturan Jadwal</h4>
-              
-              <!-- Immediate or Scheduled -->
-              <div class="space-y-3">
-                <label class="flex items-center">
-                  <input
-                    v-model="campaignForm.sendType"
-                    type="radio"
-                    value="immediate"
-                    class="mr-2"
-                  />
-                  Kirim Sekarang
-                </label>
-                <label class="flex items-center">
-                  <input
-                    v-model="campaignForm.sendType"
-                    type="radio"
-                    value="scheduled"
-                    class="mr-2"
-                  />
-                  Jadwalkan Pengiriman
-                </label>
-              </div>
-
-              <!-- Schedule DateTime -->
-              <div v-if="campaignForm.sendType === 'scheduled'" class="mt-4 space-y-3">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">
-                    Tanggal & Jam Mulai
-                  </label>
-                  <input
-                    v-model="campaignForm.scheduledDateTime"
-                    type="datetime-local"
-                    :min="new Date().toISOString().slice(0, 16)"
-                    class="input-field"
-                    required
-                  />
-                </div>
-              </div>
-
-              <!-- Delay Between Messages -->
-              <div class="mt-4">
-                <label class="block text-sm font-medium text-gray-700">
-                  Jeda Antar Pesan (menit)
-                </label>
-                <select v-model="campaignForm.delayMinutes" class="input-field">
-                  <option value="1">1 menit (cepat)</option>
-                  <option value="2">2 menit</option>
-                  <option value="5">5 menit</option>
-                  <option value="10">10 menit (recommended)</option>
-                  <option value="15">15 menit</option>
-                  <option value="30">30 menit</option>
-                  <option value="60">1 jam</option>
-                </select>
-                <p class="mt-1 text-sm text-gray-500">
-                  Jeda yang lebih lama mengurangi risiko spam dan lebih aman
-                </p>
-              </div>
-            </div>
-
-            <!-- Preview -->
-            <div class="border rounded-lg p-4 bg-gray-50">
-              <h4 class="font-medium text-gray-900 mb-2">📋 Preview Campaign</h4>
-              <div class="text-sm space-y-1">
-                <p><strong>Template:</strong> {{ getTemplatePreview() }}</p>
-                <p><strong>Target:</strong> {{ getTargetPreview() }}</p>
-                <p><strong>Total Penerima:</strong> {{ getTotalRecipients() }} nomor</p>
-                <p><strong>Jadwal:</strong> {{ getSchedulePreview() }}</p>
-                <p><strong>Jeda:</strong> {{ campaignForm.delayMinutes }} menit antar pesan</p>
-                <p><strong>Estimasi Selesai:</strong> {{ getEstimatedCompletion() }}</p>
-
-                <div v-if="needsPaymentLink && paymentConfig.generateLinks" class="mt-3 pt-3 border-t">
-                  <p class="font-medium text-blue-900">💳 Payment Links:</p>
-                  <p><strong>Jumlah:</strong> Rp {{ paymentConfig.amount?.toLocaleString('id-ID') }}</p>
-                  <p><strong>Deskripsi:</strong> {{ paymentConfig.description || 'Kas Kelas' }}</p>
-                  <p><strong>Jatuh Tempo:</strong> {{ paymentConfig.dueDate || 'Belum diatur' }}</p>
-                  <p class="text-blue-600 text-xs mt-1">
-                    ✅ {{ getTotalRecipients() }} link PakaSir akan dibuat otomatis
-                  </p>
-                </div>
-              </div>
+              <select v-model="campaignForm.delay" class="input-field">
+                <option value="3">3 detik (cepat)</option>
+                <option value="5">5 detik</option>
+                <option value="10">10 detik (recommended)</option>
+                <option value="15">15 detik</option>
+                <option value="30">30 detik (aman)</option>
+              </select>
             </div>
 
             <!-- Actions -->
             <div class="flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-6 border-t border-gray-200">
-              <button
-                type="button"
-                @click="closeModal"
-                class="btn-secondary w-full sm:w-auto order-2 sm:order-1"
-              >
+              <button type="button" @click="closeModal" class="btn-secondary">
                 Batal
               </button>
-              <button
-                type="submit"
-                :disabled="saving"
-                class="btn-primary w-full sm:w-auto order-1 sm:order-2"
-              >
-                {{ saving ? 'Menyimpan...' : (editingCampaign ? 'Update Campaign' : 'Buat Campaign') }}
+              <button type="submit" :disabled="saving" class="btn-primary">
+                {{ saving ? 'Menyimpan...' : 'Simpan Campaign' }}
               </button>
             </div>
           </form>
@@ -513,25 +412,23 @@
 
     <!-- Campaign Detail Modal -->
     <div v-if="showDetailModal"
-         class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-start justify-center pt-4 pb-20 px-4"
+         class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
          @click="showDetailModal = false">
-      <div class="relative w-full max-w-2xl mx-auto bg-white rounded-lg shadow-xl my-8 max-h-full overflow-y-auto"
+      <div class="relative w-full max-w-2xl bg-white rounded-lg shadow-xl max-h-full overflow-y-auto"
            @click.stop>
-        <div class="p-4 sm:p-6">
-          <div class="flex items-start justify-between mb-6">
-            <div class="flex-1 min-w-0">
-              <h3 class="text-lg sm:text-xl font-medium text-gray-900 truncate">
-                Detail Campaign: {{ selectedCampaign?.title }}
-              </h3>
-            </div>
-            <button @click="showDetailModal = false" class="ml-4 text-gray-400 hover:text-gray-600 p-2 -mr-2 flex-shrink-0">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-medium text-gray-900">
+              Detail Campaign: {{ selectedCampaign?.title }}
+            </h3>
+            <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-600">
               <XMarkIcon class="w-6 h-6" />
             </button>
           </div>
 
           <div v-if="selectedCampaign" class="space-y-4">
             <!-- Campaign Info -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="text-sm font-medium text-gray-500">Status</label>
                 <p :class="getStatusClass(selectedCampaign.status)" class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
@@ -540,17 +437,7 @@
               </div>
               <div>
                 <label class="text-sm font-medium text-gray-500">Total Penerima</label>
-                <p class="text-sm text-gray-900">{{ getRecipientCount(selectedCampaign) }} nomor</p>
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-500">Jadwal Mulai</label>
-                <p class="text-sm text-gray-900">
-                  {{ selectedCampaign.scheduled_at ? formatDate(selectedCampaign.scheduled_at) : 'Langsung' }}
-                </p>
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-500">Jeda Antar Pesan</label>
-                <p class="text-sm text-gray-900">{{ selectedCampaign.delay_minutes || 1 }} menit</p>
+                <p class="text-sm text-gray-900">{{ selectedCampaign.totalRecipients || 0 }} nomor</p>
               </div>
             </div>
 
@@ -562,47 +449,22 @@
               </div>
             </div>
 
-            <!-- Results (if completed) -->
+            <!-- Results -->
             <div v-if="selectedCampaign.results" class="border rounded-lg p-4">
-              <h4 class="font-medium text-gray-900 mb-3">📊 Hasil Pengiriman</h4>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-green-600">{{ selectedCampaign.results.successCount || 0 }}</div>
+              <h4 class="font-medium text-gray-900 mb-3">📊 Hasil Broadcast</h4>
+              <div class="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div class="text-2xl font-bold text-green-600">{{ selectedCampaign.results.sent || 0 }}</div>
                   <div class="text-sm text-gray-500">Berhasil</div>
                 </div>
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-red-600">{{ selectedCampaign.results.failedCount || 0 }}</div>
+                <div>
+                  <div class="text-2xl font-bold text-red-600">{{ selectedCampaign.results.failed || 0 }}</div>
                   <div class="text-sm text-gray-500">Gagal</div>
                 </div>
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-blue-600">{{ selectedCampaign.results.totalSent || 0 }}</div>
+                <div>
+                  <div class="text-2xl font-bold text-blue-600">{{ selectedCampaign.results.total || 0 }}</div>
                   <div class="text-sm text-gray-500">Total</div>
                 </div>
-              </div>
-              
-              <!-- Detailed Results -->
-              <div v-if="selectedCampaign.results.results" class="max-h-48 overflow-y-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Penerima</th>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200">
-                    <tr v-for="result in selectedCampaign.results.results" :key="result.phone">
-                      <td class="px-4 py-2 text-sm text-gray-900">{{ result.phone }}</td>
-                      <td class="px-4 py-2">
-                        <span 
-                          :class="result.success ? 'text-green-600' : 'text-red-600'"
-                          class="text-sm"
-                        >
-                          {{ result.success ? 'Berhasil' : result.error }}
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
               </div>
             </div>
           </div>
@@ -613,21 +475,18 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, defineAsyncComponent } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useToast } from 'vue-toastification'
 import { useAppStore } from '@/stores'
-import campaignService from '@/services/campaignService'
-import enhancedCampaignService from '@/services/enhancedCampaignService'
-// Async import StarSender components to avoid blocking
-const StarSenderPanel = defineAsyncComponent(() => import('@/components/StarSenderPanel.vue'))
-const StarSenderTest = defineAsyncComponent(() => import('@/components/StarSenderTest.vue'))
+import whatsappSender from '@/services/whatsappSender'
 import {
   PlusIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
   ClockIcon,
   PaperAirplaneIcon,
-  XMarkIcon
+  XMarkIcon,
+  XCircleIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
@@ -638,420 +497,487 @@ const campaigns = ref([])
 const students = ref([])
 const loading = ref(false)
 const saving = ref(false)
+const testing = ref(false)
+const broadcasting = ref(false)
 const showCreateModal = ref(false)
 const showDetailModal = ref(false)
-const editingCampaign = ref(null)
 const selectedCampaign = ref(null)
-const startsenderEnabled = ref(false) // Start disabled for stability
 
-// Form state
+// StarSender status
+const starSenderReady = ref(true) // Always ready for wa.me method
+const broadcastStats = reactive({
+  totalSent: 0,
+  successRate: 100
+})
+
+// Broadcasting progress
+const broadcastProgress = reactive({
+  active: false,
+  current: 0,
+  total: 0,
+  sent: 0,
+  failed: 0,
+  remaining: 0,
+  currentRecipient: null
+})
+
+// Quick broadcast form
+const quickBroadcast = reactive({
+  target: 'unpaid',
+  template: '',
+  message: ''
+})
+
+// Campaign form
 const campaignForm = reactive({
   title: '',
   message: '',
   target: 'unpaid',
-  selectedStudents: [],
-  sendType: 'scheduled',
-  scheduledDateTime: '',
-  delayMinutes: 10
-})
-
-// Template and payment config
-const selectedTemplate = ref('')
-const paymentConfig = reactive({
-  generateLinks: false,
-  amount: 50000,
-  description: '',
-  dueDate: ''
+  template: '',
+  delay: 10
 })
 
 // Computed
-const needsPaymentLink = computed(() => {
-  return ['payment_reminder', 'payment_urgent', 'payment_first_notice', 'event_payment'].includes(selectedTemplate.value)
+const unpaidStudents = computed(() => {
+  // For demo, return all students as unpaid
+  return students.value
 })
 
-// Computed
-const getUnpaidStudents = () => {
-  // Filter students yang belum bayar berdasarkan payment status
-  return students.value.filter(student => {
-    // Logic untuk determine unpaid students
-    return true // Placeholder
-  })
-}
+const paidStudents = computed(() => {
+  // For demo, return empty array
+  return []
+})
 
-const getPaidStudents = () => {
-  // Filter students yang sudah bayar
-  return students.value.filter(student => {
-    // Logic untuk determine paid students
-    return false // Placeholder
-  })
-}
+const todayBroadcasts = computed(() => {
+  return campaigns.value.filter(c => {
+    if (!c.executedAt) return false
+    const today = new Date().toDateString()
+    const campaignDate = new Date(c.executedAt).toDateString()
+    return today === campaignDate
+  }).length
+})
 
-// Template methods
-const applyTemplate = () => {
-  if (!selectedTemplate.value || selectedTemplate.value === 'custom') {
-    return
-  }
+// Message templates
+const messageTemplates = {
+  reminder: `Halo [[NAME]]! 👋
 
-  const templates = enhancedCampaignService.getMessageTemplates()
-  const template = templates[selectedTemplate.value]
+💰 **Reminder Pembayaran Kas Kelas**
 
-  if (template) {
-    campaignForm.message = template.template
-    campaignForm.title = template.title
+Ini adalah pengingat pembayaran kas kelas untuk bulan ini.
 
-    // Set default payment config for payment templates
-    if (needsPaymentLink.value) {
-      paymentConfig.generateLinks = true
+Silakan segera lakukan pembayaran agar administrasi kelas tetap lancar.
 
-      // Set default values based on template
-      if (selectedTemplate.value === 'payment_reminder') {
-        paymentConfig.description = 'Kas Kelas ' + new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
-        paymentConfig.dueDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0] // Last day of current month
-      }
-    } else {
-      paymentConfig.generateLinks = false
-    }
-  }
+Terima kasih! 🙏`,
+
+  urgent: `🚨 **URGENT** - [[NAME]]
+
+Pembayaran kas kelas sudah memasuki batas waktu. Mohon segera melakukan pembayaran hari ini.
+
+Hubungi bendahara jika ada kendala.
+
+Terima kasih atas perhatiannya! 🙏`,
+
+  announcement: `📢 **Pengumuman Penting**
+
+Halo [[NAME]]!
+
+Ada pengumuman penting untuk kelas kita. Silakan check group WA atau hubungi ketua kelas untuk informasi lebih lanjut.
+
+Terima kasih! 🙏`,
+
+  payment_reminder: `Halo [[NAME]]! 👋
+
+💰 Reminder pembayaran kas kelas bulan ini:
+
+• Jumlah: Rp 50.000
+• Jatuh tempo: Akhir bulan
+• Status: Belum bayar
+
+Silakan segera lakukan pembayaran. Terima kasih! 🙏`,
+
+  payment_urgent: `🚨 URGENT - [[NAME]]
+
+Pembayaran kas kelas sudah terlambat! Mohon segera bayar hari ini untuk menghindari denda.
+
+Hubungi bendahara jika ada kendala: 08xxx
+
+Terima kasih! 🙏`,
+
+  announcement: `📢 **Pengumuman Kelas**
+
+Halo [[NAME]]!
+
+Ada informasi penting untuk kelas. Silakan baca dengan seksama dan konfirmasi jika diperlukan.
+
+Detail akan disampaikan di group kelas.
+
+Terima kasih! 🙏`,
+
+  event: `🎉 **Info Kegiatan Kelas**
+
+Halo [[NAME]]!
+
+Ada kegiatan kelas yang akan datang. Mohon persiapkan diri dan catat tanggalnya ya!
+
+Info lengkap di group WA kelas.
+
+Sampai jumpa! 👋`,
+
+  thanks: `🙏 **Terima Kasih**
+
+Halo [[NAME]]!
+
+Terima kasih atas partisipasi aktif dalam kegiatan kelas. Dukungan kalian sangat berarti!
+
+Keep up the good work! 💪`
 }
 
 // Methods
 const loadData = async () => {
   try {
     loading.value = true
-
-    // Load students with error handling
-    try {
-      await store.fetchStudents()
-      students.value = store.students || []
-    } catch (studentError) {
-      console.warn('Error loading students:', studentError)
-      students.value = []
-      toast.warning('Data siswa tidak dapat dimuat, menggunakan data kosong')
+    
+    // Load students
+    await store.fetchStudents()
+    students.value = store.students || []
+    
+    // Load campaigns from localStorage
+    const storedCampaigns = localStorage.getItem('campaigns')
+    if (storedCampaigns) {
+      campaigns.value = JSON.parse(storedCampaigns)
     }
-
-    // Load campaigns from database/storage with error handling
-    try {
-      const campaignResult = await campaignService.getCampaigns()
-
-      if (!campaignResult.success && campaignResult.error) {
-        throw new Error(campaignResult.error)
-      }
-
-      campaigns.value = campaignResult.data || []
-    } catch (campaignError) {
-      console.warn('Error loading campaigns:', campaignError)
-      campaigns.value = []
-      toast.warning('Data campaign tidak dapat dimuat, menggunakan data kosong')
+    
+    // Load broadcast stats
+    const storedStats = localStorage.getItem('broadcastStats')
+    if (storedStats) {
+      const stats = JSON.parse(storedStats)
+      Object.assign(broadcastStats, stats)
     }
-
-    // If no campaigns exist, create simple demo data
-    if (campaigns.value.length === 0) {
-      try {
-        const demoCampaign = {
-          id: 'demo_' + Date.now(),
-          title: 'Demo Campaign WhatsApp',
-          message: `Halo [[NAME]]! Ini adalah demo campaign WhatsApp.`,
-          target: 'all',
-          recipients: [],
-          delay_minutes: 10,
-          status: 'draft',
-          scheduled_at: null,
-          created_at: new Date().toISOString(),
-          results: null
-        }
-
-        // Try to create campaign, but don't fail if it doesn't work
-        try {
-          await campaignService.createCampaign(demoCampaign)
-        } catch (createError) {
-          console.warn('Could not save demo campaign:', createError)
-        }
-
-        campaigns.value = [demoCampaign]
-      } catch (demoError) {
-        console.warn('Could not create demo campaign:', demoError)
-        campaigns.value = []
-      }
-    }
-
+    
   } catch (error) {
     console.error('Error loading data:', error)
-    const errorMessage = error?.message || 'Terjadi kesalahan saat memuat data'
-    toast.error(`Gagal memuat data: ${errorMessage}`)
+    toast.error('Gagal memuat data')
   } finally {
     loading.value = false
   }
 }
 
-const saveCampaign = async () => {
+const testBroadcast = async () => {
+  testing.value = true
   try {
-    saving.value = true
+    const testMessage = "🧪 Test broadcast dari Campaign System - " + new Date().toLocaleTimeString()
+    
+    // Try to send to first student
+    if (students.value.length > 0) {
+      const testStudent = students.value[0]
+      const result = await whatsappSender.sendMessage(testStudent.phone, testMessage)
+      
+      if (result.success) {
+        toast.success('Test broadcast berhasil! WhatsApp terbuka.')
+      } else {
+        toast.error('Test broadcast gagal: ' + result.error)
+      }
+    } else {
+      toast.warning('Tidak ada data siswa untuk test')
+    }
+  } catch (error) {
+    console.error('Test broadcast error:', error)
+    toast.error('Error saat test broadcast')
+  } finally {
+    testing.value = false
+  }
+}
 
-    // Validate form
-    if (!campaignForm.title || !campaignForm.message) {
-      toast.error('Judul dan pesan harus diisi')
+const applyQuickTemplate = () => {
+  if (quickBroadcast.template && messageTemplates[quickBroadcast.template]) {
+    quickBroadcast.message = messageTemplates[quickBroadcast.template]
+  }
+}
+
+const sendQuickBroadcast = async () => {
+  if (!quickBroadcast.message.trim()) {
+    toast.error('Pesan tidak boleh kosong')
+    return
+  }
+  
+  broadcasting.value = true
+  
+  try {
+    // Get recipients based on target
+    let recipients = []
+    switch (quickBroadcast.target) {
+      case 'all':
+        recipients = students.value
+        break
+      case 'unpaid':
+        recipients = unpaidStudents.value
+        break
+      case 'paid':
+        recipients = paidStudents.value
+        break
+    }
+    
+    if (recipients.length === 0) {
+      toast.warning('Tidak ada penerima yang dipilih')
       return
     }
+    
+    // Start broadcasting
+    await startBroadcast(recipients, quickBroadcast.message, 5) // 5 second delay
+    
+    // Clear form
+    quickBroadcast.message = ''
+    quickBroadcast.template = ''
+    
+  } catch (error) {
+    console.error('Quick broadcast error:', error)
+    toast.error('Gagal mengirim quick broadcast')
+  } finally {
+    broadcasting.value = false
+  }
+}
 
-    if (getTotalRecipients() === 0) {
-      toast.error('Pilih minimal 1 penerima')
-      return
+const startBroadcast = async (recipients, message, delaySeconds = 10) => {
+  // Initialize progress
+  broadcastProgress.active = true
+  broadcastProgress.current = 0
+  broadcastProgress.total = recipients.length
+  broadcastProgress.sent = 0
+  broadcastProgress.failed = 0
+  broadcastProgress.remaining = recipients.length
+  
+  const results = []
+  
+  try {
+    for (let i = 0; i < recipients.length && broadcasting.value; i++) {
+      const recipient = recipients[i]
+      
+      // Update current recipient
+      broadcastProgress.currentRecipient = recipient
+      
+      try {
+        // Personalize message
+        const personalizedMessage = message
+          .replace(/\[\[NAME\]\]/g, recipient.name || '')
+          .replace(/\[\[NICKNAME\]\]/g, recipient.nickname || '')
+          .replace(/\[\[PHONE\]\]/g, recipient.phone || '')
+        
+        // Send message
+        const result = await whatsappSender.sendMessage(recipient.phone, personalizedMessage, {
+          openInNewTab: i === 0 // Only open first message in new tab
+        })
+        
+        if (result.success) {
+          broadcastProgress.sent++
+          toast.success(`✅ Terkirim ke ${recipient.name}`, { timeout: 2000 })
+        } else {
+          broadcastProgress.failed++
+          toast.error(`❌ Gagal ke ${recipient.name}`, { timeout: 2000 })
+        }
+        
+        results.push({
+          name: recipient.name,
+          phone: recipient.phone,
+          success: result.success,
+          timestamp: result.timestamp
+        })
+        
+      } catch (error) {
+        console.error(`Error sending to ${recipient.name}:`, error)
+        broadcastProgress.failed++
+        results.push({
+          name: recipient.name,
+          phone: recipient.phone,
+          success: false,
+          error: error.message
+        })
+      }
+      
+      // Update progress
+      broadcastProgress.current = i + 1
+      broadcastProgress.remaining = recipients.length - (i + 1)
+      
+      // Delay before next message (except for last one)
+      if (i < recipients.length - 1 && broadcasting.value) {
+        await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000))
+      }
     }
+    
+    // Update stats
+    broadcastStats.totalSent += broadcastProgress.sent
+    localStorage.setItem('broadcastStats', JSON.stringify(broadcastStats))
+    
+    // Show completion message
+    const successRate = Math.round((broadcastProgress.sent / recipients.length) * 100)
+    toast.success(`🎉 Broadcast selesai! ${broadcastProgress.sent}/${recipients.length} berhasil (${successRate}%)`)
+    
+  } finally {
+    broadcastProgress.active = false
+    broadcastProgress.currentRecipient = null
+  }
+  
+  return results
+}
 
-    // Prepare campaign data
-    const campaignData = {
-      id: editingCampaign.value?.id || campaignService.generateCampaignId(),
+const stopBroadcast = () => {
+  broadcasting.value = false
+  toast.info('🛑 Broadcast dihentikan')
+}
+
+const applyTemplate = () => {
+  if (campaignForm.template && messageTemplates[campaignForm.template]) {
+    campaignForm.message = messageTemplates[campaignForm.template]
+  }
+}
+
+const saveCampaign = async () => {
+  if (!campaignForm.title.trim() || !campaignForm.message.trim()) {
+    toast.error('Judul dan pesan harus diisi')
+    return
+  }
+  
+  saving.value = true
+  
+  try {
+    // Get recipients
+    let recipients = []
+    switch (campaignForm.target) {
+      case 'all':
+        recipients = students.value
+        break
+      case 'unpaid':
+        recipients = unpaidStudents.value
+        break
+      case 'paid':
+        recipients = paidStudents.value
+        break
+    }
+    
+    const campaign = {
+      id: 'campaign_' + Date.now(),
       title: campaignForm.title,
       message: campaignForm.message,
       target: campaignForm.target,
-      recipients: getRecipientIds(),
-      delay_minutes: parseInt(campaignForm.delayMinutes),
+      totalRecipients: recipients.length,
+      delay: parseInt(campaignForm.delay),
       status: 'draft',
-      scheduled_at: campaignForm.sendType === 'scheduled' ?
-        new Date(campaignForm.scheduledDateTime).toISOString() : null
+      createdAt: new Date().toISOString(),
+      results: null
     }
-
-    if (editingCampaign.value) {
-      // Update existing campaign
-      await campaignService.updateCampaign(campaignData)
-      const index = campaigns.value.findIndex(c => c.id === editingCampaign.value.id)
-      campaigns.value[index] = campaignData
-      toast.success('Campaign berhasil diupdate')
-    } else {
-      // Create new campaign
-      await campaignService.createCampaign(campaignData)
-      campaigns.value.push(campaignData)
-      toast.success('Campaign berhasil dibuat')
-    }
-
-    // Execute campaign if immediate or scheduled
-    if (campaignForm.sendType === 'immediate' || campaignData.scheduled_at) {
-      toast.info('Memproses campaign dengan payment links...')
-
-      // Prepare payment config if needed
-      const finalPaymentConfig = (needsPaymentLink.value && paymentConfig.generateLinks) ? {
-        generateLinks: true,
-        amount: parseInt(paymentConfig.amount),
-        description: paymentConfig.description || `Kas Kelas ${new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}`,
-        dueDate: paymentConfig.dueDate,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
-      } : null
-
-      await executeEnhancedCampaign(campaignData, finalPaymentConfig)
-    }
-
+    
+    campaigns.value.push(campaign)
+    
+    // Save to localStorage
+    localStorage.setItem('campaigns', JSON.stringify(campaigns.value))
+    
+    toast.success('Campaign berhasil dibuat')
     closeModal()
-
+    
   } catch (error) {
     console.error('Error saving campaign:', error)
-    const errorMessage = error?.message || error?.toString() || 'Terjadi kesalahan saat menyimpan campaign'
-    toast.error(`Gagal menyimpan campaign: ${errorMessage}`)
+    toast.error('Gagal menyimpan campaign')
   } finally {
     saving.value = false
   }
 }
 
 const executeCampaign = async (campaign) => {
+  if (!confirm(`Yakin ingin menjalankan campaign "${campaign.title}"?`)) return
+  
+  broadcasting.value = true
+  
   try {
-    // Use campaignService to execute the campaign
-    const result = await campaignService.executeCampaign(campaign)
-
-    if (result.success) {
-      // Update local campaign data
-      const index = campaigns.value.findIndex(c => c.id === campaign.id)
-      if (index !== -1) {
-        campaigns.value[index] = result.campaign
-      }
-
-      const { successCount, totalSent } = result.campaign.results
-      toast.success(`Campaign berhasil dijadwalkan! ${successCount}/${totalSent} pesan terjadwal`)
-
-      // Show details of scheduled messages
-      if (result.results && result.results.length > 0) {
-        const firstSchedule = new Date(result.results[0].scheduledTime).toLocaleString('id-ID')
-        const lastSchedule = new Date(result.results[result.results.length - 1].scheduledTime).toLocaleString('id-ID')
-
-        toast.info(`Pesan pertama: ${firstSchedule}, Pesan terakhir: ${lastSchedule}`, {
-          timeout: 8000
-        })
-      }
+    // Get recipients
+    let recipients = []
+    switch (campaign.target) {
+      case 'all':
+        recipients = students.value
+        break
+      case 'unpaid':
+        recipients = unpaidStudents.value
+        break
+      case 'paid':
+        recipients = paidStudents.value
+        break
     }
-
+    
+    if (recipients.length === 0) {
+      toast.warning('Tidak ada penerima untuk campaign ini')
+      return
+    }
+    
+    // Update campaign status
+    campaign.status = 'running'
+    campaign.executedAt = new Date().toISOString()
+    
+    // Start broadcast
+    const results = await startBroadcast(recipients, campaign.message, campaign.delay)
+    
+    // Update campaign with results
+    campaign.status = 'completed'
+    campaign.results = {
+      total: recipients.length,
+      sent: broadcastProgress.sent,
+      failed: broadcastProgress.failed,
+      details: results
+    }
+    
+    // Save updated campaigns
+    localStorage.setItem('campaigns', JSON.stringify(campaigns.value))
+    
   } catch (error) {
     console.error('Error executing campaign:', error)
-    const errorMessage = error?.message || error?.toString() || 'Terjadi kesalahan saat menjalankan campaign'
-    toast.error(`Gagal menjalankan campaign: ${errorMessage}`)
-
-    // Update campaign status to failed
     campaign.status = 'failed'
-    await campaignService.updateCampaign(campaign)
-
-    const index = campaigns.value.findIndex(c => c.id === campaign.id)
-    if (index !== -1) {
-      campaigns.value[index] = campaign
-    }
+    toast.error('Gagal menjalankan campaign')
+  } finally {
+    broadcasting.value = false
   }
 }
 
-const executeEnhancedCampaign = async (campaign, paymentConfig = null) => {
-  try {
-    // Use enhanced campaign service with payment links
-    const result = await enhancedCampaignService.executeEnhancedCampaign(campaign, paymentConfig)
-
-    if (result.success) {
-      // Update local campaign data
-      const index = campaigns.value.findIndex(c => c.id === campaign.id)
-      if (index !== -1) {
-        campaigns.value[index] = result.campaign
-      }
-
-      const { successCount, totalSent, paymentLinksGenerated } = result.campaign.results
-
-      if (paymentConfig && paymentLinksGenerated > 0) {
-        toast.success(`🎉 Campaign + Payment Links berhasil! ${successCount}/${totalSent} pesan, ${paymentLinksGenerated} link dibuat`)
-      } else {
-        toast.success(`Campaign berhasil dijadwalkan! ${successCount}/${totalSent} pesan terjadwal`)
-      }
-
-      // Show details of scheduled messages
-      if (result.results && result.results.length > 0) {
-        const firstSchedule = new Date(result.results[0].scheduledTime).toLocaleString('id-ID')
-        const lastSchedule = new Date(result.results[result.results.length - 1].scheduledTime).toLocaleString('id-ID')
-
-        toast.info(`⏰ Jadwal: ${firstSchedule} - ${lastSchedule}`, {
-          timeout: 8000
-        })
-
-        if (paymentLinksGenerated > 0) {
-          toast.info(`💳 ${paymentLinksGenerated} Payment Links PakaSir berhasil dibuat dan diintegrasikan!`, {
-            timeout: 6000
-          })
-        }
-      }
-    }
-
-  } catch (error) {
-    console.error('Error executing enhanced campaign:', error)
-    const errorMessage = error?.message || error?.toString() || 'Terjadi kesalahan saat menjalankan enhanced campaign'
-    toast.error(`Gagal menjalankan campaign: ${errorMessage}`)
-
-    // Update campaign status to failed
-    campaign.status = 'failed'
-    await enhancedCampaignService.updateCampaign(campaign)
-
-    const index = campaigns.value.findIndex(c => c.id === campaign.id)
-    if (index !== -1) {
-      campaigns.value[index] = campaign
-    }
-  }
+const viewCampaign = (campaign) => {
+  selectedCampaign.value = campaign
+  showDetailModal.value = true
 }
 
-const getRecipientsFromCampaign = (campaign) => {
-  switch (campaign.target) {
-    case 'all':
-      return students.value
-    case 'paid':
-      return getPaidStudents()
-    case 'unpaid':
-      return getUnpaidStudents()
-    case 'selected':
-      return students.value.filter(s => campaign.recipients.includes(s.id))
-    default:
-      return []
-  }
-}
-
-const getRecipientIds = () => {
-  switch (campaignForm.target) {
-    case 'all':
-      return students.value.map(s => s.id)
-    case 'paid':
-      return getPaidStudents().map(s => s.id)
-    case 'unpaid':
-      return getUnpaidStudents().map(s => s.id)
-    case 'selected':
-      return campaignForm.selectedStudents
-    default:
-      return []
-  }
-}
-
-const getTotalRecipients = () => {
-  return getRecipientIds().length
-}
-
-const getTemplatePreview = () => {
-  if (!selectedTemplate.value) return 'Custom Template'
-
-  const templates = {
-    payment_reminder: '💰 Reminder Pembayaran Kas',
-    payment_urgent: '🚨 Urgent - Pembayaran Terlambat',
-    payment_first_notice: '📋 Pemberitahuan Pembayaran',
-    info_announcement: '📢 Pengumuman Kelas',
-    payment_confirmation: '✅ Konfirmasi Pembayaran',
-    event_payment: '🎉 Pembayaran Kegiatan',
-    thank_you: '🙏 Terima Kasih & Apresiasi',
-    custom: '✏️ Custom Message'
-  }
-
-  return templates[selectedTemplate.value] || 'Unknown Template'
-}
-
-const getTargetPreview = () => {
-  const labels = {
-    all: 'Semua Siswa',
-    paid: 'Siswa Sudah Bayar',
-    unpaid: 'Siswa Belum Bayar',
-    selected: 'Pilihan Manual'
-  }
-  return labels[campaignForm.target] || 'Unknown'
-}
-
-const getSchedulePreview = () => {
-  if (campaignForm.sendType === 'immediate') {
-    return 'Kirim sekarang'
-  }
-  return campaignForm.scheduledDateTime ? 
-    new Date(campaignForm.scheduledDateTime).toLocaleString('id-ID') : 
-    'Belum diatur'
-}
-
-const getEstimatedCompletion = () => {
-  const totalRecipients = getTotalRecipients()
-  if (totalRecipients === 0) return '-'
+const deleteCampaign = (campaignId) => {
+  if (!confirm('Yakin ingin menghapus campaign ini?')) return
   
-  const totalMinutes = totalRecipients * campaignForm.delayMinutes
-  const startTime = campaignForm.sendType === 'scheduled' && campaignForm.scheduledDateTime ?
-    new Date(campaignForm.scheduledDateTime) :
-    new Date()
+  const index = campaigns.value.findIndex(c => c.id === campaignId)
+  if (index !== -1) {
+    campaigns.value.splice(index, 1)
+    localStorage.setItem('campaigns', JSON.stringify(campaigns.value))
+    toast.success('Campaign berhasil dihapus')
+  }
+}
+
+const closeModal = () => {
+  showCreateModal.value = false
   
-  const endTime = new Date(startTime.getTime() + totalMinutes * 60 * 1000)
-  return endTime.toLocaleString('id-ID')
+  // Reset form
+  Object.assign(campaignForm, {
+    title: '',
+    message: '',
+    target: 'unpaid',
+    template: '',
+    delay: 10
+  })
 }
 
 const getTargetLabel = (target) => {
   const labels = {
     all: 'Semua Siswa',
     paid: 'Sudah Bayar',
-    unpaid: 'Belum Bayar',
-    selected: 'Pilihan Manual'
+    unpaid: 'Belum Bayar'
   }
   return labels[target] || target
-}
-
-const getRecipientCount = (campaign) => {
-  const recipients = getRecipientsFromCampaign(campaign)
-  return recipients.length
 }
 
 const getStatusLabel = (status) => {
   const labels = {
     draft: 'Draft',
-    scheduled: 'Terjadwal',
-    sending: 'Mengirim',
+    running: 'Berjalan',
     completed: 'Selesai',
-    failed: 'Gagal',
-    cancelled: 'Dibatalkan'
+    failed: 'Gagal'
   }
   return labels[status] || status
 }
@@ -1059,11 +985,9 @@ const getStatusLabel = (status) => {
 const getStatusClass = (status) => {
   const classes = {
     draft: 'bg-gray-100 text-gray-800',
-    scheduled: 'bg-blue-100 text-blue-800',
-    sending: 'bg-yellow-100 text-yellow-800',
+    running: 'bg-yellow-100 text-yellow-800',
     completed: 'bg-green-100 text-green-800',
-    failed: 'bg-red-100 text-red-800',
-    cancelled: 'bg-gray-100 text-gray-800'
+    failed: 'bg-red-100 text-red-800'
   }
   return classes[status] || 'bg-gray-100 text-gray-800'
 }
@@ -1072,86 +996,36 @@ const getProgress = (campaign) => {
   if (!campaign.results) {
     return campaign.status === 'completed' ? 100 : 0
   }
-  return Math.round((campaign.results.successCount / campaign.results.totalSent) * 100)
+  return Math.round((campaign.results.sent / campaign.results.total) * 100)
 }
 
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleString('id-ID')
-}
-
-const viewCampaign = (campaign) => {
-  selectedCampaign.value = campaign
-  showDetailModal.value = true
-}
-
-const editCampaign = (campaign) => {
-  editingCampaign.value = campaign
-  campaignForm.title = campaign.title
-  campaignForm.message = campaign.message
-  campaignForm.target = campaign.target
-  campaignForm.selectedStudents = campaign.recipients || []
-  campaignForm.sendType = campaign.scheduled_at ? 'scheduled' : 'immediate'
-  campaignForm.scheduledDateTime = campaign.scheduled_at ? 
-    new Date(campaign.scheduled_at).toISOString().slice(0, 16) : ''
-  campaignForm.delayMinutes = campaign.delay_minutes || 10
-  showCreateModal.value = true
-}
-
-const deleteCampaign = async (campaignId) => {
-  if (!confirm('Yakin ingin menghapus campaign ini?')) return
-
-  try {
-    await campaignService.deleteCampaign(campaignId)
-
-    const index = campaigns.value.findIndex(c => c.id === campaignId)
-    if (index !== -1) {
-      campaigns.value.splice(index, 1)
-      toast.success('Campaign berhasil dihapus')
-    }
-  } catch (error) {
-    console.error('Error deleting campaign:', error)
-    const errorMessage = error?.message || error?.toString() || 'Terjadi kesalahan saat menghapus campaign'
-    toast.error(`Gagal menghapus campaign: ${errorMessage}`)
-  }
-}
-
-const closeModal = () => {
-  showCreateModal.value = false
-  editingCampaign.value = null
-  selectedTemplate.value = ''
-
-  // Reset form
-  Object.assign(campaignForm, {
-    title: '',
-    message: '',
-    target: 'unpaid',
-    selectedStudents: [],
-    sendType: 'scheduled',
-    scheduledDateTime: '',
-    delayMinutes: 10
+// Event listeners for WhatsApp sender events
+const setupWhatsAppEventListeners = () => {
+  window.addEventListener('whatsapp:progress', (event) => {
+    const { current, total, sent, failed } = event.detail
+    broadcastProgress.current = current
+    broadcastProgress.total = total
+    broadcastProgress.sent = sent
+    broadcastProgress.failed = failed
+    broadcastProgress.remaining = total - current
   })
-
-  // Reset payment config
-  Object.assign(paymentConfig, {
-    generateLinks: false,
-    amount: 50000,
-    description: '',
-    dueDate: ''
+  
+  window.addEventListener('whatsapp:complete', (event) => {
+    const { total, sent, failed } = event.detail
+    broadcastProgress.active = false
+    broadcastStats.totalSent += sent
+    localStorage.setItem('broadcastStats', JSON.stringify(broadcastStats))
   })
-}
-
-const enableStarSender = () => {
-  startsenderEnabled.value = true
-  toast.info('Enabling StarSender components...')
-}
-
-const retryStarSender = () => {
-  startsenderEnabled.value = true
-  toast.info('Retrying StarSender initialization...')
 }
 
 // Lifecycle
 onMounted(() => {
   loadData()
+  setupWhatsAppEventListeners()
+})
+
+onUnmounted(() => {
+  // Stop any ongoing broadcast
+  broadcasting.value = false
 })
 </script>

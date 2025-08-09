@@ -25,14 +25,18 @@
         <!-- Logo -->
         <div class="flex items-center px-4 sm:px-6 py-4 border-b border-gray-200">
           <div class="flex items-center">
-            <div class="relative w-10 h-10 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-              <!-- Book icon -->
-              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7 19H5V5h2v14zm4-12h6v2h-6V7zm0 4h6v2h-6v-2zm0 4h4v2h-4v-2z"/>
+            <div class="relative w-10 h-10 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg animate-pulse">
+              <!-- Enhanced Book icon -->
+              <svg class="w-6 h-6 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C10.895 2 10 2.895 10 4v16c0 1.105.895 2 2 2s2-.895 2-2V4c0-1.105-.895-2-2-2z"/>
+                <path d="M6 3C4.895 3 4 3.895 4 5v14c0 1.105.895 2 2 2h4V3H6z"/>
+                <path d="M18 3h-4v18h4c1.105 0 2-.895 2-2V5c0-1.105-.895-2-2-2z"/>
+                <path d="M7 7h2v2H7V7zm0 3h2v2H7v-2zm0 3h2v2H7v-2z" fill="rgba(255,255,255,0.7)"/>
+                <path d="M15 7h2v2h-2V7zm0 3h2v2h-2v-2zm0 3h2v2h-2v-2z" fill="rgba(255,255,255,0.7)"/>
               </svg>
-              <!-- Small sparkle -->
-              <div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full flex items-center justify-center">
-                <span class="text-xs">✨</span>
+              <!-- Money symbol overlay -->
+              <div class="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center shadow-md">
+                <span class="text-xs font-bold text-white">₹</span>
               </div>
             </div>
             <div class="ml-3">

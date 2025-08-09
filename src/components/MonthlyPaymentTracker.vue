@@ -22,52 +22,58 @@
     </div>
 
     <!-- Current Month Summary -->
-    <div class="card p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-      <div class="flex items-center justify-between mb-4">
-        <h4 class="text-lg font-semibold text-blue-900">
+    <div class="card p-8 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 shadow-xl">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+        <h4 class="text-2xl font-bold text-blue-900 mb-4 lg:mb-0">
           📊 {{ currentMonthName }} (Tahun Ajaran {{ selectedYear }}/{{ selectedYear + 1 }})
         </h4>
-        <div class="flex items-center space-x-4">
-          <div class="text-center">
-            <div class="text-2xl font-bold text-green-600">{{ currentMonthStats.paid }}</div>
-            <div class="text-xs text-gray-600">Sudah Bayar</div>
+        <div class="flex items-center space-x-6">
+          <div class="text-center p-4 bg-green-100 rounded-2xl border border-green-200">
+            <div class="text-3xl font-bold text-green-600">{{ currentMonthStats.paid }}</div>
+            <div class="text-sm text-green-700 font-medium">✅ Sudah Bayar</div>
           </div>
-          <div class="text-center">
-            <div class="text-2xl font-bold text-red-600">{{ currentMonthStats.unpaid }}</div>
-            <div class="text-xs text-gray-600">Belum Bayar</div>
+          <div class="text-center p-4 bg-red-100 rounded-2xl border border-red-200">
+            <div class="text-3xl font-bold text-red-600">{{ currentMonthStats.unpaid }}</div>
+            <div class="text-sm text-red-700 font-medium">❌ Belum Bayar</div>
           </div>
-          <div class="text-center">
-            <div class="text-2xl font-bold text-blue-600">{{ currentMonthStats.rate }}%</div>
-            <div class="text-xs text-gray-600">Rate Bayar</div>
+          <div class="text-center p-4 bg-blue-100 rounded-2xl border border-blue-200">
+            <div class="text-3xl font-bold text-blue-600">{{ currentMonthStats.rate }}%</div>
+            <div class="text-sm text-blue-700 font-medium">📈 Rate Bayar</div>
           </div>
         </div>
       </div>
-      
+
       <!-- Progress Bar -->
-      <div class="w-full bg-gray-200 rounded-full h-3 mb-4">
+      <div class="w-full bg-gray-200 rounded-full h-4 mb-6 shadow-inner">
         <div
-          class="bg-gradient-to-r from-green-500 to-emerald-500 h-3 rounded-full transition-all duration-500"
+          class="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 h-4 rounded-full transition-all duration-700 shadow-sm"
           :style="{ width: currentMonthStats.rate + '%' }"
         ></div>
       </div>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-600">Total Pemasukan:</span>
-          <span class="font-semibold text-green-600">{{ formatCurrency(currentMonthStats.totalIncome) }}</span>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-green-200 shadow-sm">
+          <div class="flex justify-between items-center">
+            <span class="text-green-700 font-medium">💰 Total Pemasukan:</span>
+            <span class="font-bold text-green-600 text-lg">{{ formatCurrency(currentMonthStats.totalIncome) }}</span>
+          </div>
         </div>
-        <div class="flex justify-between">
-          <span class="text-gray-600">Target Bulan Ini:</span>
-          <span class="font-semibold">{{ formatCurrency(monthlyTarget) }}</span>
+        <div class="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-blue-200 shadow-sm">
+          <div class="flex justify-between items-center">
+            <span class="text-blue-700 font-medium">🎯 Target Bulan Ini:</span>
+            <span class="font-bold text-blue-600 text-lg">{{ formatCurrency(monthlyTarget) }}</span>
+          </div>
         </div>
-        <div class="flex justify-between">
-          <span class="text-gray-600">Pencapaian:</span>
-          <span 
-            class="font-semibold"
-            :class="currentMonthStats.totalIncome >= monthlyTarget ? 'text-green-600' : 'text-orange-600'"
-          >
-            {{ Math.round((currentMonthStats.totalIncome / monthlyTarget) * 100) }}%
-          </span>
+        <div class="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-purple-200 shadow-sm">
+          <div class="flex justify-between items-center">
+            <span class="text-purple-700 font-medium">📊 Pencapaian:</span>
+            <span
+              class="font-bold text-lg"
+              :class="currentMonthStats.totalIncome >= monthlyTarget ? 'text-green-600' : 'text-orange-600'"
+            >
+              {{ Math.round((currentMonthStats.totalIncome / monthlyTarget) * 100) }}%
+            </span>
+          </div>
         </div>
       </div>
     </div>

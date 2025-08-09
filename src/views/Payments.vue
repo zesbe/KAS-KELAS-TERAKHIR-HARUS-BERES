@@ -1042,47 +1042,68 @@ const sendBulkMessages = async () => {
     }
 
     const results = []
-    const delay = bulkMessage.delayMinutes * 60 * 1000 // Convert to milliseconds
+    const delaySeconds = bulkMessage.delayMinutes * 60
 
     for (let i = 0; i < targetPayments.length; i++) {
       const payment = targetPayments[i]
+      const student = payment.student
+      const phone = student?.phone || ''
 
       try {
         if (i > 0) {
           // Add delay between messages
-          await new Promise(resolve => setTimeout(resolve, delay))
+          await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000))
         }
 
         const message = generateMessageTemplate(payment)
-        await // TODO: Implement WhatsApp service - sendMessage(payment.student?.phone, message)
+
+        // Clean phone number for WhatsApp (Indonesian format)
+        const cleanPhone = phone.replace(/\D/g, '').replace(/^0/, '62')
+
+        // Create WhatsApp URL
+        const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
+
+        // Open WhatsApp (only first one opens in new tab, others use link click method)
+        if (i === 0) {
+          window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+        } else {
+          // For subsequent messages, use invisible link method to avoid popup blocks
+          const link = document.createElement('a')
+          link.href = whatsappUrl
+          link.target = '_blank'
+          link.rel = 'noopener noreferrer'
+          link.style.display = 'none'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        }
 
         results.push({
-          recipient: payment.student?.name,
-          phone: payment.student?.phone,
+          recipient: student?.name,
+          phone: phone,
           success: true
         })
 
-        toast.success(`Pesan berhasil dikirim ke ${payment.student?.name}`)
+        toast.success(`📱 ${i + 1}/${targetPayments.length} - WhatsApp dibuka untuk ${student?.name}`, {
+          timeout: 2000
+        })
+
       } catch (error) {
         results.push({
-          recipient: payment.student?.name,
-          phone: payment.student?.phone,
+          recipient: student?.name,
+          phone: phone,
           success: false,
           error: error.message
         })
 
-        if (error.message.includes('CORS Error')) {
-          toast.error(`CORS Error: Tidak dapat mengirim ke ${payment.student?.name}. Gunakan backend server untuk production.`)
-        } else {
-          toast.error(`Gagal mengirim pesan ke ${payment.student?.name}: ${error.message}`)
-        }
+        toast.error(`❌ Gagal membuka WhatsApp untuk ${student?.name}`)
       }
     }
 
     const successCount = results.filter(r => r.success).length
     const failCount = results.filter(r => !r.success).length
 
-    toast.success(`Selesai! ${successCount} pesan berhasil dikirim${failCount > 0 ? `, ${failCount} gagal` : ''}`)
+    toast.success(`🎉 Selesai! ${successCount} WhatsApp terbuka${failCount > 0 ? `, ${failCount} gagal` : ''}`)
 
     // Reset form
     bulkMessage.selectedPayments = []

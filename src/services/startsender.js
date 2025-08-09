@@ -30,12 +30,29 @@ class StarSender {
   }
 
   // Initialize beautiful music system
-  initializeMusic() {
-    this.musicManager = musicManager
-    this.currentSongIndex = 0
+  async initializeMusic() {
+    try {
+      // Dynamically import music manager
+      const { default: musicManager } = await import('./musicManager.js')
+      this.musicManager = musicManager
+      this.currentSongIndex = 0
 
-    console.log('🎵 StarSender Music System Ready!')
-    console.log('🎼 Connected to advanced Music Manager')
+      console.log('🎵 StarSender Music System Ready!')
+      console.log('🎼 Connected to advanced Music Manager')
+    } catch (error) {
+      console.log('🎵 Music Manager not available, using fallback')
+      this.musicManager = {
+        setMoodMusic: (mood) => console.log(`🎵 ${mood} mood (fallback)`),
+        stop: () => console.log('🔇 Stop music (fallback)'),
+        nextTrack: () => console.log('⏭️ Next track (fallback)'),
+        playSuccessSound: () => console.log('🎉 Success sound (fallback)'),
+        playErrorSound: () => console.log('❌ Error sound (fallback)'),
+        adaptMusicToProgress: (progress) => console.log(`🎵 Progress: ${progress}% (fallback)`),
+        getCurrentTrack: () => ({ name: 'Fallback Mode', description: 'Music system unavailable' }),
+        getTrackList: () => [],
+        isPlaying: false
+      }
+    }
   }
 
   // Play beautiful music during sending

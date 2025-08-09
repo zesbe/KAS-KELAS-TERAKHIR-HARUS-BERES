@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-8">
     <!-- Database Setup Notice -->
     <div v-if="isSupabaseConfigured && needsDatabaseSetup" class="space-y-4">
       <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -44,57 +44,58 @@
     </div>
 
     <!-- Development Notice -->
-    <div v-if="!isSupabaseConfigured" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+    <div v-if="!isSupabaseConfigured" class="bg-amber-50 border border-amber-200 rounded-xl p-5" style="box-shadow: var(--shadow-enterprise)">
       <div class="flex">
         <div class="flex-shrink-0">
-          <ExclamationTriangleIcon class="h-5 w-5 text-yellow-400" />
+          <ExclamationTriangleIcon class="h-5 w-5 text-amber-500" />
         </div>
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-yellow-800">Mode Pengembangan</h3>
-          <div class="mt-2 text-sm text-yellow-700">
-            <p>Aplikasi berjalan dengan data simulasi. Untuk menggunakan database real, konfigurasikan Supabase di Settings.</p>
+        <div class="ml-4">
+          <h3 class="text-sm font-semibold text-amber-800 tracking-tight">Development Mode</h3>
+          <div class="mt-2 text-sm text-amber-700">
+            <p>Application is running with simulation data. Configure Supabase in Settings for real database.</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Dashboard Header -->
-    <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-8 shadow-2xl">
-      <div class="absolute inset-0 bg-black opacity-10"></div>
-      <div class="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-10 rounded-full"></div>
-      <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+    <div class="relative overflow-hidden bg-slate-900 rounded-xl p-8" style="box-shadow: var(--shadow-enterprise-lg)">
+      <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"></div>
+      <div class="absolute top-0 right-0 w-64 h-64 bg-slate-700 opacity-10 rounded-full transform translate-x-32 -translate-y-32"></div>
 
       <div class="relative flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 class="text-3xl font-bold text-white mb-2">
-            ✨ Dashboard Kas Kelas
+          <h1 class="text-3xl font-bold text-white mb-3 tracking-tight">
+            Financial Dashboard
           </h1>
-          <p class="text-blue-100 text-lg">
-            Overview keuangan dan statistik pembayaran
+          <p class="text-slate-300 text-lg font-medium">
+            Class fund overview and payment analytics
           </p>
         </div>
 
         <!-- Desktop report button -->
         <button
           @click="showPdfModal = true"
-          class="hidden sm:flex mt-6 sm:mt-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 items-center border border-white/30 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-          title="Dashboard Report Options"
+          class="hidden sm:flex mt-6 sm:mt-0 bg-white hover:bg-slate-50 text-slate-900 font-semibold py-3 px-6 rounded-lg transition-all duration-200 items-center border border-slate-200"
+          style="box-shadow: var(--shadow-enterprise-md)"
+          title="Generate Reports"
         >
           <DocumentArrowDownIcon class="w-5 h-5 mr-2" />
-          Laporan Dashboard
+          Generate Report
         </button>
 
         <!-- Mobile flip report button -->
-        <div class="sm:hidden mt-4">
+        <div class="sm:hidden mt-6">
           <button
             @click="showMobileDownload = !showMobileDownload"
-            class="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 flex items-center justify-center border border-white/30 shadow-lg"
+            class="w-full bg-white hover:bg-slate-50 text-slate-900 font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center border border-slate-200"
+            style="box-shadow: var(--shadow-enterprise-md)"
             title="Toggle Report Options"
           >
-            <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-            <span class="text-sm">Laporan</span>
+            <DocumentArrowDownIcon class="w-5 h-5 mr-2" />
+            <span class="text-sm font-semibold">Reports</span>
             <svg
-              :class="['w-4 h-4 ml-2 transition-transform duration-300', showMobileDownload ? 'rotate-180' : '']"
+              :class="['w-4 h-4 ml-2 transition-transform duration-200', showMobileDownload ? 'rotate-180' : '']"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -105,15 +106,15 @@
 
           <!-- Mobile report content -->
           <div
-            :class="['overflow-hidden transition-all duration-300', showMobileDownload ? 'max-h-20 mt-2' : 'max-h-0']"
+            :class="['overflow-hidden transition-all duration-300', showMobileDownload ? 'max-h-20 mt-3' : 'max-h-0']"
           >
             <button
               @click="showPdfModal = true"
-              class="w-full bg-white/30 backdrop-blur-sm hover:bg-white/40 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center text-sm border border-white/40"
-              title="Dashboard Report Options"
+              class="w-full bg-slate-100 hover:bg-slate-200 text-slate-900 font-medium py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center text-sm border border-slate-200"
+              title="Generate Reports"
             >
               <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
-              Pilih Aksi Laporan
+              Select Report Action
             </button>
           </div>
         </div>

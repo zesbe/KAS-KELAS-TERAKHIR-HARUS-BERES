@@ -35,6 +35,40 @@
       </div>
     </div>
 
+    <!-- Quick Actions Card -->
+    <div class="card p-6">
+      <h4 class="text-lg font-medium text-gray-900 mb-4">⚡ Aksi Cepat</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="border rounded-lg p-4 bg-blue-50">
+          <h5 class="font-medium text-blue-900 mb-2">💡 Tips Marking Manual</h5>
+          <ul class="text-sm text-blue-800 space-y-1">
+            <li>• Klik tombol "✓ Tandai Lunas" untuk mark individual payment</li>
+            <li>• Gunakan "✓ Tandai Semua Lunas" untuk mark bulk dalam detail</li>
+            <li>• Progress akan otomatis terupdate</li>
+            <li>• Data tersimpan otomatis</li>
+          </ul>
+        </div>
+
+        <div class="border rounded-lg p-4 bg-green-50">
+          <h5 class="font-medium text-green-900 mb-2">📊 Status Overview</h5>
+          <div class="text-sm space-y-1">
+            <div class="flex justify-between">
+              <span class="text-green-700">Lunas:</span>
+              <span class="font-semibold">{{ multiMonthPayments.filter(p => p.status === 'completed').length }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-blue-700">Sebagian:</span>
+              <span class="font-semibold">{{ multiMonthPayments.filter(p => p.status === 'partial').length }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-yellow-700">Pending:</span>
+              <span class="font-semibold">{{ multiMonthPayments.filter(p => p.status === 'pending').length }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Multi-Month Payments List -->
     <div class="card p-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">

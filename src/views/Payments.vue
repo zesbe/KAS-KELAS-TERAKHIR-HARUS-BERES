@@ -1449,6 +1449,145 @@ const downloadPaymentsPDF = async () => {
   }
 }
 
+// Handle PDF actions from modal
+const handlePaymentsPrint = () => {
+  showPaymentsPdfModal.value = false
+  printPaymentsPDF()
+}
+
+const handlePaymentsDownload = () => {
+  showPaymentsPdfModal.value = false
+  downloadPaymentsPDFFile()
+}
+
+const handlePaymentsPreview = () => {
+  showPaymentsPdfModal.value = false
+  previewPaymentsPDF()
+}
+
+// Print function
+const printPaymentsPDF = () => {
+  try {
+    const pdfContent = generatePaymentsPDFContent()
+    const printWindow = window.open('', '_blank', 'width=800,height=600')
+
+    if (printWindow) {
+      const printContent = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Laporan Pembayaran</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.5; }
+h1 { color: #1f2937; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; }
+h2 { color: #374151; margin-top: 30px; border-left: 4px solid #3b82f6; padding-left: 10px; }
+table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; font-size: 11px; }
+th { background-color: #f3f4f6; font-weight: bold; }
+.status-pending { color: #d97706; font-weight: bold; }
+.status-completed { color: #059669; font-weight: bold; }
+.status-expired { color: #dc2626; font-weight: bold; }
+tr:nth-child(even) { background-color: #f9fafb; }
+@media print { body { margin: 0; } }
+</style></head><body>${pdfContent}</body></html>`
+
+      printWindow.document.write(printContent)
+      printWindow.document.close()
+
+      printWindow.onload = () => {
+        printWindow.focus()
+        printWindow.print()
+      }
+
+      toast.success('🖨️ Dialog printer dibuka!')
+    }
+  } catch (error) {
+    console.error('Print error:', error)
+    toast.error('Gagal membuka printer')
+  }
+}
+
+// Download function
+const downloadPaymentsPDFFile = () => {
+  try {
+    const pdfContent = generatePaymentsPDFContent()
+    const timestamp = new Date().toLocaleDateString('id-ID').replace(/\//g, '_')
+    const fileName = `Laporan_Pembayaran_${timestamp}.html`
+
+    const htmlContent = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laporan Pembayaran - ${new Date().toLocaleDateString('id-ID')}</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.5; }
+h1 { color: #1f2937; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; }
+h2 { color: #374151; margin-top: 30px; border-left: 4px solid #3b82f6; padding-left: 10px; }
+table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; font-size: 11px; }
+th { background-color: #f3f4f6; font-weight: bold; }
+.status-pending { color: #d97706; font-weight: bold; }
+.status-completed { color: #059669; font-weight: bold; }
+.status-expired { color: #dc2626; font-weight: bold; }
+tr:nth-child(even) { background-color: #f9fafb; }
+.download-info { background-color: #ecfdf5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
+@media print { .download-info { display: none; } }
+</style></head><body>
+<div class="download-info">
+<h3 style="color: #065f46;">💾 File Berhasil Didownload!</h3>
+<p style="color: #047857;">Gunakan Ctrl+P untuk print atau share via browser.</p>
+</div>
+${pdfContent}
+</body></html>`
+
+    createPaymentDownloadLink(htmlContent, fileName)
+  } catch (error) {
+    console.error('Download error:', error)
+    toast.error('Gagal download laporan')
+  }
+}
+
+// Preview function
+const previewPaymentsPDF = () => {
+  try {
+    const pdfContent = generatePaymentsPDFContent()
+
+    const htmlContent = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview - Laporan Pembayaran</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.5; }
+h1 { color: #1f2937; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; }
+h2 { color: #374151; margin-top: 30px; border-left: 4px solid #3b82f6; padding-left: 10px; }
+table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; font-size: 11px; }
+th { background-color: #f3f4f6; font-weight: bold; }
+.status-pending { color: #d97706; font-weight: bold; }
+.status-completed { color: #059669; font-weight: bold; }
+.status-expired { color: #dc2626; font-weight: bold; }
+tr:nth-child(even) { background-color: #f9fafb; }
+.preview-info { background-color: #dbeafe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6; }
+.action-buttons { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
+.btn { padding: 10px 15px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
+.btn-print { background: #059669; color: white; }
+</style></head><body>
+<div class="action-buttons">
+<button onclick="window.print()" class="btn btn-print">🖨️ Print</button>
+</div>
+<div class="preview-info">
+<h3 style="color: #1e40af;">👁️ Preview Mode</h3>
+<p style="color: #1d4ed8;">Ini adalah preview laporan. Gunakan tombol Print di atas atau Ctrl+P.</p>
+</div>
+${pdfContent}
+</body></html>`
+
+    const previewWindow = window.open('', '_blank')
+    if (previewWindow) {
+      previewWindow.document.write(htmlContent)
+      previewWindow.document.close()
+      toast.success('👁️ Preview dibuka di tab baru!')
+    }
+  } catch (error) {
+    console.error('Preview error:', error)
+    toast.error('Gagal membuka preview')
+  }
+}
+
 // Helper function for payment download
 const createPaymentDownloadLink = (content, fileName) => {
   try {

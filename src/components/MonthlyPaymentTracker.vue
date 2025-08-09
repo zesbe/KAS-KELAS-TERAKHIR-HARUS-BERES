@@ -330,7 +330,21 @@ const loadMonthlyData = () => {
     // Get transactions for this month
     const monthTransactions = store.transactions.filter(t => {
       const transactionMonth = new Date(t.created_at).toISOString().slice(0, 7)
-      return transactionMonth === monthCode && t.type === 'income' && t.status === 'completed'
+      const matches = transactionMonth === monthCode && t.type === 'income' && t.status === 'completed'
+
+      // Debug logging for August and September 2025
+      if ((monthName === 'Agustus' || monthName === 'September') && year === 2025) {
+        console.log(`🔍 ${monthName} ${year} (${monthCode}):`, {
+          transaction: t.description,
+          created_at: t.created_at,
+          transactionMonth,
+          monthCode,
+          matches,
+          student: t.student?.name
+        })
+      }
+
+      return matches
     })
     
     // Get paid student IDs for this month

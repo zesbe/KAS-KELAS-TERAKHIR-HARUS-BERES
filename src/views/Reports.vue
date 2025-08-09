@@ -8,6 +8,7 @@
       </div>
       <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
         <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+          <!-- CSV Exports -->
           <button @click="exportSummaryCSV" class="btn-secondary w-full sm:w-auto">
             <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
             <span class="hidden sm:inline">Export Summary CSV</span>
@@ -23,10 +24,24 @@
             <span class="hidden sm:inline">Export Lengkap</span>
             <span class="sm:hidden">Lengkap</span>
           </button>
-          <button @click="generatePDFReport" class="btn-secondary w-full sm:w-auto">
+        </div>
+
+        <!-- PDF Downloads -->
+        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+          <button @click="downloadDetailPDF" class="btn-outline w-full sm:w-auto">
             <PrinterIcon class="w-4 h-4 mr-2" />
-            <span class="hidden sm:inline">Generate PDF</span>
-            <span class="sm:hidden">PDF</span>
+            <span class="hidden sm:inline">PDF Detail</span>
+            <span class="sm:hidden">Detail PDF</span>
+          </button>
+          <button @click="downloadSummaryPDF" class="btn-outline w-full sm:w-auto">
+            <PrinterIcon class="w-4 h-4 mr-2" />
+            <span class="hidden sm:inline">PDF Summary</span>
+            <span class="sm:hidden">Summary PDF</span>
+          </button>
+          <button @click="downloadCompletePDF" class="btn-primary w-full sm:w-auto">
+            <PrinterIcon class="w-4 h-4 mr-2" />
+            <span class="hidden sm:inline">PDF Lengkap</span>
+            <span class="sm:hidden">Lengkap PDF</span>
           </button>
         </div>
       </div>

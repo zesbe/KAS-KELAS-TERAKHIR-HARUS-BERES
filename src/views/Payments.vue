@@ -886,6 +886,7 @@ const bulkMessage = reactive({
 
 const sending = ref(false)
 const showCorsErrorModal = ref(false)
+const showPaymentsPdfModal = ref(false)
 const corsErrorData = ref({
   phone: '',
   message: '',
@@ -1400,7 +1401,7 @@ const downloadPaymentsPDF = async () => {
   <div class="mobile-info">
     <h3 style="color: #065f46; margin: 0 0 10px 0;">📱 Panduan Download:</h3>
     <ul style="margin: 0; color: #047857; font-size: 14px;">
-      <li><strong>Mobile:</strong> Menu browser (��) → "Simpan halaman" atau "Unduh"</li>
+      <li><strong>Mobile:</strong> Menu browser (⋮) → "Simpan halaman" atau "Unduh"</li>
       <li><strong>Share:</strong> Gunakan tombol share browser untuk kirim via WhatsApp</li>
       <li><strong>Print:</strong> Menu browser → "Cetak" → "Simpan sebagai PDF"</li>
     </ul>

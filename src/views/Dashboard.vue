@@ -439,7 +439,24 @@ const downloadDashboardPDF = async () => {
 }
 
 const generateDashboardPDFContent = () => {
-  const recentTransactions = store.recentTransactions.slice(0, 10) // Latest 10 transactions
+  // Get ALL transactions, not just 10
+  const allTransactions = store.transactions || []
+
+  // Also get all students with payment status
+  const allStudents = store.students || []
+  const paidStudentIds = allTransactions
+    .filter(t => t.type === 'income' && t.status === 'completed')
+    .map(t => t.student_id)
+
+  const studentsWithStatus = allStudents.map(student => ({
+    ...student,
+    hasPaid: paidStudentIds.includes(student.id),
+    paymentCount: allTransactions.filter(t =>
+      t.student_id === student.id &&
+      t.type === 'income' &&
+      t.status === 'completed'
+    ).length
+  }))
 
   let transactionRows = ''
   recentTransactions.forEach(transaction => {

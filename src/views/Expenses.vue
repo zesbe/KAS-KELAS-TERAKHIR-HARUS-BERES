@@ -799,6 +799,34 @@ const generatePDFStyles = () => `
       background: #f3f4f6;
       color: #374151;
     }
+    .notes-column {
+      background-color: #f9fafb !important;
+      border-left: 3px solid #e5e7eb !important;
+      word-wrap: break-word;
+      word-break: break-word;
+      max-width: 200px;
+    }
+    .notes-text {
+      font-style: italic;
+      color: #6b7280;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      padding: 4px;
+      background: rgba(243, 244, 246, 0.5);
+      border-radius: 4px;
+      display: block;
+      min-height: 20px;
+    }
+    .notes-empty {
+      color: #d1d5db;
+      text-align: center;
+      font-style: normal;
+    }
+    .table th:nth-child(4) {
+      background: #f1f5f9 !important;
+      color: #475569 !important;
+      font-weight: 700;
+    }
     @media print {
       body {
         margin: 0;
@@ -825,6 +853,16 @@ const generatePDFStyles = () => `
       .summary-box {
         break-inside: avoid;
         page-break-inside: avoid;
+      }
+      .notes-column {
+        background-color: #f9fafb !important;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+      }
+      .notes-text {
+        background: rgba(243, 244, 246, 0.5) !important;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
       }
       * {
         -webkit-print-color-adjust: exact;
@@ -860,6 +898,7 @@ const generateExpensesPDFContent = () => {
         <p>Komplek Keuangan, Jl. Guntur I</p>
         <p>Tanggal Cetak: ${currentDate}</p>
         ${filters.dateFrom || filters.dateTo ? `<p>Periode: ${filters.dateFrom || 'Awal'} - ${filters.dateTo || 'Sekarang'}</p>` : ''}
+        <p style="font-size: 0.85rem; margin-top: 10px; opacity: 0.9;">✨ Termasuk catatan lengkap untuk setiap pengeluaran</p>
       </div>
 
       <!-- Executive Summary -->
@@ -905,26 +944,29 @@ const generateExpensesPDFContent = () => {
         <table class="table">
           <thead>
             <tr>
-              <th style="width: 12%">Tanggal</th>
-              <th style="width: 15%">Kategori</th>
-              <th style="width: 30%">Keterangan</th>
-              <th style="width: 15%">Jumlah</th>
-              <th style="width: 12%">Status</th>
-              <th style="width: 16%">Disetujui Oleh</th>
+              <th style="width: 10%">Tanggal</th>
+              <th style="width: 12%">Kategori</th>
+              <th style="width: 25%">Keterangan</th>
+              <th style="width: 20%">Catatan</th>
+              <th style="width: 12%">Jumlah</th>
+              <th style="width: 10%">Status</th>
+              <th style="width: 11%">Disetujui Oleh</th>
             </tr>
           </thead>
           <tbody>
             ${filteredExpenses.value.map((expense, index) => `
               <tr ${index % 2 === 0 ? 'class="highlight"' : ''}>
-                <td>${formatDate(expense.created_at)}</td>
+                <td style="font-size: 0.8rem;">${formatDate(expense.created_at)}</td>
                 <td><span class="category-tag">${getCategoryLabel(expense.category)}</span></td>
-                <td>
-                  ${expense.description}
-                  ${expense.notes ? `<br><small style="color: #6b7280;">${expense.notes}</small>` : ''}
+                <td style="font-weight: 500;">${expense.description}</td>
+                <td class="notes-column">
+                  <span class="notes-text ${!expense.notes ? 'notes-empty' : ''}">
+                    ${expense.notes ? expense.notes : 'Tidak ada catatan'}
+                  </span>
                 </td>
                 <td class="expense-amount">${formatCurrency(expense.amount)}</td>
                 <td class="status-${expense.status}">${getStatusLabel(expense.status)}</td>
-                <td>${expense.approved_by || '-'}</td>
+                <td style="font-size: 0.8rem;">${expense.approved_by || '-'}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -1006,6 +1048,7 @@ const generateExpensesSummaryPDFContent = () => {
         <h2>SD Islam Al Husna - Kelas 1B</h2>
         <p>Komplek Keuangan, Jl. Guntur I</p>
         <p>Tanggal Cetak: ${currentDate}</p>
+        <p style="font-size: 0.85rem; margin-top: 10px; opacity: 0.9;">✨ Termasuk catatan untuk pengeluaran terbaru</p>
       </div>
 
       <!-- Key Metrics -->
@@ -1051,19 +1094,25 @@ const generateExpensesSummaryPDFContent = () => {
         <table class="table">
           <thead>
             <tr>
-              <th>Tanggal</th>
-              <th>Kategori</th>
-              <th>Keterangan</th>
-              <th>Jumlah</th>
-              <th>Status</th>
+              <th style="width: 15%">Tanggal</th>
+              <th style="width: 15%">Kategori</th>
+              <th style="width: 25%">Keterangan</th>
+              <th style="width: 20%">Catatan</th>
+              <th style="width: 15%">Jumlah</th>
+              <th style="width: 10%">Status</th>
             </tr>
           </thead>
           <tbody>
             ${filteredExpenses.value.slice(0, 10).map((expense, index) => `
               <tr ${index % 2 === 0 ? 'class="highlight"' : ''}>
-                <td>${formatDate(expense.created_at)}</td>
+                <td style="font-size: 0.8rem;">${formatDate(expense.created_at)}</td>
                 <td><span class="category-tag">${getCategoryLabel(expense.category)}</span></td>
-                <td>${expense.description}</td>
+                <td style="font-weight: 500;">${expense.description}</td>
+                <td class="notes-column">
+                  <span class="notes-text ${!expense.notes ? 'notes-empty' : ''}">
+                    ${expense.notes ? expense.notes : 'Tidak ada catatan'}
+                  </span>
+                </td>
                 <td class="expense-amount">${formatCurrency(expense.amount)}</td>
                 <td class="status-${expense.status}">${getStatusLabel(expense.status)}</td>
               </tr>

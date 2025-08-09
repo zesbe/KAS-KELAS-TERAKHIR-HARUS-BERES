@@ -152,35 +152,85 @@
           </select>
         </div>
         
-        <div class="flex items-end">
-          <button 
-            @click="generateBulkLinks"
-            :disabled="!quickGenerate.amount || !quickGenerate.description || generating"
-            class="btn-primary w-full"
-          >
-            {{ generating ? 'Generating...' : 'Generate Links' }}
-          </button>
-        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Pembayaran</label>
+            <select v-model="quickGenerate.type" class="input-field">
+              <option value="single">Sekali Bayar</option>
+              <option value="monthly">Bulanan (50k/bulan)</option>
+            </select>
+          </div>
       </div>
-      
+
+      <!-- Monthly Payment Options -->
+      <div v-if="quickGenerate.type === 'monthly'" class="mt-4 p-4 bg-blue-50 rounded-lg">
+        <h4 class="font-medium text-blue-900 mb-3">💳 Opsi Pembayaran Bulanan</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-blue-700 mb-2">Jumlah Per Bulan</label>
+            <input
+              v-model.number="quickGenerate.monthlyAmount"
+              type="number"
+              min="1"
+              class="input-field"
+              placeholder="50000"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-blue-700 mb-2">Jumlah Bulan</label>
+            <select v-model.number="quickGenerate.monthCount" class="input-field">
+              <option value="1">1 Bulan</option>
+              <option value="2">2 Bulan</option>
+              <option value="3">3 Bulan</option>
+              <option value="6">6 Bulan</option>
+              <option value="12">12 Bulan</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-blue-700 mb-2">Total</label>
+            <div class="input-field bg-gray-100">
+              {{ formatCurrency((quickGenerate.monthlyAmount || 50000) * (quickGenerate.monthCount || 1)) }}
+            </div>
+          </div>
+        </div>
+        <p class="text-sm text-blue-600 mt-2">
+          💡 Sistem akan membuat {{ quickGenerate.monthCount || 1 }} link pembayaran terpisah untuk setiap bulan
+        </p>
+      </div>
+
       <!-- Student Selection for Manual Target -->
       <div v-if="quickGenerate.target === 'selected'" class="mt-4">
         <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Siswa</label>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 max-h-48 overflow-y-auto">
-          <label 
-            v-for="student in store.students" 
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+          <label
+            v-for="student in store.students"
             :key="student.id"
             class="flex items-center space-x-2 p-2 border rounded-lg hover:bg-gray-50"
           >
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               :value="student.id"
               v-model="quickGenerate.selectedStudents"
               class="rounded"
             />
-            <span class="text-sm">{{ student.name }}</span>
+            <span class="text-sm">{{ student.name }} ({{ student.nickname }})</span>
           </label>
         </div>
+      </div>
+      
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+        <div class="text-sm text-gray-600">
+          <span class="font-medium">{{ getTargetStudentsCount() }}</span> siswa akan dibuatkan link
+          <span v-if="quickGenerate.type === 'monthly'" class="text-blue-600 font-medium">
+            ({{ quickGenerate.monthCount || 1 }} bulan)
+          </span>
+        </div>
+        <button
+          @click="generateBulkPayments"
+          :disabled="generating || getTargetStudentsCount() === 0"
+          class="btn-primary"
+        >
+          {{ generating ? 'Membuat...' : (quickGenerate.type === 'monthly' ? 'Buat Pembayaran Bulanan' : 'Generate Link') }}
+        </button>
       </div>
     </div>
 
@@ -366,6 +416,14 @@
             >
               <CheckCircleIcon class="w-4 h-4 mr-1" />
               <span class="text-xs">Lunas</span>
+            </button>
+            <button
+              @click="showPaymentDetails(payment)"
+              class="flex items-center justify-center text-blue-600 hover:text-blue-900 py-2"
+              title="Detail Link"
+            >
+              <InformationCircleIcon class="w-4 h-4 mr-1" />
+              <span class="text-xs">Detail</span>
             </button>
             <button
               @click="checkPaymentStatus(payment)"
@@ -572,57 +630,183 @@
       v-if="showPreviewModal && previewPayment"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white rounded-lg max-w-md w-full mx-4 p-4 sm:p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Link Pembayaran</h3>
+      <div class="bg-white rounded-lg max-w-2xl w-full mx-4 p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Detail Link Pembayaran</h3>
+          <span :class="getStatusClass(previewPayment.status)">
+            {{ getStatusLabel(previewPayment.status) }}
+          </span>
+        </div>
         
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Siswa</label>
-            <p class="text-sm text-gray-900">{{ previewPayment.student?.name }}</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Student Info -->
+          <div class="space-y-4">
+            <div class="bg-blue-50 rounded-lg p-4">
+              <h4 class="font-medium text-blue-900 mb-3">👤 Informasi Siswa</h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-blue-700">Nama:</span>
+                  <span class="font-medium">{{ previewPayment.student?.name || '-' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-blue-700">Panggilan:</span>
+                  <span class="font-medium">{{ previewPayment.student?.nickname || '-' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-blue-700">No. HP:</span>
+                  <span class="font-medium font-mono">{{ previewPayment.student?.phone || '-' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Info -->
+            <div class="bg-green-50 rounded-lg p-4">
+              <h4 class="font-medium text-green-900 mb-3">💰 Detail Pembayaran</h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-green-700">Jumlah:</span>
+                  <span class="font-bold text-lg text-green-800">{{ formatCurrency(previewPayment.amount) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-green-700">Keterangan:</span>
+                  <span class="font-medium">{{ previewPayment.description || '-' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-green-700">Bulan:</span>
+                  <span class="font-medium">{{ previewPayment.month || new Date().toISOString().slice(0, 7) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-green-700">Metode:</span>
+                  <span class="font-medium">{{ previewPayment.payment_method || 'Online' }}</span>
+                </div>
+              </div>
+            </div>
           </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
-            <p class="text-sm text-gray-900">{{ formatCurrency(previewPayment.amount) }}</p>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Order ID</label>
-            <p class="text-sm font-mono text-gray-900">{{ previewPayment.order_id }}</p>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Link Pembayaran</label>
-            <div class="flex items-center space-x-2">
-              <input 
-                :value="previewPayment.payment_url"
-                readonly
-                class="input-field text-xs"
-              />
-              <button 
-                @click="copyToClipboard(previewPayment.payment_url)"
-                class="btn-secondary p-2"
-              >
-                <DocumentDuplicateIcon class="w-4 h-4" />
-              </button>
+
+          <!-- Technical Info -->
+          <div class="space-y-4">
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h4 class="font-medium text-gray-900 mb-3">🔗 Informasi Teknis</h4>
+              <div class="space-y-2 text-sm">
+                <div>
+                  <label class="block text-gray-700 mb-1">Order ID:</label>
+                  <div class="flex items-center space-x-2">
+                    <code class="bg-white px-2 py-1 rounded border text-xs">{{ previewPayment.order_id }}</code>
+                    <button 
+                      @click="copyToClipboard(previewPayment.order_id)"
+                      class="text-gray-500 hover:text-gray-700"
+                    >
+                      <DocumentDuplicateIcon class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div>
+                  <label class="block text-gray-700 mb-1">Dibuat:</label>
+                  <span class="text-gray-600">{{ formatDate(previewPayment.created_at) }}</span>
+                </div>
+                
+                <div v-if="previewPayment.completed_at">
+                  <label class="block text-gray-700 mb-1">Selesai:</label>
+                  <span class="text-green-600">{{ formatDate(previewPayment.completed_at) }}</span>
+                </div>
+                
+                <div v-if="previewPayment.expires_at">
+                  <label class="block text-gray-700 mb-1">Expires:</label>
+                  <span class="text-orange-600">{{ formatDate(previewPayment.expires_at) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Actions -->
+            <div class="bg-yellow-50 rounded-lg p-4">
+              <h4 class="font-medium text-yellow-900 mb-3">⚡ Aksi Cepat</h4>
+              <div class="space-y-2">
+                <button
+                  v-if="previewPayment.status === 'pending'"
+                  @click="markAsPaid(previewPayment); showPreviewModal = false"
+                  class="w-full btn-success text-sm py-2"
+                >
+                  <CheckCircleIcon class="w-4 h-4 mr-2" />
+                  Tandai Sebagai Lunas
+                </button>
+                
+                <button
+                  @click="checkPaymentStatus(previewPayment)"
+                  class="w-full btn-outline text-sm py-2"
+                >
+                  <ArrowPathIcon class="w-4 h-4 mr-2" />
+                  Cek Status Pembayaran
+                </button>
+                
+                <button
+                  @click="createMonthlyPayment(previewPayment.student)"
+                  class="w-full btn-secondary text-sm py-2"
+                >
+                  <PlusIcon class="w-4 h-4 mr-2" />
+                  Buat Pembayaran Bulan Depan
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Payment Link Section -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <label class="block text-sm font-medium text-gray-700 mb-2">🔗 Link Pembayaran</label>
+          <div class="flex items-center space-x-2">
+            <input 
+              :value="previewPayment.payment_url"
+              readonly
+              class="input-field text-xs flex-1"
+            />
+            <button 
+              @click="copyToClipboard(previewPayment.payment_url)"
+              class="btn-secondary px-3 py-2"
+              title="Copy Link"
+            >
+              <DocumentDuplicateIcon class="w-4 h-4" />
+            </button>
+            <button 
+              @click="openPaymentLink(previewPayment.payment_url)"
+              class="btn-outline px-3 py-2"
+              title="Buka Link"
+            >
+              <LinkIcon class="w-4 h-4" />
+            </button>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">Link ini akan tetap tersimpan dan dapat diakses kapan saja</p>
+        </div>
+
+        <!-- Notes Section -->
+        <div v-if="previewPayment.notes" class="mt-4 p-3 bg-blue-50 rounded-lg">
+          <label class="block text-sm font-medium text-blue-900 mb-1">📝 Catatan</label>
+          <p class="text-sm text-blue-800">{{ previewPayment.notes }}</p>
+        </div>
         
-        <div class="flex justify-end space-x-3 pt-4">
+        <div class="flex justify-between space-x-3 pt-6 border-t border-gray-200 mt-6">
           <button 
             @click="showPreviewModal = false"
             class="btn-secondary"
           >
             Tutup
           </button>
-          <button
-            @click="sendWhatsAppMessage(previewPayment)"
-            class="btn-success"
-          >
-            <ChatBubbleLeftIcon class="w-4 h-4 mr-2" />
-            Kirim via WhatsApp
-          </button>
+          <div class="flex space-x-2">
+            <button
+              @click="sendWhatsAppMessage(previewPayment)"
+              class="btn-success"
+            >
+              <ChatBubbleLeftIcon class="w-4 h-4 mr-2" />
+              Kirim WhatsApp
+            </button>
+            <button
+              @click="viewInvoice(previewPayment)"
+              class="btn-primary"
+            >
+              <DocumentTextIcon class="w-4 h-4 mr-2" />
+              Lihat Invoice
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -731,7 +915,8 @@ import {
   TrashIcon,
   DocumentDuplicateIcon,
   DocumentTextIcon,
-  DocumentArrowDownIcon
+  DocumentArrowDownIcon,
+  InformationCircleIcon
 } from '@heroicons/vue/24/outline'
 
 const store = useAppStore()
@@ -750,7 +935,10 @@ const quickGenerate = reactive({
   amount: 50000,
   description: 'Kas Bulanan',
   target: 'all',
-  selectedStudents: []
+  selectedStudents: [],
+  type: 'single', // 'single' or 'monthly'
+  monthlyAmount: 50000,
+  monthCount: 1
 })
 
 const singleLink = reactive({
@@ -830,68 +1018,110 @@ const getStatusClass = (status) => {
   return classes[status] || classes.pending
 }
 
-const generateBulkLinks = async () => {
-  try {
-    generating.value = true
-
-    let targetStudents = []
-    const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
-
-    if (quickGenerate.target === 'all') {
-      targetStudents = store.students
-    } else if (quickGenerate.target === 'unpaid') {
-      // Use the new getter that excludes students who already paid this month
-      targetStudents = store.unpaidStudentsThisMonth
-
-      if (targetStudents.length === 0) {
-        toast.info(`Semua siswa sudah membayar untuk bulan ${currentMonth}! 🎉`)
-        return
-      }
-    } else if (quickGenerate.target === 'selected') {
-      targetStudents = store.students.filter(s => quickGenerate.selectedStudents.includes(s.id))
-    }
-
-    // Show confirmation for bulk generation
-    if (targetStudents.length > 5) {
-      const confirmed = confirm(`Generate link pembayaran untuk ${targetStudents.length} siswa?\n\nBulan: ${currentMonth}\nJumlah: ${formatCurrency(quickGenerate.amount)}\nKeterangan: ${quickGenerate.description}`)
-      if (!confirmed) return
-    }
-
-    // Use the new bulk generation method
-    try {
-      const results = await store.generateBulkPaymentLinks(
-        quickGenerate.amount,
-        quickGenerate.description,
-        quickGenerate.target === 'unpaid'
-      )
-
-      const successful = results.filter(r => r.success).length
-      const failed = results.filter(r => !r.success).length
-
-      if (successful > 0) {
-        toast.success(`✅ Berhasil generate ${successful} link pembayaran untuk bulan ${currentMonth}`)
-      }
-      if (failed > 0) {
-        toast.warning(`⚠️ ${failed} link gagal dibuat (mungkin siswa sudah bayar)`)
-      }
-
-    } catch (error) {
-      if (error.message.includes('sudah membayar')) {
-        toast.info(error.message)
-      } else {
-        throw error
-      }
-    }
-
-    // Reset form
-    quickGenerate.selectedStudents = []
-  } catch (error) {
-    toast.error('Gagal generate link pembayaran: ' + error.message)
-    console.error('Error generating bulk links:', error)
-  } finally {
-    generating.value = false
+const getTargetStudentsCount = () => {
+  if (quickGenerate.target === 'all') {
+    return store.students.length
+  } else if (quickGenerate.target === 'unpaid') {
+    return store.unpaidStudentsThisMonth.length
+  } else if (quickGenerate.target === 'selected') {
+    return quickGenerate.selectedStudents.length
   }
+  return 0
 }
+
+ const generateBulkPayments = async () => {
+   try {
+     generating.value = true
+     
+     // Get target students
+     let targetStudents = []
+     if (quickGenerate.target === 'all') {
+       targetStudents = [...store.students]
+     } else if (quickGenerate.target === 'unpaid') {
+       targetStudents = store.unpaidStudentsThisMonth || []
+     } else if (quickGenerate.target === 'selected') {
+       targetStudents = store.students.filter(s => quickGenerate.selectedStudents.includes(s.id))
+     }
+
+     if (targetStudents.length === 0) {
+       toast.error('Tidak ada siswa yang dipilih')
+       return
+     }
+
+     const results = []
+     const totalLinks = targetStudents.length * (quickGenerate.type === 'monthly' ? quickGenerate.monthCount : 1)
+     let createdCount = 0
+
+     for (const student of targetStudents) {
+       if (quickGenerate.type === 'monthly') {
+         // Create multiple monthly payments
+         for (let month = 0; month < quickGenerate.monthCount; month++) {
+           const paymentDate = new Date()
+           paymentDate.setMonth(paymentDate.getMonth() + month)
+           const monthCode = paymentDate.toISOString().slice(0, 7)
+           const monthName = paymentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+           
+           try {
+             await store.generatePaymentLink(
+               student.id,
+               quickGenerate.monthlyAmount || 50000,
+               `${quickGenerate.description} - ${monthName}`
+             )
+             createdCount++
+             results.push({ student: student.name, month: monthName, success: true })
+             
+             // Update progress
+             toast.info(`📝 ${createdCount}/${totalLinks} - ${student.name} (${monthName})`, { timeout: 1000 })
+           } catch (error) {
+             results.push({ student: student.name, month: monthName, success: false, error: error.message })
+             toast.error(`❌ Gagal: ${student.name} (${monthName})`)
+           }
+         }
+       } else {
+         // Create single payment
+         try {
+           await store.generatePaymentLink(
+             student.id,
+             quickGenerate.amount,
+             quickGenerate.description
+           )
+           createdCount++
+           results.push({ student: student.name, success: true })
+           
+           // Update progress
+           toast.info(`📝 ${createdCount}/${totalLinks} - ${student.name}`, { timeout: 1000 })
+         } catch (error) {
+           results.push({ student: student.name, success: false, error: error.message })
+           toast.error(`❌ Gagal: ${student.name}`)
+         }
+       }
+     }
+
+     const successCount = results.filter(r => r.success).length
+     const failCount = results.filter(r => !r.success).length
+
+     if (successCount > 0) {
+       toast.success(`🎉 ${successCount} link pembayaran berhasil dibuat!${failCount > 0 ? ` (${failCount} gagal)` : ''}`, {
+         timeout: 5000
+       })
+       
+       // Reset form
+       quickGenerate.selectedStudents = []
+       if (quickGenerate.type === 'monthly') {
+         quickGenerate.monthCount = 1
+         quickGenerate.monthlyAmount = 50000
+       }
+     } else {
+       toast.error('Semua link pembayaran gagal dibuat')
+     }
+
+   } catch (error) {
+     toast.error('Gagal membuat link pembayaran: ' + error.message)
+     console.error('Error generating bulk payments:', error)
+   } finally {
+     generating.value = false
+   }
+ }
 
 const createSingleLink = async () => {
   try {
@@ -1053,22 +1283,23 @@ const checkPaymentStatus = async (payment) => {
 }
 
 const markAsPaid = async (payment) => {
-  const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+  // Use the payment's intended month, not current month
+  const paymentMonth = payment.month || new Date().toISOString().slice(0, 7)
+  const paymentMonthName = new Date(paymentMonth + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
 
-  if (!confirm(`Tandai pembayaran ${payment.student?.name} sebagai LUNAS untuk bulan ${currentMonth}?\n\nJumlah: ${formatCurrency(payment.amount)}\nKeterangan: ${payment.description}\n\n⚠️ Ini akan menambah saldo kas kelas dan menandai siswa sebagai sudah bayar bulan ini.`)) {
+  if (!confirm(`Tandai pembayaran ${payment.student?.name} sebagai LUNAS untuk bulan ${paymentMonthName}?\n\nJumlah: ${formatCurrency(payment.amount)}\nKeterangan: ${payment.description}\n\n⚠️ Ini akan menambah saldo kas kelas dan menandai siswa sebagai sudah bayar untuk ${paymentMonthName}.`)) {
     return
   }
 
   try {
     const now = new Date().toISOString()
-    const currentMonthCode = now.slice(0, 7) // YYYY-MM format
 
     // Update payment status to completed
     await store.updatePaymentLink(payment.id, {
       status: 'completed',
       payment_method: 'manual',
       completed_at: now,
-      month: currentMonthCode,
+      month: paymentMonth, // Keep the original intended month
       notes: `Ditandai lunas secara manual oleh admin pada ${new Date().toLocaleString('id-ID')}`
     })
 
@@ -1076,14 +1307,14 @@ const markAsPaid = async (payment) => {
     await store.addTransaction({
       type: 'income',
       amount: payment.amount,
-      description: `${payment.description} - ${currentMonth} (Manual)`,
+      description: `${payment.description} - ${paymentMonthName} (Manual)`,
       student_id: payment.student_id,
       payment_method: 'manual',
       order_id: payment.order_id,
       status: 'completed',
-      month: currentMonthCode,
+      month: paymentMonth, // Use the payment's intended month
       created_at: now,
-      notes: `Pembayaran manual - ${payment.student?.name} untuk ${currentMonth}`
+      notes: `Pembayaran manual - ${payment.student?.name} untuk ${paymentMonthName}`
     })
 
     // Refresh data to update UI and balance
@@ -1092,7 +1323,7 @@ const markAsPaid = async (payment) => {
 
     // Show success with balance update info
     const newBalance = store.currentBalance
-    toast.success(`✅ ${payment.student?.name} berhasil ditandai LUNAS!\n💰 Saldo kas bertambah: ${formatCurrency(payment.amount)}\n📊 Saldo saat ini: ${formatCurrency(newBalance)}`, {
+    toast.success(`✅ ${payment.student?.name} berhasil ditandai LUNAS untuk ${paymentMonthName}!\n💰 Saldo kas bertambah: ${formatCurrency(payment.amount)}\n📊 Saldo saat ini: ${formatCurrency(newBalance)}`, {
       timeout: 6000
     })
 
@@ -1422,5 +1653,39 @@ const sendBulkMessages = async () => {
   } finally {
     sending.value = false
   }
+}
+
+const showPaymentDetails = (payment) => {
+  previewPayment.value = payment
+  showPreviewModal.value = true
+}
+
+const createMonthlyPayment = (student) => {
+  const currentMonth = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+  const currentMonthCode = new Date().toISOString().slice(0, 7) // YYYY-MM format
+
+  const payment = {
+    student_id: student.id,
+    amount: 0, // Will be set by user input
+    description: '', // Will be set by user input
+    status: 'pending',
+    payment_method: 'manual',
+    month: currentMonthCode,
+    order_id: `INV-${currentMonthCode}-${student.id}-${Date.now()}`,
+    created_at: new Date().toISOString(),
+    notes: `Pembayaran bulan ${currentMonth} (Manual)`
+  }
+
+  store.paymentLinks.push(payment)
+  toast.success(`✅ Link pembayaran bulan ${currentMonth} untuk ${student.name} berhasil dibuat!`)
+  showCreateModal.value = true // Re-open create modal to set amount and description
+  singleLink.studentId = student.id
+  singleLink.amount = 0
+  singleLink.description = `Pembayaran bulan ${currentMonth}`
+}
+
+const openPaymentLink = (url) => {
+  window.open(url, '_blank', 'noopener,noreferrer')
+  toast.info('Link pembayaran dibuka di tab baru')
 }
 </script>

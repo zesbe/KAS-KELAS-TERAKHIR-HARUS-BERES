@@ -299,7 +299,7 @@ class ExportService {
       categoryDetails[category].push(expense)
     })
 
-    const headers = ['Kategori', 'Keterangan', 'Tanggal', 'Jumlah (IDR)', 'Disetujui Oleh']
+    const headers = ['Kategori', 'Keterangan', 'Catatan', 'Tanggal', 'Jumlah (IDR)', 'Disetujui Oleh']
     const data = []
 
     Object.entries(categoryTotals).forEach(([category, total]) => {
@@ -307,6 +307,7 @@ class ExportService {
       data.push([
         categoryLabels[category] || category,
         `=== TOTAL: ${this.formatCurrency(total)} ===`,
+        '',
         '',
         '',
         ''
@@ -317,6 +318,7 @@ class ExportService {
         data.push([
           '',
           expense.description,
+          expense.notes || '',
           this.formatDate(expense.created_at),
           this.formatCurrency(expense.amount),
           expense.approved_by || ''
@@ -324,7 +326,7 @@ class ExportService {
       })
 
       // Add spacing
-      data.push(['', '', '', '', ''])
+      data.push(['', '', '', '', '', ''])
     })
 
     const timestamp = new Date().toISOString().slice(0, 10)

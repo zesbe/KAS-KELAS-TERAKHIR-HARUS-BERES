@@ -37,6 +37,8 @@ CREATE TABLE transactions (
     payment_method VARCHAR(50),
     order_id VARCHAR(100) UNIQUE,
     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed', 'cancelled')),
+    month VARCHAR(7), -- YYYY-MM format for tracking monthly payments
+    notes TEXT, -- Additional notes for manual payments or special instructions
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -47,6 +49,7 @@ CREATE INDEX idx_transactions_type ON transactions(type);
 CREATE INDEX idx_transactions_status ON transactions(status);
 CREATE INDEX idx_transactions_created_at ON transactions(created_at);
 CREATE INDEX idx_transactions_order_id ON transactions(order_id);
+CREATE INDEX idx_transactions_month ON transactions(month);
 
 -- =========================================
 -- TABLE: expenses
@@ -83,8 +86,13 @@ CREATE TABLE payment_links (
     description TEXT NOT NULL,
     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'expired', 'cancelled')),
     payment_method VARCHAR(50),
+    payment_type VARCHAR(50) DEFAULT 'single' CHECK (payment_type IN ('single', 'multi_month', 'emergency', 'event', 'equipment', 'custom')),
+    month VARCHAR(7), -- YYYY-MM format for tracking monthly payments
+    months INTEGER DEFAULT 1, -- Number of months for multi-month payments
+    monthly_amount INTEGER, -- Amount per month for multi-month payments
+    notes TEXT, -- Additional notes for manual payments or special instructions
     completed_at TIMESTAMP WITH TIME ZONE,
-    expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '7 days'),
+    expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '30 days'), -- Extended to 30 days
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -94,6 +102,9 @@ CREATE INDEX idx_payment_links_student_id ON payment_links(student_id);
 CREATE INDEX idx_payment_links_order_id ON payment_links(order_id);
 CREATE INDEX idx_payment_links_status ON payment_links(status);
 CREATE INDEX idx_payment_links_created_at ON payment_links(created_at);
+CREATE INDEX idx_payment_links_month ON payment_links(month);
+CREATE INDEX idx_payment_links_expires_at ON payment_links(expires_at);
+CREATE INDEX idx_payment_links_payment_type ON payment_links(payment_type);
 
 -- =========================================
 -- TABLE: campaigns

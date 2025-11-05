@@ -1,0 +1,45 @@
+name: Keep Supabase Database Active
+
+on:
+  schedule:
+    # Run every day at 00:00 UTC (jam 7 pagi WIB)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping Supabase Database
+        run: |
+          echo "Pinging Supabase to keep database active..."
+
+          # Perform a simple query to the students table
+          # This will keep the database active
+          response=$(curl -X GET \
+            "${{ secrets.VITE_SUPABASE_URL }}/rest/v1/students?select=count" \
+            -H "apikey: ${{ secrets.VITE_SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.VITE_SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -w "\nHTTP_STATUS:%{http_code}" \
+            -s)
+
+          http_status=$(echo "$response" | grep "HTTP_STATUS" | cut -d: -f2)
+
+          echo "Response status: $http_status"
+
+          if [ "$http_status" = "200" ] || [ "$http_status" = "206" ]; then
+            echo "✅ Successfully pinged Supabase database"
+            echo "Database is active and responding"
+          else
+            echo "⚠️  Ping returned status $http_status"
+            echo "Response: $response"
+            exit 1
+          fi
+
+      - name: Log completion
+        if: success()
+        run: |
+          echo "Database keep-alive ping completed successfully at $(date)"
+          echo "Next ping scheduled for tomorrow at 00:00 UTC"
